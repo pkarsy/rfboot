@@ -1,11 +1,14 @@
 
-One of the main goals of rfboot is to upload the firmware reliably, without the danger of "bricking" the device
-
-By "bricked" I mean a device with corrupted or half writen firmware, needing physical access to the 
-reset button to be reprogrammed and "unbricked".
-This is often unacceptable as the device can be very hard to access.
-
-With rfboot is almost impossible to "brick" the device to be programmed
+A bootloader runs only at power on or after a MCU Reset
+One of the main goals of rfboot is to upload the firmware reliably, without physical access to the device including the Reset button.
+This means that the application must implement a mechanism to software reset the MCU whenever
+we need to update the firmware. A simple solution is to listen for incoming RF packets. When a packet arrives containing exactly the string
+ie "Reset" then the application resets the device giving control to rfboot. The rftool utility, whenever creates a new empty project has ready 
+such a mechanism in the .ino file. Also the examples contain this solution
+As long as this mechanism works, we can upload code to the device literally thousands of times, without any need to even touch the device
+. if however the device for some reason stops responding to the reset request, then it is
+impossible to reprogram it remotely. We need to access the reset button wich is not very easy sometimes. rfboot is designed
+to avoid this type of failure
 
 This is acomplished:
 - If the upload process is interrupted, rfboot detects it and waits for new firmware.
