@@ -1,7 +1,8 @@
 A lot in fact
 
-- atmega328p only. Should be easy to port to similar AVR MCUs
-- CC1101 chip. There are a lot of sub GHz RF chips out there, but I am not familiar with any of them
-- Only linux (for development)  at the moment . this alone is ruling out a lot of potential users I am afraid
-- In order to communicate with and upload code to MCU, the usb2rf module must be attached to the PC
+- atmega328p only. Should be easy to port to similar AVR MCUs. You need an ISP programmer like usbtiny or usbasp to burn
+the bootloader (rfboot) in the MCU
+- CC1101 rf module. 
+- Only linux support at the moment as this is the platform I use.
+- In order to communicate with and upload code to MCU, the usb2rf module must be attached to the PC. See README in the usb2rf folder
 - The rftool software must be installeed somewere to the PC
