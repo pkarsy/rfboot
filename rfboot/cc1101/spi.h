@@ -1,0 +1,97 @@
+/**
+ * The code converted from c++ to c in order to use it in the rfboot
+ * 
+ * 
+ * 
+ **/
+
+/**
+ * Copyright (c) 2011 panStamp <contact@panstamp.com>
+ * 
+ * This file is part of the panStamp project.
+ * 
+ * panStamp  is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * any later version.
+ * 
+ * panStamp is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with panStamp; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 
+ * USA
+ * 
+ * Author: Daniel Berenguer
+ * Creation date: 03/03/2011
+ */
+
+#ifndef _SPI_H
+#define _SPI_H
+
+//#include "Arduino.h"
+#include <inttypes.h>
+#define byte uint8_t
+#include <pin_macros.h>
+
+/**
+ * SPI pins
+ */
+//#define SPI_SS   10     // PB2 = SPI_SS
+//#define SPI_MOSI 11     // PB3 = MOSI
+//#define SPI_MISO 12     // PB4 = MISO
+//#define SPI_SCK  13     // PB5 = SCK
+//#define GDO0     2        // PD2 = INT0
+#define SPI_SS   B,2     // PB2 = SPI_SS
+#define SPI_MOSI B,3     // PB3 = MOSI
+#define SPI_MISO B,4     // PB4 = MISO
+#define SPI_SCK  B,5     // PB5 = SCK
+#define GDO0     D,2     // PD2 = INT0
+
+#define PORT_SPI_MISO  PINB
+#define BIT_SPI_MISO  4
+
+#define PORT_SPI_SS  PORTB
+#define BIT_SPI_SS   2
+
+#define PORT_GDO0  PIND
+#define BIT_GDO0  2
+
+/**
+ * Macros
+ */
+// Wait until SPI operation is terminated
+#define wait_Spi()  while(!(SPSR & _BV(SPIF)))
+
+/**
+ * Class: SPI
+ * 
+ * Description:
+ * Basic SPI class
+ */
+//class SPI
+//{
+//  public:
+/**
+ * init
+ * 
+ * SPI initialization
+ */
+void spi_init();
+
+/**
+ * send
+ * 
+ * Send byte via SPI
+ * 
+ * 'value'  Value to be sent
+ * 
+ * Return:
+ *  Response received from SPI slave
+ */
+byte spi_send(byte value);
+//};
+#endif
