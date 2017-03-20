@@ -1,6 +1,6 @@
 # rfboot
 Notice: The project is in a quite workable state. However this project site is not ready yet.
-I hope in a few days (say until 25 March 2017) the code will be added and this notice will be removed
+I hope in a few days (say until 25-30 March 2017) the code, PCB files etc will be added and this notice will be removed
 
 Bootloader for Atmega328 over the air (OTA) with CC1101 RF module
 
