@@ -1,0 +1,5 @@
+A lotin fact
+
+- Only linux at the moment . this alone is ruling out a lot og potential users
+- In order to communicate with and upload code to MCU, the usb2rf module must be attached to the PC
+- The rftool software must be installeed somewere to the PC
