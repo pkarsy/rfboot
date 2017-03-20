@@ -1,3 +1,9 @@
+/*
+Copyright (c) 2017 Panagiotis Karagiannis
+Based on the panstamp library and modified to better suite the needs of
+rfboot. The licence remains the same LGPLv3 or later
+*/
+
 /**
  * Copyright (c) 2011 panStamp <contact@panstamp.com>
  * 
