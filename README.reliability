@@ -1,2 +1,15 @@
 
+One of the main goals of rfboot is to upload the firmware reliably, without the danger of "bricking" the appliance
+
+By "bricked" I mean a device with corrupted or half writen firmware, needing physical access to the 
+reset button to be reprogrammed and "unbricked".
+This is often unacceptable as the device can be very hard to access.
+
+I think in this spcific field rfboot really shines. Basically is almost impossible to "brick" the device you program unintentionally
+
+This is acomplished:
+- When the upload process is interrupted, rfboot detects it and waits for new firmware.
+- At the event of a power loss or MCU reset while programming, when the power comes back rfboot
+will detect the corrupted code and stays waiting for new firmware. When eventually the upload
+process finishes correctly, only then rfboot gives control to the app
 
