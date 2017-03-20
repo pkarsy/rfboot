@@ -1,17 +1,21 @@
 
-One of the main goals of rfboot is to upload the firmware reliably, without the danger of "bricking" the appliance
+One of the main goals of rfboot is to upload the firmware reliably, without the danger of "bricking" the device
 
 By "bricked" I mean a device with corrupted or half writen firmware, needing physical access to the 
 reset button to be reprogrammed and "unbricked".
 This is often unacceptable as the device can be very hard to access.
 
-I think in this spcific field rfboot really shines. Basically is almost impossible to "brick" the device you program unintentionally
+With rfboot is almost impossible to "brick" the device to be programmed
 
 This is acomplished:
-- When the upload process is interrupted, rfboot detects it and waits for new firmware.
+- If the upload process is interrupted, rfboot detects it and waits for new firmware.
 - At the event of a power loss or MCU reset while programming, when the power comes back rfboot
 will detect the corrupted code and stays waiting for new firmware. When eventually the upload
 process finishes correctly, only then rfboot gives control to the app
-- Additionally rfboot enables watchdog timer (reset in 2s) before the application start. If for some reason the
-application is mulfunctioning, watchdog timer will eventually reset the device allowing to reprogram it 
+- Additionally rfboot enables watchdog timer (reset in 2s) before the application starts. If for some reason the
+application is malfunctioning, watchdog timer will eventually reset the device allowing to reprogram it
+- The danger to upload the wrong code to a device is minimal to not existent. Every atmega chip with rfboot intalled in it, 
+can (and should) have a rfboot listening to
+different channel syncwords etc. 
+Even if we work in parrallel with multiple projects, the code always gows to the correct MCU 
 
