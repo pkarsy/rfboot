@@ -12,4 +12,6 @@ This is acomplished:
 - At the event of a power loss or MCU reset while programming, when the power comes back rfboot
 will detect the corrupted code and stays waiting for new firmware. When eventually the upload
 process finishes correctly, only then rfboot gives control to the app
+- Additionally rfboot enables watchdog timer (reset in 2s) before the application start. If for some reason the
+application is mulfunctioning, watchdog timer will eventually reset the device allowing to reprogram it 
 
