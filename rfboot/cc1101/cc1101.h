@@ -1,3 +1,9 @@
+/*
+Copyright (c) 2017 Panagiotis Karagiannis
+Made some modifications to the panstamp library to better suite the needs of
+rfboot. The licence remains the same
+*/
+
 /**
  * Copyright (c) 2011 panStamp <contact@panstamp.com>
  * 
