@@ -1,3 +1,8 @@
+In the following section lets imagine a electronic project wich is hard
+to access physically such as weathering station on the roof. We use the cc1101 chip
+to fetch data, but we also want to update the code via the RF link
+
+Here is explined what rfboot does to acomplish this job reliably
 
 A bootloader runs only at power on or after a MCU Reset
 One of the main goals of rfboot is to upload the firmware reliably, without physical access to the device including the Reset button.
