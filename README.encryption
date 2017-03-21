@@ -1,4 +1,5 @@
-
+The use of encryption is not justified in a lot of scenarios. However there may be cases which 
+is useful
 
 The firmware is uploaded to the atmega chip encrypted with XTEA algorithm in CBC mode.
 As rfboot selects a different IV at every session, even if we upload the same file several times,
