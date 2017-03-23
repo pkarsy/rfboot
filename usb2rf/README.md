@@ -4,11 +4,10 @@ direction, allows rf packets to be received from the PC
 
 ```
 +----------+
-|          |         +---------+         +--------+
-| Computer |   --->  | usb2rf  |  --->   | CC1101 |  ----> RF
-|          |   USB   +---------+   SPI   +--------+
-+----------+        usb2rf module
-rftool
-terminal emulator
-etc
+|          |         +-----------------+         +--------+
+| gtkterm  |  ---->  | usb2rf firmware |  --->   | CC1101 |  ----> ((( RF Waves ))) --> RF electronic component
+| rftool   |   USB   +-----------------+   SPI   +--------+
++----------+            usb2rf module
+Computer
+
 ```
