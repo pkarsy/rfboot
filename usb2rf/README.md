@@ -6,7 +6,7 @@ direction, allows rf packets to be received from the PC
 +----------+
 |          |                    +-----------------+         +--------+                               electronic project
 | gtkterm  |  <---> FTDI <-->   | usb2rf firmware |  <-->   | CC1101 |  <---> {{{ ΕΜ Waves }}} <-->       with a
-| rftool   |   USB              +-----------------+   SPI   +--------+                                CC1101 module
+| rftool   |   USB      Serial  +-----------------+   SPI   +--------+                                CC1101 module
 +----------+                  Arduino Pro Mini 3.3V
 Computer          |__________________________________________________|
                                  usb2rf module
