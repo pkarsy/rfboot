@@ -4,9 +4,9 @@ direction, allows rf packets to be received from the PC
 
 ```
 +----------+
-|          |         +-----------------+         +--------+
-| gtkterm  |  ---->  | usb2rf firmware |  --->   | CC1101 |  ----> ((( RF Waves ))) --> RF electronic component
-| rftool   |   USB   +-----------------+   SPI   +--------+
+|          |         +-----------------+         +--------+                               electronic project
+| gtkterm  |  <--->  | usb2rf firmware |  <-->   | CC1101 |  <---> {{{ ΕΜ Waves }}} <-->       with a
+| rftool   |   USB   +-----------------+   SPI   +--------+                                CC1101 module
 +----------+            usb2rf module
 Computer
 
