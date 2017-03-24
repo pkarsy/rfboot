@@ -17,3 +17,4 @@ it should be OK, because
 the application (ie the Arduino Schetch) and the bootloader are different sources. Again if
 you modified the bootloader you have to give back the improvements
 
+If you believe that the licence needs to be modified/ changed send me a note
