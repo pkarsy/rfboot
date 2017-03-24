@@ -1,6 +1,11 @@
 When a new project is created with "rftool create ProjectName" a new rfboot instance is created
 with a unique RF channel SyncWord and XTEA key.
 
+The idea of encryption emerged as a way to learn some things about encryption. The AES
+encryption resulted in an oversized bootloader, more than the 4Kb limit of atmega328 so
+I choose XTEA becase is very small and the code in wikipedia is in public domain by the
+creators of the algorithm
+
 The use of encryption may seem overkill . Who cares to sniff the firmware in the air, you may ask.
 In fact for a commercial project this can be a real concern. But even for a completely open
 source project the use of encryption is essential. The reason is that without encryption,
@@ -10,8 +15,6 @@ code to another module.
 Note the difference with bootloaders such as optiboot or atmegaboot.
 They dont need encryption, because code is transfered by wire, and
 physical access to the module is required.
-
-A very importand reason for me, it was to learn some things about encryption
 
 I found that encryption is not slowing down the uploading process.
 Due to the way the upload works, it is not any more complicated either.
@@ -28,7 +31,7 @@ The firmware is not encrypted in the atmega flash. When the bootloader is first 
 but I have no solid information if atmega328 can withstand FLASH read attacks.
 
 There is also the possibility that rfboot has some bug, and an exploit can trick it to
-reveal the code somehow.
+reveal the code somehow. Or that the data are badly encrypted and can easily decrypted, and so on
 
 Generally speaking, no warranties that the code works, offers any security, confidentiality,
 it is usefull to any particular purpose, etc.
