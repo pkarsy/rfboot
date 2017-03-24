@@ -1,20 +1,20 @@
 When a new project is created with "rftool create ProjectName" a new rfboot instance is created
-with a unique RF channel SyncWord and XTEA key.
+with a unique RF channel, SyncWord, and XTEA key.
 
 The idea of encryption emerged as a way to learn some things about encryption. The AES
-encryption resulted in an oversized bootloader, more than the 4Kb limit of atmega328 so
-I choose XTEA becase is very small and the code in wikipedia is in public domain by the
-creators of the algorithm
+cipher resulted in an oversized bootloader, more than the 4Kb limit of atmega328 so
+I choose XTEA because is very small and the code in wikipedia is in public domain by the
+algorithm creators
 
-The use of encryption may seem overkill . Who cares to sniff the firmware in the air, you may ask.
+The use of encryption may seem overkill . Who cares to steal the firmware from the air, you may ask.
 In most cases the answer is nobody.
-But for a commercial project this can be a real concern. And it tourns out,  even for a completely open
+But for a commercial project this can be a real concern. And it turns out,  even for a completely open
 source project the use of encryption is essential. The reason is that without encryption,
 the bootloader can easily be fooled to upload any code -by anyone- in the RF module's distance range.
 This can be done on purpose or even accidentally, if for example someone (or you) try to upload
 code to another module.
 Note the difference with bootloaders such as optiboot or atmegaboot.
-They dont need encryption, because code is transfered by wire, and
+They don't need encryption, because code is transfered by wire, and
 physical access to the module is required.
 
 I found that encryption is not slowing down the uploading process.
@@ -23,15 +23,15 @@ Due to the way the rfboot works, it is not any more complicated either.
 For these reasons encryption is permanently enabled in rfboot. If for some reason you need
 to disable encryption you have to edit the source code.
 
-The firmware is uploaded to the atmega chip encrypted with XTEA algorithm in CBC mode.
+The firmware is uploaded to the atmega328 encrypted with XTEA algorithm in CBC mode.
 As rfboot selects a different IV at every session, even if we upload the same file several times,
 the data on the air will be different every time. An "attacker" cannot use an old recorded
 session, and cannot send random data either, because rfboot checks if the first
-packet is encrypted with the correct XTEA key and the choosen IV. At the moment the IV is stored
-in the last 2 bytes of EEPROM. Only the first 65536 uploads will have unique IV's. As threre
+packet is encrypted with the correct XTEA key and the chosen IV. At the moment the IV is stored
+in the last 2 bytes of EEPROM. Only the first 65536 uploads will have unique IV's. As there
 is no possibility that a project needs so many firmware updates, I think the security
-is OK with this aproach.
-Maybe later I will use a method to collect entropy at boot, so rfboot can choose a uniqe IV
+is OK with this approach.
+Maybe later I will use a method to collect entropy at boot, so rfboot can choose a unique IV
 without the need to store the previous value in the EEPROM.
 The most promising method seems to be
 https://gist.github.com/endolith/2568571
@@ -44,5 +44,5 @@ There is also the possibility that rfboot has some bug, and an exploit can trick
 reveal the code somehow. Or that the data are badly encrypted and can easily decrypted, and so on
 
 Generally speaking, no warranties that the code works, offers any security, confidentiality,
-it is usefull to any particular purpose, etc.
+it is useful to any particular purpose, etc.
 
