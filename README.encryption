@@ -1,8 +1,19 @@
 When a new project is created with "rftool create ProjectName" a new rfboot instance is created
 with a unique RF channel SyncWord and XTEA key.
-The use of encryption may seem overkill . However there may be cases which 
-is useful, and I found that is not slowing down the uploading process. Another benefit is that
-by using encryption, is impossible to send the code to the wrong module. 
+
+The use of encryption may seem overkill . Who cares to sniff the code in the air, you may ask.
+In fact for a commercial project this can be a real concern. But even for a completely open
+source project the use of encryption is essential. The reason is that without encryption,
+the bootloader is easily fooled to upload any code by anyone in the RF module's distance range
+This can be done on purpose or even accidentally, if for example someone (or you) try to upload
+code to another module.
+Note that difference with bootloaders such as optiboot or atmegaboot.
+They dont need encryption, because code is transfered by wire, and
+physical access to the module is required.
+
+I also found that encryption is not slowing down the uploading process. For these reasons
+encryption is permanently enabled in rfboot. If for some reason you need to disable encryption
+you have to edit the source code.
 
 The firmware is uploaded to the atmega chip encrypted with XTEA algorithm in CBC mode.
 As rfboot selects a different IV at every session, even if we upload the same file several times,
