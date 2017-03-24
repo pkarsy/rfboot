@@ -7,7 +7,8 @@ I choose XTEA becase is very small and the code in wikipedia is in public domain
 creators of the algorithm
 
 The use of encryption may seem overkill . Who cares to sniff the firmware in the air, you may ask.
-In fact for a commercial project this can be a real concern. But even for a completely open
+In most cases the answer is nobody.
+But for a commercial project this can be a real concern. And it tourns out,  even for a completely open
 source project the use of encryption is essential. The reason is that without encryption,
 the bootloader can easily be fooled to upload any code -by anyone- in the RF module's distance range.
 This can be done on purpose or even accidentally, if for example someone (or you) try to upload
@@ -17,14 +18,23 @@ They dont need encryption, because code is transfered by wire, and
 physical access to the module is required.
 
 I found that encryption is not slowing down the uploading process.
-Due to the way the upload works, it is not any more complicated either.
+Due to the way the rfboot works, it is not any more complicated either.
 
 For these reasons encryption is permanently enabled in rfboot. If for some reason you need
 to disable encryption you have to edit the source code.
 
 The firmware is uploaded to the atmega chip encrypted with XTEA algorithm in CBC mode.
 As rfboot selects a different IV at every session, even if we upload the same file several times,
-the data on the air will be different every time
+the data on the air will be different every time. An "attacker" cannot use an old recorded
+session, and cannot send random data either, because rfboot checks if the first
+packet is encrypted with the correct XTEA key and the choosen IV. At the moment the IV is stored
+in the last 2 bytes of EEPROM. Only the first 65536 uploads will have unique IV's. As threre
+is no possibility that a project needs so many firmware updates, I think the security
+is OK with this aproach.
+Maybe later I will use a method to collect entropy at boot, so rfboot can choose a uniqe IV
+without the need to store the previous value in the EEPROM.
+The most promising method seems to be
+https://gist.github.com/endolith/2568571
 
 The firmware is not encrypted in the atmega flash. When the bootloader is first installed with
 "make xtal" or "make noxtal" the fuses are set so an ISP programmer cannot read the FLASH
