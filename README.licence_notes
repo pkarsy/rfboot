@@ -13,9 +13,9 @@ if you want to use rfboot in a commercial product, you need
 to give back under LGPLv3 the modifications / improvements
 
 If you want to use rfboot to upload a proprietary/closed source application,
-it should be OK, because
-the application (ie the Arduino sketch) and the bootloader use different source codes. Again if
-you modified the bootloader you have to give back the improvements
+it should be OK, because the application (ie the Arduino sketch) and the bootloader
+use different source codes.
+Again if you modified the bootloader you should give back the improvements
 
 It should be obvious but to be really sure: channel, syncword, XTEA key are just numbers.
 They are not modifications to the code, and you don't publish them
