@@ -1,10 +1,19 @@
+The list of the prerequistics is somewhat long I am afraid.
 
-- atmega328p only. Should be easy to port to similar AVR MCUs. You need an ISP programmer like usbtiny or usbasp to burn
+First of all a linux PC is needed, for the development. I don't use Windows neither MAC and is very hard for me to
+support another platform. I suppose you can use VirtualBox if you really need to use rfboot from windows. Or mabe
+someone will do the porting (seems hard).
+
+for the usb2rf module ......... to be continued
+
+At the moment atmega328p is only supported. This  includes a bare atmega328 with some caps etc. But very interestingly includes
+many arduino/ arduino clones. A very well suited arduino is the ProMini 3.3V. It has 3.3 regulator and can directly drive the CC1101
+And can also powered directly from a Lithium call
+
+You need an ISP programmer like usbtiny or usbasp to burn
 the bootloader (rfboot) in the MCU
 
 - CC1101 rf module.
-
-- Only linux support at the moment as this is the platform I use.
 
 - In order to communicate with and upload code to MCU, the usb2rf module must be attached to the PC. See README in the usb2rf folder
 
