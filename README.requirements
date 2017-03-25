@@ -1,12 +1,12 @@
 The list of the prerequistics is somewhat long I am afraid.
 
-**Software/PC side**
+Software/PC side
 
-First of all a linux PC is needed, for the development. I don't use Windows neither MAC and is very hard for me to
-support another platform. I suppose you can use VirtualBox if you really need to use rfboot from windows. Or mabe
-someone will do the porting (seems hard).
+First of all a linux PC is needed, for the development. I don't use Windows neither MAC
+and is very hard for me to support another platform. I suppose you can use VirtualBox if
+you really need to use rfboot from windows. Or mabe someone will do the porting (seems hard).
 
-**usb2rf module**
+usb2rf module
 
 To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 module and some jumper wires.
 More information on this in rfboot/usb2rf folder. There, you can also find information on building a more
