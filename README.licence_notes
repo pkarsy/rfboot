@@ -10,11 +10,12 @@ If you do any modifications to the code and you want to distribute them, you hav
 to use the same license.
 
 if you want to use rfboot in a commercial product, you need
-to give back under LGPLv3 any modifications / improvements
+to give back under LGPLv3 the modifications / improvements
 
 If you want to use rfboot to upload a proprietary/closed source application,
 it should be OK, because
-the application (ie the Arduino Schetch) and the bootloader are different sources. Again if
+the application (ie the Arduino Schetch) and the bootloader use different source codes. Again if
 you modified the bootloader you have to give back the improvements
 
-If you believe that the licence needs to be modified/ changed send me a note
+It is obvious but to be really sure: channel, syncword, XTEA key are just numbers. They are
+not modifications to the code, and you don't publish them
