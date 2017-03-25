@@ -18,5 +18,4 @@ the application (ie the Arduino sketch) and the bootloader use different source 
 you modified the bootloader you have to give back the improvements
 
 It should be obvious but to be really sure: channel, syncword, XTEA key are just numbers.
-They are
-not modifications to the code, and you don't publish them
+They are not modifications to the code, and you don't publish them
