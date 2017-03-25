@@ -1,6 +1,6 @@
 # rfboot
 Notice: The bootloader is in a quite workable state. However the site is incomplete and a lot of modifications need to be done.
-I hope in a few days (say until 25-30 March 2017) the code, PCB files etc will be added and this notice will be removed
+I hope in a few days (say until 31 March 2017) the code, PCB files etc will be added and this notice will be removed
 
 Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip
 
