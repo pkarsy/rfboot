@@ -12,12 +12,14 @@ To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 m
 More information on this in rfboot/usb2rf folder. There, you can also find information on building a more
 robust module on a custom PCB.
 
-
-**Target (your electronics project)**
+Target (your electronics project)
 
 At the moment atmega328p is only supported. This  includes a bare atmega328 with some caps etc. It also includes
-many arduino/ arduino clones. A very well suited arduino is the ProMini 3.3V. It has 3.3 regulator and can directly drive the CC1101 without level converters. It can powered directly from a Lithium cell, making it ideal for prototyping
-Very Importand: You need an ISP programmer (usbasp, usbtiny etc) to burn the bootloader , the first time inside the atmega chip. After that no wires are required.
+many arduino/ arduino clones. A very well suited arduino is the ProMini 3.3V. It has 3.3 regulator and can directly drive the CC1101 without level converters. It lacks a USB port and USB chip, wich is a plus in this particular case,
+as rfboot does not use the serial line. It can powered directly from a Lithium cell,
+making it ideal for prototyping
+Very Importand: You need an ISP programmer (usbasp, usbtiny etc) to burn the bootloader
+inside the atmega chip. After that no wires are required.
 
 
 - CC1101 rf module.
