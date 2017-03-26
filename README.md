@@ -7,11 +7,11 @@ Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip
 
 A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying work-flow, by allowing the program to be uploaded via the RF link. The emphasis is on reliability and security
 
-- [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Reliabi) A good starting point. And gives us an idea of what tools we need to have in order to work with rfboot. NOT READY YET
+- [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Reliabi) A good starting point. And gives us an idea of what tools we need,in order to work with rfboot. **NOT READY YET**
 
 - [Installation](https://github.com/pkarsy/rfboot/wiki/Installation) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straightforward as possible.
 
-- [The first project](https://github.com/pkarsy/rfboot/wiki/Installation) Instructions on the first example. NOT READY YET
+- [The first project](https://github.com/pkarsy/rfboot/wiki/Installation) Instructions on the first example. **NOT READY YET**
 
 - [Reliability](https://github.com/pkarsy/rfboot/wiki/Reliability) Explains how rfboot does the job, under an inherently unreliable link(RF)
 
