@@ -11,10 +11,10 @@ A lot of electronic projects need to communicate with other components via an RF
 
 - [Installation](https://github.com/pkarsy/rfboot/wiki/Installation) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straightforward as possible.
 
-- [The first project](https://github.com/pkarsy/rfboot/wiki/Installation) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straightforward as possible.
+- [The first project](https://github.com/pkarsy/rfboot/wiki/Installation) Instructions on the first example. NOT READY YET
 
-- [Reliability](https://github.com/pkarsy/rfboot/wiki/Reliability) Explains how rfboot does the job under an inherently unreliable link(RF)
+- [Reliability](https://github.com/pkarsy/rfboot/wiki/Reliability) Explains how rfboot does the job, under an inherently unreliable link(RF)
 
 - [Encryption](https://github.com/pkarsy/rfboot/wiki/Encryption) Discuses how the firmware is encrypted over the air, and why this is useful
 
-- [Notes about the License](https://github.com/pkarsy/rfboot/wiki/Notes-about-the-License) I Am Not A Lawyer. I am not even watching legal TV shows ! I you see some mistakes, pls send me a note 
+- [Notes about the License](https://github.com/pkarsy/rfboot/wiki/Notes-about-the-License) This is a very important topic, but I Am Not A Lawyer. I am not even watching legal TV shows ! [](https://assets-cdn.github.com/images/icons/emoji/unicode/1f60a.png) I you see some mistakes, pls send me a note.
