@@ -7,4 +7,6 @@ Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip
 
 A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying workflow, by allowing the program to be uploaded via the RF link. The emphasis is on reliability and security
 
-[What Rfboot can do](https://github.com/pkarsy/rfboot/wiki/Reliability)
+- [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Reliability) Not ready yet
+
+- [Reliability](https://github.com/pkarsy/rfboot/wiki/Reliability)
