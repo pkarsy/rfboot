@@ -5,9 +5,9 @@ I hope in a few days (say until 31 March 2017) the code, help pages, etc will be
 
 Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip
 
-A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying work-flow, by allowing the program to be uploaded via the RF link. The emphasis is on reliability and security
+A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying work-flow, by allowing the program to be uploaded via the same RF link. The emphasis is on reliability and security
 
-- [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Reliabi) A good starting point. And gives us an idea of what tools we need,in order to work with rfboot. **NOT READY YET**
+- [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Reliabi) A good starting point. And gives us an idea of what tools we need,in order to work with rfboot. **VIDEOS NOT READY YET**
 
 - [Installation](https://github.com/pkarsy/rfboot/wiki/Installation) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straightforward as possible.
 
@@ -17,4 +17,4 @@ A lot of electronic projects need to communicate with other components via an RF
 
 - [Encryption](https://github.com/pkarsy/rfboot/wiki/Encryption) Discuses how the firmware is encrypted over the air, and why this is useful
 
-- [Notes about the License](https://github.com/pkarsy/rfboot/wiki/Notes-about-the-License) This is a very important topic, but I Am Not A Lawyer. I am not even watching legal TV shows :)  If you see some mistakes, pls send me a note.
+- [Notes about the License](https://github.com/pkarsy/rfboot/wiki/Notes-about-the-License) This is a very important topic, but I Am Not A Lawyer. If you see some mistakes, pls inform me.
