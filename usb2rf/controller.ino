@@ -29,8 +29,6 @@
 // you are on the pc (to control the app or update the tqrget firmware) this ok
 
 
-//#define RI A2
-
 #include <CC1101.h>
 // The connection to the hardware chip CC1101 the RF Chip
 CC1101 cc1101;
