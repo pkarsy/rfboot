@@ -5,10 +5,14 @@ I hope in a few days (say until 31 March 2017) the code, help pages, etc will be
 
 Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip
 
-A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying workflow, by allowing the program to be uploaded via the RF link. The emphasis is on reliability and security
+A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying work-flow, by allowing the program to be uploaded via the RF link. The emphasis is on reliability and security
 
-- [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Reliabi) A good starting point. And gives us an idea of what tools we need to have in order to work with rfboot.
+- [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Reliabi) A good starting point. And gives us an idea of what tools we need to have in order to work with rfboot. NOT READY YET
 
-- [Installation](https://github.com/pkarsy/rfboot/wiki/Installation) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straithforward as possible.
+- [Installation](https://github.com/pkarsy/rfboot/wiki/Installation) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straightforward as possible.
 
-- [Reliability](https://github.com/pkarsy/rfboot/wiki/Reliability) Explains how rfboot does the job under an inherently unreliable link(RF) 
+- [Reliability](https://github.com/pkarsy/rfboot/wiki/Reliability) Explains how rfboot does the job under an inherently unreliable link(RF)
+
+- [Encryption](https://github.com/pkarsy/rfboot/wiki/Encryption) Discuses how the firmware is encrypted over the air, and why this is useful
+
+- [Notes about the License](https://github.com/pkarsy/rfboot/wiki/Notes-about-the-License) I Am Not A Lawyer. I am not even watching legal TV series ! I you see some mistakes here pls send me a note 
