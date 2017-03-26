@@ -1,8 +1,6 @@
 // Must be the same in rftool
 #define USB2RF_PROTOCOL_VERSION "01"
-/*
-Pws leitourgei. .......
-*/
+
 
 // WARNING the USB-to-RF  module does NOT have rfboot as bootloader
 // But the bootloader wich is preinstalled with the module
@@ -23,7 +21,7 @@ Pws leitourgei. .......
 // module with a FTDI(or equivalent to FTDI) chip
 // with a unique device : /dev/serial/by-id/ddddddd
 
-// Warning: AtmegaBOOT has big problems with Warchdog. Specifically is
+// Warning: AtmegaBOOT has big problems with Warchdog. Specifically if
 // a watchdog reset occurs the bootloader cannot start the application anymore.
 // either install a fixed atmegaboot (they float on  the Internet) or do
 // not use watchdog functionality
@@ -31,26 +29,7 @@ Pws leitourgei. .......
 // you are on the pc (to control the app or update the tqrget firmware) this ok
 
 
-// For the nrf24+ module, In this example the Mirf library is used but
-// you can use whatever library you want
-// Ok there are more advanced libraries but this is quite stable
-// and most of all, it is the library I know better to use
-//#define CHIP_NRF24L01
-#define CHIP_CC1101
-
-#ifdef CHIP_NRF24L01
-#include <SPI.h>
-//#include <PrintRf.h>
-// the nrf24 pinout in the USB-to-RF module
-const uint8_t CE_PIN = A0;
-const uint8_t CSN_PIN = A1;
-PrintRf nrf(CE_PIN,CSN_PIN);
-CCPACKET ccpacket __attribute__ ((section (".noinit")));
-
-uint8_t packet[32];
-#endif
-#define RI A2
-#ifdef CHIP_CC1101 ///////////////////////////////////
+//#define RI A2
 
 #include <CC1101.h>
 // The connection to the hardware chip CC1101 the RF Chip
@@ -67,7 +46,6 @@ void cc1101signalsInterrupt(void) {
 //CCPACKET ccpacket; // __attribute__ ((section (".noinit")));
 uint8_t packet[64];
 //ccpacket.data;
-#endif  //////////////////////////////////////////////
 
 // #include <SoftwareSerial.h>
 // SoftwareSerial debug_port(8,9);
@@ -105,14 +83,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					//    }
 					//}
 					{
-						#ifdef CHIP_NRF24L01
-						nrf.ceLow();
-						nrf.setChannel(channel);
-						nrf.ceHi();
-						#endif
-						#ifdef CHIP_CC1101
 						cc1101.setChannel(channel);
-						#endif
 						if (debug) {
 							debug_port.print(F("channel="));
 							debug_port.println(channel);
@@ -134,12 +105,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					if (debug) {
 						debug_port.println(F("USB to RF Reset"));
 					}
-					#ifdef CHIP_NRF24L01
-					nrf.setAddress("@_@_@");
-					#endif
-					#ifdef CHIP_CC1101
 					cc1101.setSyncWord(0,0);
-					#endif
 
 					digitalWriteFast(RESET_TRIGGER,LOW);
 					pinModeFast(RESET_TRIGGER, OUTPUT); // reset the module because D4 is connected with RESET pin. See circuit diagram
@@ -150,32 +116,6 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 			break;
 
 
-		#ifdef CHIP_NRF24L01
-		case 'A':
-			{
-				if (cmd_len!=6) {
-					if (debug) {
-						debug_port.print(F("Given address has wrong cmd size "));
-						debug_port.println(cmd_len);
-					}
-				}
-				else {
-					nrf.ceLow();
-					cmd++;
-					nrf.setAddress(cmd);
-					nrf.ceHi();
-
-
-					if (debug) {
-						debug_port.print(F("Setting address to : "));
-						debug_port.write(cmd,5);
-						debug_port.println();
-					}
-				}
-			}
-			break;
-		#endif
-		#ifdef CHIP_CC1101
 		case 'A':
 			if (cmd_len==3) {
 				cc1101.setSyncWord(cmd[1],cmd[2]);
@@ -193,7 +133,6 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 				}
 			}
 			break;
-		#endif
 
 		case 'Q':
 			if (cmd_len==1) {
@@ -217,12 +156,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					debug_port.println(F("Software reset"));
 					debug_port.flush();
 				}
-				#ifdef CHIP_NRF24L01
-				nrf.setAddress("@_@_@");
-				#endif
-				#ifdef CHIP_CC1101
 				cc1101.setSyncWord(0,0);
-				#endif
 				resetFunc();
 			}
 			else {
@@ -247,24 +181,20 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 int main() {
 
 	init(); // mandatory, for arduino functions to work
+	
 	pinMode(DEBUG_PIN,INPUT_PULLUP);
 	Serial.begin(57600);
-	//Serial.begin(38400);
+	
 	debug_port.begin(19200);
 	delay(1);
-	pinModeFast(RI,OUTPUT);
-	digitalWriteFast(RI,HIGH);
-	#ifdef CHIP_NRF24L01
-	nrf.init();
-	#endif
+	//pinModeFast(RI,OUTPUT);
+	//digitalWriteFast(RI,HIGH);
 
-	#ifdef CHIP_CC1101
 	cc1101.init();
 	cc1101.setCarrierFreq(CFREQ_433);
 	cc1101.disableAddressCheck(); //if not specified, will only display "packet received"
 	cc1101.setSyncWord(57,232);
 	attachInterrupt(0, cc1101signalsInterrupt, FALLING);
-	#endif
 
 	debug_port.println("Usb2rf debug port at 19200 bps");
 
@@ -313,11 +243,7 @@ int main() {
 				idx++;
 				if (idx==32) {
 
-					#ifdef CHIP_NRF24L01
-					bool succ = nrf.send(packet, 32);
-					#endif
 
-					#ifdef CHIP_CC1101
 					if (debug) debug_port.write("out 32");
 
 					//ccpacket.length = 32;
@@ -330,7 +256,6 @@ int main() {
 					}
 					while (! packetAvailable);
 					packetAvailable = false;
-					#endif
 
 
 					if ( debug and (!succ) ) debug_port.println(F("Sending packet failed"));
@@ -355,11 +280,6 @@ int main() {
 						debug_port.write("out ");
 						debug_port.print(idx);
 					}
-					#ifdef CHIP_NRF24L01
-					nrf.send(packet, idx);
-
-					#endif
-					#ifdef CHIP_CC1101
 					//ccpacket.length = idx;
 					//bool succ = cc1101.sendData(ccpacket);
 					bool succ;
@@ -374,25 +294,13 @@ int main() {
 						else debug_port.write(" F\r\n");
 					}
 
-					#endif
 
 				}
 				timer = micros();
 				idx=0;
 			}
 		}
-		#ifdef CHIP_NRF24L01
-		if (nrf.dataReady()) {
-			uint8_t len = nrf.get(packet);  // len is 0-32
-			if (len>0) {
-				digitalWriteFast(RI,LOW);
-				Serial.write((const uint8_t*)packet,len);
-				digitalWriteFast(RI,HIGH);
-			}
-		}
-		#endif
 
-		#ifdef CHIP_CC1101
 		if (packetAvailable) {
 			byte pkt_size = cc1101.getPacket(packet);
 			packetAvailable = false;
@@ -448,7 +356,6 @@ int main() {
 			}
 			
 		}
-		#endif
 
 	}
 }
