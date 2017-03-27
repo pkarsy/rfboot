@@ -74,12 +74,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 				}
 				else {
 					uint8_t channel = cmd[1];
-					//if (channel>127) {
-					//    if (debug) {
-					//        debug_port.print(F("Wrong channel "));
-					//        debug_port.println(channel);
-					//    }
-					//}
+
 					{
 						cc1101.setChannel(channel);
 						if (debug) {
@@ -118,7 +113,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 			if (cmd_len==3) {
 				cc1101.setSyncWord(cmd[1],cmd[2]);
 				if (debug) {
-					debug_port.print("Syncword = ");
+					debug_port.print(F("Syncword = "));
 					debug_port.print(cmd[1]) ;
 					debug_port.print(",");
 					debug_port.println(cmd[2]);
@@ -126,7 +121,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 			}
 			else {
 				if (debug) {
-					debug_port.print("cc1101 wrong cmd size ");
+					debug_port.print(F("cc1101 wrong cmd size "));
 					debug_port.println(cmd_len);
 				}
 			}
@@ -194,7 +189,7 @@ int main() {
 	cc1101.setSyncWord(57,232);
 	attachInterrupt(0, cc1101signalsInterrupt, FALLING);
 
-	debug_port.println("Usb2rf debug port at 19200 bps");
+	debug_port.println(F("Usb2rf debug port at 19200 bps"));
 
 	uint8_t idx = 0;
 	uint32_t timer = micros();
@@ -207,9 +202,9 @@ int main() {
 	while (1) {
 		if (debug != last_debug) {
 			last_debug = debug;
-			debug_port.write("debug messages ");
-			if (debug) debug_port.write("enabled\r\n");
-			else debug_port.write("disabled\r\n");
+			debug_port.print(F("debug messages "));
+			if (debug) debug_port.println(F("enabled"));
+			else debug_port.println(F("disabled"));
 		}
 		if (cmdmode) {
 			if (Serial.available()) {
