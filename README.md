@@ -3,9 +3,13 @@
 **Notice: The bootloader is in a quite workable state. However the site is incomplete and a lot of modifications need to be done.
 I hope in a few days (say until 31 March 2017) the code, help pages, etc will be added and this notice will be removed**
 
-Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip
+Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip.
 
-A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying workflow, by allowing the program to be uploaded via this RF link. The emphasis is on reliability and security
+A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying workflow, by allowing the program to be uploaded via this RF link. The emphasis is on reliability and security.
+
+Additonaly this repository has
+- A powerful utility (rftool) to easily create new projects using rfboot as bootloader
+- An Arduino library for CC1101 (panStamp based)
 
 - [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Rfboot-in-Action) A good starting point. And gives us an idea of what tools we need to use rfboot. **VIDEOS NOT READY YET**
 
