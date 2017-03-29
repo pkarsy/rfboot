@@ -244,61 +244,12 @@ void get_mcusr(void) {
 	// The application at normal operation will
 	// have the duty to reset the WDOG timer periodically, witch is a good
 	// practice anyway.
-	wdt_enable(WDTO_2S);
+	//wdt_enable(WDTO_2S);
 }
 
-//////////////////////////////////////////////////////////////////////
-// This code generates the random data (entropy) needed for the IV  //
-volatile byte sample = 0;
-volatile bool sample_waiting = false;
-byte current_bit = 0;
-byte result = 0;
-
-
-
-// Watchdog Timer Interrupt Service Routine
-ISR(WDT_vect)
-{
-  sample = TCNT1L; // Ignore higher bits
-  sample_waiting = true;
-}
-
-// Setup of the watchdog timer.
-void wdt_fast_interrupt_mode() {
-  cli();
-  MCUSR = 0;
-  // Start timed sequence
-  WDTCSR |= _BV(WDCE) | _BV(WDE);
-  // Put WDT into interrupt mode
-  // Set shortest prescaler(time-out) value = 2048 cycles (~16 ms)
-  WDTCSR = _BV(WDIE);
-  sei();
-}
-
-// Rotate bits to the left
-// https://en.wikipedia.org/wiki/Circular_shift#Implementing_circular_shifts
-byte rotl(const byte value, int shift) {
-  if ((shift &= sizeof(value)*8 - 1) == 0)
-	return value;
-  return (value << shift) | (value >> (sizeof(value)*8 - shift));
-}
-
-bool gatherEntropy() {
-	  if (sample_waiting) {
-		sample_waiting = false;
-		result = rotl(result, 1); // Spread randomness around
-		result ^= sample; // XOR preserves randomness
-		current_bit++;
-		if (current_bit > 7)
-		{
-			current_bit = 0;
-			return true;
-		}
-	  }
-	  return false;
-}
-//																	 //
-///////////////////////////////////////////////////////////////////////
+#ifdef USE_ENTROPY
+	#include "entropy.h"
+#endif
 
 #include "cc1101.h"
 
@@ -352,9 +303,9 @@ void send_pkt(uint8_t msg, uint16_t data) {
 	data_ready = false;
 }
 
-void  send_iv(uint8_t* iv) {
+void  send_iv(const uint32_t* iv) {
 	outpkt.length=8;
-	memcpy(outpkt.data,iv,8);
+	memcpy(outpkt.data,(byte*)iv,8);
 	cc1101_sendData(outpkt);
 	while (! data_ready);
 	data_ready = false;
@@ -458,10 +409,33 @@ int main(void) {
 	// here we gather entropy to be ready when the radio is on
 	//
 	// TODO
-	// TCCR1B |= (1 << CS10) ; // Set up timer1 with prescaler 1
+	uint32_t iv[2];
+	#ifdef USE_ENTROPY
+		TCCR1B |= (1 << CS10) ; // Set up timer1 with prescaler 1
+		wdtSetup();
+		byte* p=iv;
+		
+		for (byte i=0;i<8;i++) {
+			while (! gatherEntropy() ) ;
+			p[i]=result;
+		}
+	#else
+
+	
+		// Here the IV is created using the last 2 bytes of EEPROM
+		uint16_t round = eeprom_read_word(E2END-1)+1;
+		//memset(packet,0,8);
+		//packet[0]=round & 0xff ;
+		//packet[1]=round >> 8;
+		iv[0]=round;
+	#endif
+
+
+	wdt_enable(WDTO_2S);
 
 	// here we set RF channel, SyncWord etc
 	radio_init();
+	// sei(); radio_init() does it
 	{
 		// 250 iterations before give up
 		uint8_t i=250;
@@ -484,20 +458,13 @@ int main(void) {
 		if (*p != START_SIGNATURE) reset_mcu();
 	}
 
-	// Here the IV is created using the last 2 bytes of EEPROM
-	uint16_t round = eeprom_read_word(E2END-1)+1;
-	memset(packet,0,8);
-	packet[0]=round & 0xff ;
-	packet[1]=round >> 8;
-
-	ccpacket.length = 8;
-
-	cc1101_sendData(ccpacket);
-	uint32_t iv[2];
-	memcpy(iv,packet,8);
-	while (! data_ready);
-	data_ready = false;
+	//ccpacket.length = 8;
+	//cc1101_sendData(ccpacket);
+	//memcpy(iv,packet,8);
+	//while (! data_ready);
+	//data_ready = false;
 	// The packet with the IV is out
+	send_iv(iv);
 
 
 	// the struct is used to extract upload parameters from the first packet
@@ -596,8 +563,11 @@ int main(void) {
 
 	// TODO
 	//if (pgm_read_word(0) != 0xffff) {
-	eeprom_update_word(E2END-1, round);
-	eeprom_busy_wait();
+	#ifndef USE_ENTROPY
+		eeprom_update_word(E2END-1, round);
+		eeprom_busy_wait();
+	#endif
+	
 	page_erase(0);
 	//}
 
