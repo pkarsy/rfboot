@@ -37,7 +37,7 @@ atmega328p: LDSECTION  = --section-start=.text=0x7000
 atmega328p: $(PROGRAM)_atmega328p.elf
 atmega328p: size
 
-# 8MHz uses internal RC oscillator
+# 8MHz . Uses internal RC oscillator
 noxtal: atmega328p
 	avrdude -q -p atmega328p -c usbasp -v -e  -U lfuse:w:0xE2:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
@@ -64,7 +64,6 @@ clean:
 
 %.hex: %.elf
 	$(OBJCOPY) -j .text -j .data -O ihex $< $@
-
 
 size:
 	avr-size -C $(PROGRAM)_$(MCU_TARGET).elf

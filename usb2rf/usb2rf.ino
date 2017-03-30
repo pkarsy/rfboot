@@ -41,15 +41,15 @@ void cc1101signalsInterrupt(void) {
 	// set the flag that a package is available
 	packetAvailable = true;
 }
-//CCPACKET ccpacket; // __attribute__ ((section (".noinit")));
-uint8_t packet[64];
-//ccpacket.data;
 
-// #include <SoftwareSerial.h>
-// SoftwareSerial debug_port(8,9);
+uint8_t packet[64];
+
+// Seems the AltSoftSerial does better than SoftSerial @ 8MHz
 #include <AltSoftSerial.h>
 AltSoftSerial debug_port;
 
+// The digitalRead function is slow
+// and we use it extensivelly
 #include <digitalWriteFast.h>
 
 #define RESET_TRIGGER 3
@@ -106,7 +106,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					debug_port.println(F("Usb2rf module failed to reset"));
 				}
 			}
-			break;
+		break;
 
 
 		case 'A':
@@ -125,7 +125,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					debug_port.println(cmd_len);
 				}
 			}
-			break;
+		break;
 
 		case 'Q':
 			if (cmd_len==1) {
@@ -141,7 +141,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					debug_port.println(cmd_len);
 				}
 			}
-			break;
+		break;
 
 		case 'Z':
 			if (cmd_len==1) {
@@ -158,7 +158,12 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					debug_port.println(cmd_len);
 				}
 			}
-			break;
+		break;
+
+		case 'U':
+			// Upload mode
+			// TODO
+		break;
 
 		default:
 			if (debug) {
@@ -185,7 +190,7 @@ int main() {
 
 	cc1101.init();
 	cc1101.setCarrierFreq(CFREQ_433);
-	cc1101.disableAddressCheck(); //if not specified, will only display "packet received"
+	cc1101.disableAddressCheck();
 	cc1101.setSyncWord(57,232);
 	attachInterrupt(0, cc1101signalsInterrupt, FALLING);
 
@@ -238,8 +243,6 @@ int main() {
 
 
 					if (debug) debug_port.write("out 32");
-
-					//ccpacket.length = 32;
 
 					bool succ = cc1101.sendPacket(packet,32);
 
