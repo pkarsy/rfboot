@@ -9,7 +9,8 @@
  *
  * - it is not based on optiboot or other bootloasers but is
  * written from scrach.
- * - Does not use EEPROM. Configurable settings can only
+ * Uses the last 2 bytes of EEPROM as seed for the generation of the Initialization Vector.
+ * Configurable settings can only
  * be changed at compile time.
  * Cannot be used to send code with serial port. In fact does not even touch the Rx Tx pins wich can be used
  * for other purposes (as GPIO pins) or to connect to another serial device (GPS for example)
@@ -424,10 +425,9 @@ int main(void) {
 	
 		// Here the IV is created using the last 2 bytes of EEPROM
 		uint16_t round = eeprom_read_word(E2END-1)+1;
-		//memset(packet,0,8);
-		//packet[0]=round & 0xff ;
-		//packet[1]=round >> 8;
 		iv[0]=round;
+		iv[1]=COMPILE_TIME;
+		xtea_encipher( (byte*)iv,XTEAKEY);
 	#endif
 
 
