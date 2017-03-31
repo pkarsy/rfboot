@@ -2,45 +2,44 @@
 #define USB2RF_PROTOCOL_VERSION "01"
 
 
-// WARNING the USB-to-RF  module does NOT have rfboot as bootloader
+// WARNING: the USB-to-RF  module does NOT have rfboot as bootloader
 // But the bootloader wich is preinstalled with the module
-// Optiboot with Uno and
-// ATmegaBOOT with nano-v3
+// Normally this is a ProMini 3.3V with ATmegaBOOT
 // Again: Do not replace the bootloader of the USB-to-RF module
 
-// Warning:
+// WARNING:
 // Each FTDI chip has a unique Serial ID wich allows us to use the
-// /dev
-// as a permanenent serial port no matter what other devices are connected
+// /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_XXXXXXXX-if00-port0
+// as a permanenent device name no matter what other devices are connected
 // to the PC
-// Some nano v3 clones do not have FTDI chip but cheaper alternatives
-// which do their duty for serial communication but do no
-// have a unique serial ID so it not possible to use for them
-// a uniqe Serial device. The hassle to change every time the Makefile
-// in order to use them can be very anoying. Invest  1-2$ more and get a
+// Some USB to serial adapters do not
+// have a unique serial ID. If we only have one such module then is OK
+// but if we have more than one connected to the PC at the same time
+// it will be hard to choose the correct one.
+// Invest  1-2$ more and get a
 // module with a FTDI(or equivalent to FTDI) chip
 // with a unique device : /dev/serial/by-id/ddddddd
 
-// Warning: AtmegaBOOT has big problems with Warchdog. Specifically if
+// WARNING: AtmegaBOOT has big problems with Warchdog. Specifically if
 // a watchdog reset occurs the bootloader cannot start the application anymore.
 // either install a fixed atmegaboot (they float on  the Internet) or do
-// not use watchdog functionality
-// in the usb-to-rf module. Given that this module most usally will used when
-// you are on the pc (to control the app or update the tqrget firmware) this ok
+// not use watchdog functionality. The usb2rf firmware here does not use or need
+// watchdog functionality
 
 
 #include <CC1101.h>
-// The connection to the hardware chip CC1101 the RF Chip
 CC1101 cc1101;
 
 // a flag that a wireless packet has been received
 volatile bool packetAvailable = false;
 
-/* Handle interrupt from CC1101 (INT0) gdo0 on pin2 */
+// Handle interrupt from CC1101 (INT0) gdo0 on pin2
 void cc1101signalsInterrupt(void) {
-	// set the flag that a package is available
+	// set the flag that a packet is available
 	packetAvailable = true;
 }
+
+#define PAYLOAD 32
 
 uint8_t packet[64];
 
@@ -49,7 +48,9 @@ uint8_t packet[64];
 AltSoftSerial debug_port;
 
 // The digitalRead function is slow
-// and we use it extensivelly
+// and we use it extensivelly for the debug function
+// so we prefer digitalReadFast. I really dont know if
+// really is needed however.
 #include <digitalWriteFast.h>
 
 #define RESET_TRIGGER 3
@@ -61,9 +62,32 @@ AltSoftSerial debug_port;
 void(* resetFunc) (void) = 0;
 uint32_t silence_timer ;
 
+void upload_code() {
+
+}
+
 void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 
 	switch (cmd[0]) {
+
+		case 'A':
+			if (cmd_len==3) {
+				cc1101.setSyncWord(cmd[1],cmd[2]);
+				if (debug) {
+					debug_port.print(F("Syncword = "));
+					debug_port.print(cmd[1]) ;
+					debug_port.print(",");
+					debug_port.println(cmd[2]);
+				}
+			}
+			else {
+				if (debug) {
+					debug_port.print(F("cc1101 wrong cmd size "));
+					debug_port.println(cmd_len);
+				}
+			}
+		break;
+		
 		case 'C':  // We set channel
 			{
 				if (cmd_len!=2) {
@@ -82,6 +106,22 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 							debug_port.println(channel);
 						}
 					}
+				}
+			}
+		break;
+
+		case 'Q':
+			if (cmd_len==1) {
+				if (debug) {
+					debug_port.println(F("Silent for 50ms"));
+					silence_timer = millis();
+				}
+				resetFunc();
+			}
+			else {
+				if (debug) {
+					debug_port.print(F("Silent command, bad length : "));
+					debug_port.println(cmd_len);
 				}
 			}
 		break;
@@ -108,39 +148,68 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 			}
 		break;
 
-
-		case 'A':
+		case 'U':
+			// Upload mode
+			// TODO
 			if (cmd_len==3) {
-				cc1101.setSyncWord(cmd[1],cmd[2]);
 				if (debug) {
-					debug_port.print(F("Syncword = "));
-					debug_port.print(cmd[1]) ;
-					debug_port.print(",");
-					debug_port.println(cmd[2]);
+					debug_port.println(F("Switch to upload mode"));
+					//debug_port.flush();
 				}
+				
+				// Perimeno size
+				uint16_t code_idx=cmd[1]+cmd[2]*256;
+				//byte buffer[32];
+				byte i=0;
+				uint32_t timer = millis();
+				byte inpacket[64];
+				byte outpacket[64];
+				bool rfboot_waiting = true;
+				while (code_idx) {
+					
+					if ( Serial.available() ) {
+						if (i<PAYLOAD) {
+							outpacket[i] = Serial.read();
+							i++;
+							if (Serial.available()<=32) Serial.write('S');
+						}
+					}
+					
+					if (rfboot_waiting and i==PAYLOAD) {
+						bool succ = cc1101.sendPacket(outpacket,PAYLOAD);
+						i=0;
+						rfboot_waiting=false;
+					}
+
+					if (packetAvailable) {
+						byte pkt_size = cc1101.getPacket(inpacket);
+						packetAvailable = false;
+						if (pkt_size==3 and cc1101.crc_ok) {
+							
+						}
+					};
+
+				}
+
+				// loop stelnoume paketa
+				// molis o buffer exei 32bytes i ligotera zitame paketo
+				// perimenoume apantisi. an to idx pou paroume einai mikrotero apo
+				// to proigoumeno stelnoume to epomeno paketo aliws to idio
+				// an paroume lathos to proothoume sto PC kai feugoume
+				// an teleiosoun ta paketa perimenoume CRC report kai to proothoume
+				
 			}
 			else {
 				if (debug) {
-					debug_port.print(F("cc1101 wrong cmd size "));
+					debug_port.print(F("Upload code command, bad length : "));
 					debug_port.println(cmd_len);
 				}
 			}
 		break;
 
-		case 'Q':
-			if (cmd_len==1) {
-				if (debug) {
-					debug_port.println(F("Silent for 50ms"));
-					silence_timer = millis();
-				}
-				resetFunc();
-			}
-			else {
-				if (debug) {
-					debug_port.print(F("Silent command, bad length : "));
-					debug_port.println(cmd_len);
-				}
-			}
+		case 'W':
+			// TODO
+			// send wake up 1 sec pulse
 		break;
 
 		case 'Z':
@@ -158,11 +227,6 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					debug_port.println(cmd_len);
 				}
 			}
-		break;
-
-		case 'U':
-			// Upload mode
-			// TODO
 		break;
 
 		default:
@@ -276,13 +340,11 @@ int main() {
 						debug_port.write("out ");
 						debug_port.print(idx);
 					}
-					//ccpacket.length = idx;
-					//bool succ = cc1101.sendData(ccpacket);
+					
 					bool succ;
-					//for (uint8_t i=0; i<5; i++) {
+					
 					succ = cc1101.sendPacket(packet,idx);
-					//    if (succ) break;
-					//}
+					
 					while (! packetAvailable);
 					packetAvailable = false;
 					if ( debug ) {

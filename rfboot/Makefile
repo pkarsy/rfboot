@@ -1,15 +1,13 @@
 # Makefile for the rfboot bootloader
-# adapted from the Makefile for atmegaboot but changed heavily
 
 # Do not use this Makefile from the downloaded rfboot folder
 # because you will get always the same fixed channel address and a
 # useless key={0,0,0,0}
-# use "rftool create ProjectName" instead. This copys this makefile but sets all the
-# needed variables first.
+# use "rftool create ProjectName" instead. This copys this makefile and sets all the
+# needed parameters.
 
 # program name. Should not be changed.
 PROGRAM    = rfboot
-
 
 OBJ        = $(PROGRAM).o
 OPTIMIZE   = -Os -fno-inline-small-functions -fno-split-wide-types
@@ -45,9 +43,8 @@ noxtal: atmega328p
 xtal: atmega328p
 	avrdude -q -p atmega328p -c usbasp -v -e  -U lfuse:w:0xFF:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
-promini: xtal
+#promini: xtal
 
-naked: noxtal
 
 %.elf:
 	$(CC) $(CFLAGS) $(LDFLAGS) -c -o xtea.o xtea/xtea.c
