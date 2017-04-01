@@ -94,7 +94,6 @@ proc toString(u: uint16): string =
 proc toString(u: uint32): string =
   return (u and 0xffff).uint16.toString & (u shr 16).uint16.toString
 
-
 # Stops other processess accessing the serial port
 proc sendStopSignal() =
   discard execProcess( "/bin/fuser", ["-s", "-k", "-STOP", portName] , options={ poStdErrToStdOut })
@@ -102,7 +101,6 @@ proc sendStopSignal() =
 #resumes the processes being stopped
 proc sendContSignal() {.noconv.} =
   discard execProcess( "/bin/fuser", ["-s", "-k", "-CONT", portName], options={ poStdErrToStdOut } )
-
 
 # This code is from AVR gcc documentation avr/crc.h FIX
 # converted with c2nim, and corrected by hand
@@ -175,18 +173,9 @@ proc `$`(a:array[2, uint32]): string =
   return "{" & $a[0] & "," & $a[1] & "}"
 
 
-#var xteaiv: array[2,uint32]
 proc xteaEncipherCbc(v: array[2, uint32]; key: array[4, uint32], iv: var array[2,uint32]) : array[2, uint32] =
-  #var xored: array[2,uint32]
-  #xored[0] = v[0] xor xteaiv[0]
-  #xored[1] = v[1] xor xteaiv[1]
   result = xteaEncipher([v[0] xor iv[0],v[1] xor iv[1]] ,key)
   iv = result
-  #stderr.writeLine "result = ", result
-
-#for i in 1..100:
-#  discard xteaEncipherIv([0'u32,0],[1'u32,1,1,1])
-#quit QuitSuccess
 
 
 # xtea encrypt a string. The string is treated as a series of little endian
@@ -227,7 +216,7 @@ proc xteaEncipher(st: string, key: array[4,uint32] ) : string =
 
 proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
   result = ""
-  assert(st.len mod 8 == 0,"mult of 8")
+  assert(st.len mod 8 == 0,"String to be encrypted must have size multiple of 8 bytes")
   for i in countup(0 , st.len - 1, step=8):
     var x0,x1:uint32
     let s = st[i .. i+7]
