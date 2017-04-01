@@ -6,15 +6,7 @@ import tables
 import posix
 
 
-# TODO fix comment
-# The serialport library is statically linked for easy use and distribution
-# of the generated rftool
-# libserialport is not standard in Ubuntu 1x.xx
-# so we prefer to link it statically
-# For libserialport static link
-
-#import serialport
-#{.passL: "./libserialport/.libs/libserialport.a".}
+const BOOTLOADER_SIZE = 4096
 
 {.compile: "serial.c".}
 proc c_openport*(port: cstring):cint {.importc.}
@@ -27,30 +19,25 @@ const fileSource = "/home/pkar/Documents/Programming/arduino/rfboot/"
 
 const RFB_NO_SIGNATURE = 1
 const RFB_INVALID_CODE_SIZE = 2
-const RFB_ROUND_IS = 3
+#const RFB_ROUND_IS = 3
 const RFB_SEND_PKT = 4
 const RFB_WRONG_CRC=5
 const RFB_SUCCESS=6
-#const RFBOOT_PROTOCOL_VERSION = 1
-
 
 
 const ApplicationSettingsFile = "app_settings.h"
 const RfbootSettingsFile = "rfboot/rfboot_settings.h"
-const MaxAppSize = 32*1024 - 4096
+const MaxAppSize = 32*1024 - BOOTLOADER_SIZE
 const StartSignature = 0xd20f6cdf # This is expected from rfboot
 const Payload = 32
-const ProtocolVersion = 1
+#const ProtocolVersion = 1
 const CommdModeStr = "COMMD"
 
-#const CHIP_NRF24L01 = "nrf24l01"
-#const CHIP_CC1101 = "cc1101"
-
 # must be the same as controller.ino
-const USB2RF_PROTOCOL_VERSION = "01"
+#const USB2RF_PROTOCOL_VERSION = "01"
 var portName:string
 
-var actionG = "create"
+#var actionG = "create"
 
 
 discard """
@@ -155,7 +142,7 @@ proc parseKey(keyStr: string): array[4,uint32] =
 #
 # xtea works with 8 byte  blocks, and treats them as 2 uint32 numbers
 proc xteaEncipher(v: array[2, uint32]; key: array[4, uint32]) : array[2, uint32] =
-  #const delta: uint32 = 0x9E3779B9.uint32
+  
   const delta: uint32 = 0x9E3779B9'u32
   const num_rounds = 32
   var
@@ -182,37 +169,7 @@ proc xteaEncipherCbc(v: array[2, uint32]; key: array[4, uint32], iv: var array[2
 # uint32 numbers. The string must have a size multiple of 8
 # [ BYTE0(LSB) BYTE1 BYTE2 BYTE3(MSB) ] -> uint32
 # "1000" -> 1'u32
-discard """
-proc xteaEncipher(st: string, key: array[4,uint32] ) : string =
-  result = ""
-  assert(st.len mod 8 == 0,"mult of 8")
-  for i in countup(0 , st.len - 1, step=8):
-    var x0,x1:uint32
-    let s = st[i .. i+7]
-    for i in countdown(3,1):
-      x0+=s[i].uint32
-      x0 = x0 shl 8
-    x0 += s[0].uint32
-    for i in countdown(7,5):
-      x1+=s[i].uint32
-      x1 = x1 shl 8
-    x1 += s[4].uint32
 
-    block:
-      let x = xteaEncipher([x0,x1],key)
-      x0=x[0]
-      x1=x[1]
-    var pkt = "00000000"
-    for i in 0..2:
-      pkt[i]=char(x0 and 0xff)
-      x0 = x0 shr 8
-    pkt[3]=char(x0)
-    for i in 4..6:
-      pkt[i]=char(x1 and 0xff)
-      x1 = x1 shr 8
-    pkt[7]=char(x1)
-    result.add pkt
-"""
 
 proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
   result = ""
@@ -245,162 +202,14 @@ proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] )
     result.add pkt
 
 
-discard """
-proc enumerate() : ptr SpPort =
-  var hwID: string
-  var f: File
-  try:
-    #hwID = "~/.usb2rf".expandTilde.readFile.strip
-    f = "~/.usb2rf".expandTilde.open
-  except IOError:
-    stderr.writeLine "file ~/.usb2rf does not exist"
-    #stderr.writeLine "type: \"rftool learnPort\" from the command line"
-    quit QuitFailure
-
-  while true:
-    var s: string
-    try:
-      s = f.readLine.strip
-    except IOError:
-      break
-    if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!"):
-      discard
-    else:
-      hwID = s
-      break
-  stderr.writeLine "hwID = ",hwID
-  if hwID==nil:
-    stderr.writeLine "Config file does not contain the info"
-    quit QuitFailure
-  #quit QuitSuccess
-
-
-
-  var ports: ptr SpPortList
-  let listPortsResult = spListPorts(addr ports)
-  case listPortsResult
-  of SpReturn.errSup:
-    stderr.writeLine "Failed to enumerate ports: Operation not supported"
-    quit QuitFailure
-  of SpReturn.errMem:
-    stderr.writeLine "Failed to enumerate ports: Memory allocation failed"
-    quit QuitFailure
-  of SpReturn.errFail:
-    stderr.writeLine "Failed to enumerate ports: System error"
-    quit QuitFailure
-  of SpReturn.errArg:
-    stderr.writeLine "Failed to enumerate ports: Invalid arguments"
-    quit QuitFailure
-  of SpReturn.ok:
-    #var portsOk  = newSeq[ptr SpPort]()
-    #if result == nil:
-    #  echo "enumerate result=NIL"
-    var portList = newSeq[ptr SpPort]()
-    for i in 0..high(ports[]):
-      #echo "i=",i
-      let port = ports[i]
-      if port == nil:
-        break
-      #echo "Details for port #", i
-      #let name = spGetPortName(port)
-      #if name == nil : echo "PORT NIL"
-      #if name != nil:
-      #  echo "  Name: ", name
-      #let description = port.spGetPortDescription
-      #if description != nil:
-      #  echo "  Description: ", description
-      let transport = port.spGetPortTransport
-
-      #case transport
-
-      #of SpTransport.native:
-      #  #echo "  Transport: native"
-
-      if  transport == SpTransport.usb:
-        #echo "  Transport: usb"
-        #var bus, address: cint
-        #if spGetPortUsbBusAddress(port, addr bus, addr address) != SpReturn.ok:
-        #  stderr.writeLine ""
-        #  #echo "    Bus: ", bus, ", Address: ", address
-        #  #discard
-        let manufacturer = spGetPortUsbManufacturer(port)
-        if manufacturer != nil:
-          #echo "    Manufacturer: ", manufacturer
-          if manufacturer == hwID:
-            portList.add(port)
-            continue
-        let product = spGetPortUsbProduct(port)
-        if product != nil:
-          #echo "    Product: ", product
-          if product == hwID:
-            portList.add(port)
-            continue
-        let serial = spGetPortUsbSerial(port)
-        if serial != nil:
-          #let serial = port.spGetPortUsbSerial
-          #echo "    Serial:", serial,":"
-          if $serial == hwID:
-            #echo "GOT IT"
-            #echo spOpen(port,SpMode.write )
-            #echo port.spSetBaudrate(57600)
-            #discard port.spBlockingWrite(cstring("*"),1,100)
-            #return port
-            #break
-            portList.add(port)
-            continue
-
-      #of SpTransport.bluetooth:
-      #  #echo "  Transport: bluetooth"
-      #  let address = port.spGetPortBluetoothAddress
-      #  if address != nil:
-      #    #echo "    Address: ", address
-      #    portList.add(port)
-      #    continue
-      #else:
-      #  #echo "  Transport: unknown (", ord(transport), ")"
-      #  discard
-
-    if portList.len == 0:
-      stderr.writeLine "Serial port with hardware id=", hwID ," not found"
-      quit QuitFailure
-    elif portList.len == 1:
-      #echo "Got just one port. GOOD"
-      let port = portList[0]
-
-      # This is used by the sendStopSignal() sendContSignal()
-      portName = $port.spGetPortName
-
-      #addQuitProc sendContSignal
-      #sendStopSignal()
-      #let status = spOpen( port,  SpMode.readWrite )
-      #if status != SpReturn.ok :
-      #  stderr.writeLine "Cannot open serial port \"", portName, "\" . Error=", status
-      #  quit QuitFailure
-      #if port.spSetBaudrate(57600) != SpReturn.ok :
-      #  stderr.writeLine "Cannot set baud rate to 57600 bps"
-      #  quit QuitFailure
-      return port
-
-      #echo sizeof(SpPort)
-    else:
-      stderr.writeLine "More than one serial port found matching \"", hwID,"\""
-      # TODO list ports
-      quit QuitFailure
-
-    #spFreePortList(ports)
-  else:
-    stderr.writeLine "Failed to enumerate ports: Unknown error : ", ord(listPortsResult)
-    quit QuitFailure
-    """
-
-proc enumerate() : string =
+proc getPortName() : string =
   var hwID: string
   var f: File
   let homeconfig = "~/.usb2rf"
   try:
     f = homeconfig.expandTilde.open
   except IOError:
-    stderr.writeLine "failed to open file ", homeconfig, ". rftool uses it to get the serial port device name."
+    stderr.writeLine "failed to open file \"", homeconfig, "\". rftool uses it to get the serial port device name."
     quit QuitFailure
 
   while true:
@@ -417,17 +226,12 @@ proc enumerate() : string =
     else:
       hwID = s
       break
-
   if hwID==nil:
     stderr.writeLine "Config file does not point to any connected device"
     quit QuitFailure
-
   stderr.writeLine "port = ",hwID
-
-
   # This is used by the sendStopSignal() sendContSignal()
   portName = hwID
-
   return hwID
 
 
@@ -475,17 +279,13 @@ proc randomXteaKey(): array[4,uint32] =
 
 proc randomString(n: Natural): string =
   result=""
-  #for i in random.urandom(n):
-  #  result.add i.char
   for i in 1..n:
     result.add randFile.readChar()
 
-#####const ATMEGA_PINS=toTable( {"2":"PD0","3":"PD1","4":"PD2","5":"PD3","6":"PD4", "11":"PD5","12":"PD6","13":"PD7","14":"PB0","15":"PB1","16":"PB2","23":"PC0","24":"PC1","25":"PC2","26":"PC3","27":"PC4","28":"PC5"} )
-#const ARDUINO_PINS=toTable( {"D0":"PD0","D1":"PD1","D2":"PD2","D3":"PD3","D4":"PD4","D5":"PD5","D6":"PD6","D7":"PD7","D8":"PB0","D9":"PB1","D10":"PB2","D14":"PC0","D15":"PC1","D16":"PC2","D17":"PC3","D18":"PC4","D19":"PC5"} )
-const ARDUINO_PINS=toTable( {"0":"PD0","1":"PD1","2":"PD2","3":"PD3","4":"PD4","5":"PD5","6":"PD6","7":"PD7","8":"PB0","9":"PB1","10":"PB2","14":"PC0","15":"PC1","16":"PC2","17":"PC3","18":"PC4","19":"PC5"} )
-const ARDUINO_ANALOG_PINS= toTable( {"A0":"14","A1":"15","A2":"16","A3":"17","A4":"18","A5":"19"} )
+#const ARDUINO_PINS=toTable( {"0":"PD0","1":"PD1","2":"PD2","3":"PD3","4":"PD4","5":"PD5","6":"PD6","7":"PD7","8":"PB0","9":"PB1","10":"PB2","14":"PC0","15":"PC1","16":"PC2","17":"PC3","18":"PC4","19":"PC5"} )
+#const ARDUINO_ANALOG_PINS= toTable( {"A0":"14","A1":"15","A2":"16","A3":"17","A4":"18","A5":"19"} )
 
-proc pin2port(pin: string): string =
+discard """proc pin2port(pin: string): string =
   let msg = "Not a valid pin : " & pin & "\n"
   var pin = pin.strip().toUpper()
   if ARDUINO_ANALOG_PINS.hasKey(pin):
@@ -528,6 +328,7 @@ proc arduinoPin(pin: string): string =
         if v1 == key:
           return k1
       return key
+"""
 
 
 proc keyAsArrayC(key: array[4,uint32]): string =
@@ -539,7 +340,7 @@ proc getUploadParams() : tuple[ channel:int, rfbootAddress:string, key: array[4,
   try:
      rfbootConf = readFile(RfbootSettingsFile)
   except IOError:
-    stderr.writeLine "The file \"", RfbootSettingsFile, "\" does not exist. You mabe deleted the rfboot directory ?"
+    stderr.writeLine "The file \"", RfbootSettingsFile, "\" does not exist."
     quit QuitFailure
 
   for i in rfbootConf.splitLines:
@@ -610,7 +411,7 @@ proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: stri
   try:
     conf = readFile ApplicationSettingsFile
   except IOError:
-    stderr.writeLine "The file \"",  ApplicationSettingsFile, "\" does not exist. You have to be inside the project folder in order to use the upload command"
+    stderr.writeLine "File \"",  ApplicationSettingsFile, "\" does not exist."
     quit QuitFailure
 
   for i in conf.splitLines:
@@ -624,9 +425,7 @@ proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: stri
           quit QuitFailure
         let startl = line.find('\"')
         let endl = line.rfind('\"')
-        #if endl-startl!=6:
-        #  stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the APP_ADDRESS has to be 5 chars long"
-        #  quit QuitFailure
+        
         result.appAddress = line[startl+1..endl-1]
         stderr.writeLine "appAddress=", result.appAddress.toArray
 
@@ -660,7 +459,7 @@ proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: stri
         result.appChannel = line.parseInt
 
       elif line.contains("APP_SYNCWORD[]"):
-        #result.rfChip = CHIP_CC1101
+        
         let brstart = line.find('{')
         let brend = line.find('}')
         line = line[brstart+1..brend-1]
@@ -811,56 +610,46 @@ proc actionCreate() =
     stderr.writeLine "Project name not given"
     quit QuitFailure
 
-  var projectName: string
+  #var projectName: string
   var appDir = ""
-  if actionG == "copy":
-    appDir = p[1].strip
-    if not existsDir(appDir):
-      stderr.writeLine "Source directory not exists"
-      quit QuitFailure
-    else:
-      projectName = $basename(appDir)
-  elif actionG == "create":
-    projectName = p[1].strip
+  #if actionG == "copy":
+  #  appDir = p[1].strip
+  #  if not existsDir(appDir):
+  #    stderr.writeLine "Source directory not exists"
+  #    quit QuitFailure
+  #  else:
+  #    projectName = $basename(appDir)
+  #elif actionG == "create":
+  let projectName = p[1].strip
 
   if projectName.len==0:
     stderr.writeLine "Project name not given"
     quit QuitFailure
-  #elif not projectName.normalize.isAlphaNumeric:
-  #  stderr.writeLine "Only alphanumeric characters should be used in project name"
-  #  quit QuitFailure
-
+  elif existsDir(projectName)or existsFile(projectName):
+    stderr.writeLine "name \"", projectName , "\" already exists"
+    quit QuitFailure
+  elif not projectName.isAlphaNumeric:
+    stderr.writeLine "Only alphanumeric characters should be used in project name"
+    quit QuitFailure
   var channel = 1
-
   const speed = 8
   var rfbAddress = randomAdress()
-
   var appAddress = randomAdress()
   while rfbAddress == appAddress:
     appAddress = randomAdress()
-  var cePin = pin2port("A0")
-  var csnPin = pin2port("10")
   var xteaKey = randomXteaKey()
-
   var syncword1 = rand()
   var syncword2 = rand()
   var rfbSyncWord1 = rand()
   var rfbSyncWord2 = rand()
-
   var rfbChannel = 4
-
-
-  #var rfChip = CHIP_NRF24L01
-  #const rfChip = CHIP_CC1101
-
-  var otbl = initTable[string,string]()
+  discard """
+  var options_table = initTable[string,string]()
   for i in countup(2,p.len-1,step=2):
     var key = p[i]
-
     if key[0] != '-':
       stderr.writeLine "Οptions must start with '-'"
       quit QuitFailure
-
     var val: string
     if i+1<p.len:
       val = p[i+1]
@@ -869,41 +658,8 @@ proc actionCreate() =
       quit QuitFailure
     else:
       key = key.strip(leading=true,trailing=false,chars = {'-'}).normalize
-      #if key=="r" or key=="rfchip":
-      #  let valNorm = val.strip.normalize
-      #  if valNorm == CHIP_NRF24L01:
-      #    rfChip = CHIP_NRF24L01
-      #  elif valNorm == CHIP_CC1101:
-      #    rfChip = CHIP_CC1101
-      #  else:
-      #    stderr.writeLine "Unknown RF chip ", val
-      #    quit QuitFailure
-      #else:
-      otbl[key]=val
-
-
-
-
-
-  #for i in countup(2,p.len-1,step=2):
-  #  var key = p[i]
-  #  var val: string
-  #  if i+1<p.len:
-  #    val = p[i+1]
-  #  if val==nil:
-  #    stderr.writeLine "Option \"", key, "\" without the actual key"
-  #    quit QuitFailure
-  #  else:
-  #    echo key,"=", val
-  #    if key[0] != '-':
-  #      stderr.writeLine "Οptions must start with '-'"
-  #      quit QuitFailure
-  #    # TODO .normalize
-  #    let keyNorm =  key.strip(leading=true,trailing=false,chars = {'-'}).normalize
-  #    case keyNorm
-
-  for key,val in otbl:
-
+      options_table[key]=val
+  for key,val in options_table:
       case key:
       #of "n","name", "projectname":
       #  if val.len == 0:
@@ -913,25 +669,6 @@ proc actionCreate() =
       #  else:
       #    p.projectName = val
 
-      #of  "appaddress":
-      #  if rfChip == CHIP_CC1101:
-      #    stderr.writeLine "appAddress option not used in ", rfChip
-      #    quit QuitFailure
-      #  if val.len != 5:
-      #    stderr.write "app address must be exactly 5 bytes"
-      #    quit QuitFailure
-      #  else:
-      #    appAddress = val
-
-      #of  "rfbaddress":
-      #  if rfChip == CHIP_CC1101:
-      #    stderr.writeLine "rfbaddress option not used in ", rfChip
-      #    quit QuitFailure
-      #  if val.len != 5:
-      #    stderr.write "rfboot address must be exactly 5 bytes"
-      #    quit QuitFailure
-      #  else:
-      #    rfbAddress = val
 
       of "c", "channel":
         #TODO alla channel gia to cc1101
@@ -940,14 +677,12 @@ proc actionCreate() =
           stderr.writeLine msg
           quit QuitFailure
         else:
-          #var channel: int
           try:
             channel = parseInt(val)
           except ValueError:
             stderr.writeLine msg
             quit QuitFailure
           if 0<= channel and channel <= 127:
-            #p.channel = channel
             discard
           else:
             stderr.writeLine msg
@@ -955,46 +690,15 @@ proc actionCreate() =
       of "key":
         xteaKey = val.parseKey
 
-      #of "cepin":
-      #  if rfChip == CHIP_CC1101:
-      #    stderr.writeLine "cePin option not used in ", rfChip
-      #    quit QuitFailure
-      #  cePin = pin2port(val)
-      #  if cePin==nil:
-      #    stderr.write "Invalid value for cePin\n"
-      #    quit QuitFailure
-      #of "csnpin":
-      #  if rfChip == CHIP_CC1101:
-      #    stderr.writeLine "csnPin option not used in ", rfChip
-      #    quit QuitFailure
-      #  csnPin = pin2port(val)
-      #  if csnPin == nil:
-      #    stderr.write "Invalid value for csnPin\n"
-      #    quit QuitFailure
-
-      #of "syncword1":
-      #  syncword1 = val.parseInt
-      #  if syncword1<0 or syncword1>255:
-      #    stderr.writeLine "syncword must be 0-255"
-      #    quit QuitFailure
-
-      #of "mcu":
-      #  let val = val.toLower
-      #  if val in ["atmega328","atmega328p"]:
-      #    p.mcu = "atmega328p"
-      #  elif val in ["atmega32","atmega32a"]:
-      #    p.mcu = "atmega32"
-      #  else:
-      #    stderr.write "No supported mcu : ", val, "\n"
-      #    quit QuitFailure
       else:
         stderr.write "Unknown option/argument : ", key, "\n"
         quit QuitFailure
 
       #    elif not val.isAlphaNumeric:
       #quit "Only alphanumeric characters should be used in project name"
-  #echo $otbl
-  #for i,j in otbl:
+      """
+  #echo $options_table
+  #for i,j in options_table:
   #  echo i,j
   #quit QuitSuccess
   #for key,val in cmdLineParserCreate():
@@ -1006,36 +710,37 @@ proc actionCreate() =
   #  quit QuitFailure
   # TODO elegxos gia to project an exei swsto onoma XWRIS "/"
   ######createDir(projectName)
-  if existsDir(projectName)or existsFile(projectName):
-    stderr.writeLine "name \"", projectName , "\" already exists"
-    projectName &= "-copy"
-    stderr.writeLine "Using \"", projectName, "\" as project name"
-    #quit QuitFailure
 
-  if actionG=="create":
-    copyDir(fileSource & "skel", projectName)
-  elif actionG=="copy":
-    echo "copy ", appDir," ", projectName
-    copyDir(appDir, projectName)
-    #echo "Done"
-    #quit QuitSuccess
-  else:
-    stderr.writeLine("actionG not a valid value")
-    quit QuitFailure
+    #projectName &= "-copy"
+    #stderr.writeLine "Using \"", projectName, "\" as project name"
+
+  #if actionG=="create":
+  copyDir(fileSource & "skel", projectName)
+  #elif actionG=="copy":
+  #  echo "copy ", appDir," ", projectName
+  #  copyDir(appDir, projectName)
+  #else:
+  #  stderr.writeLine("actionG not a valid value")
+  #  quit QuitFailure
 
   setCurrentDir(projectName)
-  if actionG=="create":
-    moveFile("skel.ino",projectName & ".ino")
-  removeDir("rfboot")
-  removeDir("rftool")
+  #if actionG=="create":
+  moveFile("skel.ino",projectName & ".ino")
+
+  for f in walkDirs("build-*"):
+    # TODO
+    #removeDir(f)
+    echo f
+  #removeDir("rfboot")
+  #removeDir("rftool")
 
   copyDir(fileSource & "rfboot", "rfboot")
-  copyDir(fileSource & "rftool", "rftool")
-  removeDir("rftool/nimcache")
-  copyDir(fileSource & "usb2rf", "usb2rf")
-  removeDir("usb2rf/build-pro328")
+  #copyDir(fileSource & "rftool", "rftool")
+  #removeDir("rftool/nimcache")
+  #copyDir(fileSource & "usb2rf", "usb2rf")
+  #removeDir("usb2rf/build-pro328")
 
-  setFilePermissions( "./rftool/rftool",  {fpUserExec, fpUserWrite, fpUserRead, fpGroupExec, fpGroupRead, fpOthersExec, fpOthersRead} )
+  #setFilePermissions( "./rftool/rftool",  {fpUserExec, fpUserWrite, fpUserRead, fpGroupExec, fpGroupRead, fpOthersExec, fpOthersRead} )
   block:
     let f = open(ApplicationSettingsFile, fmWrite)
     f.writeLine "// 1. This file is used by the C/C++ compiler arduino sketch compile"
@@ -1045,105 +750,35 @@ proc actionCreate() =
     f.writeLine "// XTEAKEY RFBOOT_ADDRESS APP_ADDRESS and CHANNEL are randomly generated"
     f.writeLine "// with the system randomness generator dev/urandom"
     f.writeLine "// After the bootloader is installed to the target module, you cannot change them"
-    f.writeLine "// If you do this, the upload process will fail"
+    f.writeLine "// otherwise, the upload process will fail"
     f.writeLine ""
-    #f.writeLine "// RF channel is common to rfboot and the application. This is not enforced."
-    #f.writeLine "// You can change it before upload the application code"
-
-    #f.writeLine "#define PROJECT_NAME \"", projectName ,"\""
-    #f.writeLine "#define CHIP_", rfChip.toUpper
     f.writeLine "const uint8_t APP_CHANNEL = ", channel, ";"
-    #if rfChip == CHIP_NRF24L01:
-    #  f.writeLine "const char APP_ADDRESS[] = \"", appAddress,"\";"
-    #  f.writeLine "// CE and CSN pins, using Arduino numbering."
-    #  f.writeLine "const uint8_t ARDUINO_CE_PIN = ", cePin.arduinoPin, ";"
-    #  f.writeLine "const uint8_t ARDUINO_CSN_PIN = ", csnPin.arduinoPin, ";"
-    #elif rfChip == CHIP_CC1101:
     f.writeLine "const uint8_t APP_SYNCWORD[] = {", syncWord1, ",", syncWord2, "};"
-
     f.writeLine "const char RESET_STRING[] = \"RST_", projectName, "\";"
     f.close
   block:
     let f = open(RfbootSettingsFile, fmWrite)
-    #f.writeLine "#define PROJECT_NAME \"", projectName ,"\""
-    #f.writeLine "#define CHIP_", rfChip.toUpper
-    #f.writeLine "// RF channel is chosen to be the same as rfboot"
-    #f.writeLine "// but you can change this if you wish. You will probbably need to reset MCU by hand for this FIX"
     f.writeLine "const uint8_t RFBOOT_CHANNEL = ", rfbChannel, ";"
-    #if rfChip == CHIP_NRF24L01:
-    #  f.writeLine "const char RFBOOT_ADDRESS[] = \"", rfbAddress, "\";"
-    #  f.writeLine "#define CE_PIN ", cePin
-    #  f.writeLine "#define CSN_PIN ", csnPin
-    #elif rfChip == CHIP_CC1101:
     f.writeLine "const uint8_t RFB_SYNCWORD[] = {", rfbSyncWord1,",", rfbSyncWord2, "};"
-      #
-    #f.writeLine "// XTEAKEY is optional. You can comment it, at any time to disable encryption"
-    f.writeLine "// Note XTEAKEY is only used when updating firmware. The application code does not use it"
-    f.writeLine "// Note also that there is no any guarantee that the encryption offers any confidenciality"
+    f.writeLine "// This key is only used when updating firmware. The application code does not use it"
+    #f.writeLine "// Note also that there is no any guarantee that the encryption offers any confidenciality"
     f.writeLine "const uint32_t XTEAKEY[] = ", xteaKey.keyAsArrayC, ";"
-
     f.close
-
   block:
     echo "Project Name = ", projectName
-
-    #if rfChip == CHIP_NRF24L01:
-    #  echo "Application address = ", appAddress
-    #  echo "rfboot address = ",      rfbAddress.toArray
-    #  echo "cePin = P", cePin[0], cePin[2], "  (Arduino pin ",cePin.arduinoPin,")"
-    #  #  #echo "ce arduino pin = ", arduinoPin(p.cePin)
-    #  echo "csnPin = P", csnPin[0], csnPin[2], "  (Arduino pin ",csnPin.arduinoPin ,")"
-
-    #elif rfChip == CHIP_CC1101:
     echo "Application SyncWord = ", syncWord1, ",", syncWord2
     echo "rfboot SyncWord = ", rfbSyncWord1, ",", rfbSyncWord2
-
-      #  #echo "csn arduino pin = ", arduinoPin(p.csnPin)
-    #echo "XTEA key = ", key.keyAsArrayC
-    #  #echo "key as hex = ", p.key.asHex()
-    #  #p.key[0],",",p.key[1],",",p.key[2],",",p.key[3]
-    echo "rfboot channel = ", rfbChannel #, " (Common to both app and rfboot)"
-    echo "Application channel = ", channel #, " (Common to both app and rfboot)"
-    #  echo "mcu = ", p.mcu
+    echo "rfboot channel = ", rfbChannel
+    echo "Application channel = ", channel
 
 
 proc actionUpload(binaryFileName: string, timeout=10.0) =
-
-
   let (rfbChannel,rfbAddress,key) = getUploadParams()
   let (newAppChannel, newAppAddress, newResetString) = getAppParams()
-
-  #echo (rfChip, rfbChannel,rfbAddress)
-  #echo (newAppChannel, newAppAddress, newResetString)
-  #echo rfChip, ",", rfbChannel, ",", rfbAddress, ","  # key.asCArray
-  #echo newAppChannel, ",", newAppAddress, ",", newResetString
-  #quit QuitSuccess
-
-  #var appSyncWord1, appSyncWord2: int
-  #var rfbSyncWord1, rfbSyncWord2: int
-  #stderr.writeLine rfbChannel," ", address
-  #stderr.writeLine appChannel," ",  appAddress, " ", resetString
-  #quit QuitSuccess
-  #stderr.writeLine "CHIP=",rfChip
   var appChannel: int
   var appAddress: string
   var resetString: string
   var round: int
-  #if rfChip == CHIP_NRF24L01:
-  #  stderr.write "NRF24L01 TRYING TO READ .lastupload"
-  #  try:
-  #    let lastupload = open(".lastupload", fmRead)
-  #    appChannel = lastupload.readline.strip.parseInt
-  #    appAddress = lastupload.readline.strip
-  #    resetString = lastupload.readline.strip
-  #    lastupload.close
-  #    stderr.write "found .lastupload"
-  #  except IOError:
-  #    appChannel = newAppChannel
-  #    appAddress = newAppAddress
-  #    resetString = newResetString
-  #elif rfChip == CHIP_CC1101:
-
   appAddress = "12"
   try:
     let lastupload = open(".lastupload", fmRead)
@@ -1156,23 +791,16 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     appChannel = newAppChannel
     appAddress = newAppAddress
     resetString = newResetString
-
-
   if resetString!=nil or resetString!="":
     if newAppChannel!=appChannel:
       stderr.writeLine "WARNING : appChannel changed to ", newAppChannel, ". Using the old ", appChannel, " to send the reset signal"
-
     if newAppAddress != appAddress:
       stderr.writeLine "WARNING : appAddress changed to ", newAppAddress.toArray, ". Using the old ", appAddress.toArray, " to send the reset signal"
-
     if newResetString != resetString:
       stderr.writeLine "WARNING : resetString changed to ", newResetString, ". Using the old ", resetString, " to send the reset signal"
-
-
   let encrypt = (key != [0'u32,0,0,0])
-
   var app = getApp(binaryFileName)
-  let portname = enumerate()
+  let portname = getPortName()
   let port = portname.openPort()
 
   var header = StartSignature.uint32.toString & app.len.uint16.toString &
@@ -1180,18 +808,16 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     StartSignature.uint32.toString & randomString(16)
 
   var smallHeader = StartSignature.uint32.toString
-
   port.drain(5000)
   port.write(CommdModeStr & "Z")  # fast reset
-
-  const USB2RF_START_MESSAGE = "USB2RF_" & USB2RF_PROTOCOL_VERSION
+  const USB2RF_START_MESSAGE = "USB2RF_01"
+  # & USB2RF_PROTOCOL_VERSION
   let p = port.getPacket(200000, len(USB2RF_START_MESSAGE) )
   if p!=USB2RF_START_MESSAGE:
     stderr.writeLine "Cannot contact usb2rf"
     quit QuitFailure
   else:
     stderr.writeLine "module identified : \"", USB2RF_START_MESSAGE, "\""
-
   if resetString==nil or resetString=="":
     stderr.writeLine "Contacting rfboot. Reset the module ..."
     stderr.writeLine "The process will continue to try for ", timeout , " sec"
@@ -1208,21 +834,14 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       stderr.writeLine "Ok the target reported reset"
     else:
       stderr.writeLine "Target did not answer the reset command, trying to send code anyway"
-
-
   stderr.writeLine "rfboot address = ", rfbAddress.toArray
   port.setAddress rfbAddress
-
   stderr.writeLine "rfboot channel = ", rfbChannel
   port.setChannel rfbChannel
-
   port.drain(5000)
-
-
   var contact = false
   var msg: string
   var iv: array[2,uint32];
-
   var startPingTime = epochTime()
   while epochTime() - startPingTime < timeout:
     port.write smallHeader
@@ -1240,20 +859,14 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     if msg.len == 8:
       iv[0]=msg[0].uint32+msg[1].uint32*256+msg[2].uint32*256*256+msg[3].uint32*256*256*256
       iv[1]=msg[4].uint32+msg[5].uint32*256+msg[6].uint32*256*256+msg[7].uint32*256*256*256
-      #stderr.writeLine "IV=[",iv[0],",", iv[1],"]"
       stderr.writeLine "IV=", iv
-
       #let ivdecrypted=xtea_decipher(iv);
       #TODO
       # if msg.len==9 neos rfboot thelei CRC 32+1 byte
       #TODO
-
     else:
-      stderr.writeLine "Wrong iv length from rfboot", msg.len
+      stderr.writeLine "Wrong IV length from rfboot", msg.len
       quit QuitFailure
-
-
-  #iv = [round.uint32,0]
   header = xteaEncipherCbc(header, key, iv)
   block:
     var app1=""
@@ -1263,15 +876,10 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       app1 = xteaEncipherCbc(app[i-32..i-1], key, iv) & app1
       i-=32
     app = app1
-
-
-
   # Sending the header
   if header.len != Payload:
     stderr.writeLine "Internal error, packet is not ", Payload, " bytes long"
     quit QuitFailure
-
-
   startPingTime = epochTime()
   while epochTime() - startPingTime < timeout:
     port.write header
@@ -1282,47 +890,30 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   if not contact:
     stderr.writeLine("Cannot contact rfboot")
     quit QuitFailure
-
   if msg.len != 3:
     stderr.writeLine "Invalid message from rfboot. len=", msg.len
     for i in msg:
       stderr.writeLine i.int
     quit QuitFailure
-
-
   let reply = msg[0].int
   let data = msg[1].int + 256 * msg[2].int
-
   var startUploadTime: float
-
   if reply == RFB_NO_SIGNATURE:
     stderr.writeLine "rfboot reports wrong signature"
     quit QuitFailure
   elif reply == RFB_INVALID_CODE_SIZE:
     stderr.writeLine "rfboot reports that application size is invalid"
     quit QuitFailure
-
   elif reply == RFB_SEND_PKT:
-    #stderr.writeLine "Rfboot contacted. Round = "
-    #, round
     startUploadTime = epochTime()
-    #let f = open(".round",fmWrite)
-    #f.writeLine(round+1);
-    #f.close
   else:
     stderr.writeLine "Unknown response ", reply, " data=", data
     quit QuitFailure
-
   var pkt_idx = data
-
   var pkt_idx_prev=pkt_idx
-
   while pkt_idx >= PAYLOAD:
-    #stderr.writeLine "pkt_idx=",pkt_idx
     port.write app[pkt_idx-32..pkt_idx-1]
-
     var res: string
-
     if (pkt_idx==PAYLOAD):
       #perimenoume parapano giati mporei na argisei na apantisei logo tou CRC check
       res = port.getPacket(1200000,3)
@@ -1334,7 +925,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
         quit QuitFailure
       let reply = res[0].int
       pkt_idx = res[1].int + res[2].int*256
-
       if reply == RFB_SEND_PKT:
         stderr.writeLine "We resend the last packet"
       elif reply == RFB_WRONG_CRC:
@@ -1347,7 +937,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       else:
         stderr.writeLine "Unexpected reply code at the end of the upload process :", pkt_idx
         quit QuitFailure
-
     else:
       res = port.getPacket(200000,3)
       if res == nil:
@@ -1365,14 +954,11 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       #else:
       pkt_idx = res[1].int + res[2].int*256
       #stderr.writeLine pkt_idx
-
-
     if pkt_idx == pkt_idx_prev:
       stderr.writeLine "Resend"
     #elif pkt_idx == 30688:
     #  stderr.writeLine "Fix the 119 to 19"
     #  pkt_idx = 5088
-
     elif pkt_idx  !=  (pkt_idx_prev - 32) :
       stderr.writeLine "Protocol error: expected pkt_idx==", pkt_idx_prev - 32, ". Got ", pkt_idx
       # To fovero 5088 bug !
@@ -1394,22 +980,16 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       for c in res:
         stderr.write c.int," "
       quit QuitFailure
-
     pkt_idx_prev=pkt_idx
-    #stderr.writeLine(pkt_idx)
-
   #
   # We got success reply
   #
-
   let f = open(".lastupload", fmWrite)
   f.writeLine newAppChannel
-
   f.writeLine newAppAddress[0].int
   f.writeLine newAppAddress[1].int
   f.writeLine newResetString
   f.close()
-
   port.setChannel newAppChannel
   port.setAddress newAppAddress
 
@@ -1417,8 +997,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
 proc actionMonitor() =
   let (appChannel, appAddress, resetString) = getAppParams()
   let p = commandLineParams()
-
-  let portname = enumerate()
+  let portname = getPortName()
   let fd = portname.openPort()
   echo "Application SyncWord = ", appAddress.toArray
   echo "Channel = ", appChannel
@@ -1426,13 +1005,11 @@ proc actionMonitor() =
   sleep(50)
   fd.setAddress appAddress
   sleep(50)
-
   discard fd.close()
   if p.len >= 2:
     stderr.writeLine "/bin/fuser -s ", portName
     let pr = startProcess( command="/bin/fuser", args=["-s", portName], options={poStdErrToStdOut} )
     let e = waitForExit(pr)
-
     if e == 0:
       stderr.writeLine "Serial port ", portName, " is in use, not executing command"
     else:
@@ -1443,40 +1020,32 @@ proc actionMonitor() =
       discard startProcess( command=p[1], args=p[2..p.len-1] & portName, options={poStdErrToStdOut,poUsePath} )
 
 
-
 proc actionResetLocal() =
-
-  let portname = enumerate()
+  let portname = getPortName()
   let fd = portname.openPort()
   # This command resets the usb2rf module
-  stderr.writeLine "reseting the usb2rf module string=" & CommdModeStr & "R"
+  stderr.writeLine "reseting the usb2rf module"
+  # string=" & CommdModeStr & "R"
   fd.write CommdModeStr & "R"
-  #fd.write CommdModeStr & "R"
-  #fd.sync()
-  #fd.flush()
 
 
 # implements command line parsing and returns all the parameters in a tuple
 proc main() =
-  let p = commandLineParams()
-  #if p.len mod 2 == 0:
-  #  stderr.writeLine "Usage:rftool action --opt1 val1 --opt2 val2 ..."
-  #  quit QuitFailure
+  let p = commandLineParams() # nim's standard library function
   if p.len == 0:
     stderr.writeLine "Usage : rftool upload|create|monitor|resetLocal| [options]"
     quit QuitFailure
-  let action = p[0].strip.normalize #mikra xoris _
+  let action = p[0].strip.normalize # mikra xoris _
   case action
   of "create":
     actionCreate()
-  of "copy":
-    actionG = "copy"
-    actionCreate()
+  #of "copy":
+  #  actionG = "copy"
+  #  actionCreate()
   of "upload":
     let binary = p[1].strip
     actionUpload(binary)
   of "monitor":
-
     actionMonitor()
   of "resetlocal":
     actionResetLocal()
