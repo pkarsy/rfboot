@@ -1,7 +1,7 @@
 import strutils
 import os
 import osproc, times
-import tables
+#import tables
 #import random
 import posix
 
@@ -120,7 +120,7 @@ proc crc16_rev(buf: string): uint16 =
 
 proc parseKey(keyStr: string): array[4,uint32] =
   const msg = "XteaKey: Expecting 4 integers (0 to 4294967295) separated by comma"
-  let key = keyStr.toLower.replace("u","").replace(" ","").split(",")
+  let key = keyStr.toLowerAscii.replace("u","").replace(" ","").split(",")
   if key.len != 4:
     stderr.writeLine msg
     quit QuitFailure
@@ -260,14 +260,14 @@ proc randomAdress(): string =
     r = r mod validChar.len
     result.add validChar[r]
 
-proc randomChannel(): int =
+discard """proc randomChannel(): int =
   const channels = 79 # random 0..78 we add 1 -> 1..79
   const maxRan = (256 div channels)*channels
   while true:
       let r=rand()
       if r<maxRan:
         #echo "good r = ",r
-        return (r mod channels)+1
+        return (r mod channels)+1"""
 
 proc randomUint32(): uint32 =
   # we fill the uint32 bytes with random data
@@ -611,7 +611,7 @@ proc actionCreate() =
     quit QuitFailure
 
   #var projectName: string
-  var appDir = ""
+  #var appDir = ""
   #if actionG == "copy":
   #  appDir = p[1].strip
   #  if not existsDir(appDir):
@@ -632,7 +632,7 @@ proc actionCreate() =
     stderr.writeLine "Only alphanumeric characters should be used in project name"
     quit QuitFailure
   var channel = 1
-  const speed = 8
+  #const speed = 8
   var rfbAddress = randomAdress()
   var appAddress = randomAdress()
   while rfbAddress == appAddress:
@@ -798,7 +798,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       stderr.writeLine "WARNING : appAddress changed to ", newAppAddress.toArray, ". Using the old ", appAddress.toArray, " to send the reset signal"
     if newResetString != resetString:
       stderr.writeLine "WARNING : resetString changed to ", newResetString, ". Using the old ", resetString, " to send the reset signal"
-  let encrypt = (key != [0'u32,0,0,0])
+  #let encrypt = (key != [0'u32,0,0,0])
   var app = getApp(binaryFileName)
   let portname = getPortName()
   let port = portname.openPort()
@@ -996,6 +996,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
 
 proc actionMonitor() =
   let (appChannel, appAddress, resetString) = getAppParams()
+  discard resetString
   let p = commandLineParams()
   let portname = getPortName()
   let fd = portname.openPort()
