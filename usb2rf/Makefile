@@ -1,5 +1,5 @@
 BOARD_TAG = pro328
-EXTRA_FLAGS = -fshort-enums
+EXTRA_FLAGS = -fshort-enums -g
 include /usr/share/arduino/Arduino.mk
  
 MONITOR_PORT  =  /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A800G6XK-if00-port0

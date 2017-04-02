@@ -661,7 +661,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   var smallHeader = StartSignature.uint32.toString
   port.drain(5000)
   port.write(CommdModeStr & "Z")  # fast reset
-  const USB2RF_START_MESSAGE = "USB2RF_01"
+  const USB2RF_START_MESSAGE = "USB2RF"
   # & USB2RF_PROTOCOL_VERSION
   let p = port.getPacket(200000, len(USB2RF_START_MESSAGE) )
   if p!=USB2RF_START_MESSAGE:
