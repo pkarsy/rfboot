@@ -9,28 +9,33 @@
 # program name. Should not be changed.
 PROGRAM    = rfboot
 
+include compile_settings.mk
+
 OBJ        = $(PROGRAM).o
 OPTIMIZE   = -Os -fno-inline-small-functions -fno-split-wide-types
 DEFS       = -g
 LIBS       = -Icc1101 -Ixtea
 CC         = avr-gcc
 
+# Default frequency is 8Mhz
+# This should be the normal for atmega328 @ 3.3V
+ifeq ($(F_CPU),)
+F_CPU := 8000000L
+endif
+
 # Override is only needed by avr-lib build system.
-override CFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) -DF_CPU=$(AVR_FREQ) $(DEFS)
+override CFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) -DF_CPU=$(F_CPU) $(DEFS)
 override LDFLAGS       = -Wl,$(LDSECTION)
 
 OBJCOPY        = avr-objcopy
 OBJDUMP        = avr-objdump
 
-
-all:
-	make atmega328p
-
+all: atmega328p
 
 atmega328p: clean
 atmega328p: MCU_TARGET = atmega328p
 atmega328p: CFLAGS += -std=gnu99 -Wall -ffunction-sections -fdata-sections -fshort-enums -g -Os -w -fno-exceptions -Wl,--gc-sections -Ixtea -Icc1101 -DCOMPILE_TIME=`date '+%s'`
-atmega328p: AVR_FREQ = 8000000L
+#atmega328p: F_CPU = 8000000L
 atmega328p: LDSECTION  = --section-start=.text=0x7000
 atmega328p: $(PROGRAM)_atmega328p.elf
 atmega328p: size
@@ -42,9 +47,6 @@ noxtal: atmega328p
 # Uses external crystal/resonator
 xtal: atmega328p
 	avrdude -q -p atmega328p -c usbasp -v -e  -U lfuse:w:0xFF:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
-
-#promini: xtal
-
 
 %.elf:
 	$(CC) $(CFLAGS) $(LDFLAGS) -c -o xtea.o xtea/xtea.c
