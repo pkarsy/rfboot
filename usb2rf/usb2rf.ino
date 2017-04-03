@@ -30,9 +30,10 @@ void cc1101signalsInterrupt(void) {
 
 #define PAYLOAD 32
 
-uint8_t packet[64];
+
 
 // Seems the AltSoftSerial does better than SoftSerial @ 8MHz
+// anything more than 19200 baud seams unreliable
 #include <AltSoftSerial.h>
 AltSoftSerial debug_port;
 
@@ -148,38 +149,116 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					debug_port.println(F("Switch to upload mode"));
 					//debug_port.flush();
 				}
-				
+
+				// This is the status codes rfboot is sending back to the programmer
+				const uint8_t RFB_NO_SIGNATURE = 1;
+				const uint8_t RFB_INVALID_CODE_SIZE = 2;
+				//const uint8_t RFB_ROUND_IS = 3;
+				const uint8_t RFB_SEND_PKT = 4;
+				const uint8_t RFB_WRONG_CRC=5;
+				const uint8_t RFB_SUCCESS=6;
 				// Perimeno size
-				uint16_t code_idx=cmd[1]+cmd[2]*256;
-				byte i=0;
+				uint16_t app_idx=cmd[1]+cmd[2]*256;
+				//byte i=0;
 				uint32_t timer = millis();
-				byte inpacket[64];
+				
 				byte outpacket[64];
 				bool rfboot_waiting = true;
-				while (code_idx) { // and (millis()-timer<1000) TODO
-					
-					if ( Serial.available() ) {
-						if (i<PAYLOAD) {
-							outpacket[i] = Serial.read();
-							i++;
-							if (Serial.available()<=32) Serial.write('S');
-						}
+				bool sending_header = true;
+				bool outpacket_ready = false;
+				while (app_idx) { // and (millis()-timer<1000) TODO
+
+					if (millis()-timer>250) {
+						// TODO timeout abort
 					}
 					
-					if (rfboot_waiting and i==PAYLOAD) {
-						bool succ = rf.sendPacket(outpacket,PAYLOAD);
-						i=0;
+					if ( (not outpacket_ready) and (Serial.available()>=PAYLOAD) ) {
+						outpacket_ready = false;
+						Serial.readBytes((char*)outpacket, PAYLOAD);
+						Serial.write('S'); // TODO
+					}
+					
+					if (rfboot_waiting and outpacket_ready) {
+						rf.sendPacket(outpacket,PAYLOAD);
 						rfboot_waiting=false;
 					}
 
 					if (rf.interrupt) {
+						byte inpacket[64];
 						byte pkt_size = rf.getPacket(inpacket);
 						rf.interrupt = false;
 						if (pkt_size==3 and rf.crc_ok) {
+							timer = millis(); // recharge the timer
 							// we just got a byte packet from rfboot
-						}
-					};
+							byte cmd = inpacket[0];
+							if (sending_header) {
+								sending_header = false;
+								switch (cmd) {
+									case RFB_NO_SIGNATURE: case RFB_INVALID_CODE_SIZE:
+										Serial.write(cmd);
+										// TODO abort
+									break;
 
+									case RFB_SEND_PKT:
+										uint16_t i=inpacket[1]+inpacket[2]*256;
+										if (i==app_idx) { // OK this is the outer packet
+											rf.sendPacket(outpacket,PAYLOAD);
+											// we dont decrease app_idx
+											// the packet was the header
+											// and we are going to send the first
+											// packet now
+										}
+									break;
+								}
+							}
+							else {
+								if (cmd==RFB_SEND_PKT) {
+									uint16_t i=inpacket[1]+inpacket[2]*256;
+									if (i==app_idx) {
+										// rfboot needs the same packet
+										rf.sendPacket(outpacket,PAYLOAD);
+										Serial.write('R'); // inform the resent
+									}
+									else if (i==app_idx-PAYLOAD) { // next packet
+										if (rfboot_waiting) {
+											// TODO should not happen
+											// abort
+										}
+										else {
+											rfboot_waiting = true;
+										}
+									}
+								}
+								else {
+									// TODO should not happen
+									// Uncknown cmd
+								}
+
+
+							}
+						}
+					}
+				}
+
+				// All packets sent
+
+				timer = millis();
+				while ( millis()-timer < 1200) {
+					if (rf.interrupt) {
+						byte inpacket[64];
+						byte pkt_size = rf.getPacket(inpacket);
+						rf.interrupt = false;
+						if (pkt_size==3 and rf.crc_ok) {
+							// we got a byte packet from rfboot
+							byte cmd = inpacket[0];
+							if (cmd==RFB_SUCCESS or cmd==RFB_WRONG_CRC) {
+								Serial.write(cmd);
+							}
+							else {
+								Serial.write('E'); // TODO
+							}
+						}
+					}
 				}
 
 				// loop stelnoume paketa
@@ -256,6 +335,7 @@ int main() {
 	Serial.write("USB2RF" );
 	
 	bool last_debug = not debug;
+	uint8_t packet[64];
 
 	while (1) {
 		if (debug != last_debug) {
