@@ -1,11 +1,5 @@
 # Makefile for the rfboot bootloader
 
-# Do not use this Makefile from the downloaded rfboot folder
-# because you will get always the same fixed channel address and a
-# useless key={0,0,0,0}
-# use "rftool create ProjectName" instead. This copys this makefile and sets all the
-# needed parameters.
-
 # program name. Should not be changed.
 PROGRAM    = rfboot
 
@@ -17,7 +11,7 @@ DEFS       = -g
 LIBS       = -Icc1101 -Ixtea
 CC         = avr-gcc
 
-# Default frequency is 8Mhz
+# Default frequency is 8Mhz, unless you set one in "complile_settings.mk"
 # This should be the normal for atmega328 @ 3.3V
 ifeq ($(F_CPU),)
 F_CPU := 8000000L
@@ -32,6 +26,7 @@ OBJDUMP        = avr-objdump
 
 all: atmega328p
 
+atmega328p: check
 atmega328p: clean
 atmega328p: MCU_TARGET = atmega328p
 atmega328p: CFLAGS += -std=gnu99 -Wall -ffunction-sections -fdata-sections -fshort-enums -g -Os -w -fno-exceptions -Wl,--gc-sections -Ixtea -Icc1101 -DCOMPILE_TIME=`date '+%s'`
@@ -40,7 +35,7 @@ atmega328p: LDSECTION  = --section-start=.text=0x7000
 atmega328p: $(PROGRAM)_atmega328p.elf
 atmega328p: size
 
-# 8MHz . Uses internal RC oscillator
+# Uses internal RC oscillator at 8MHz
 noxtal: atmega328p
 	avrdude -q -p atmega328p -c usbasp -v -e  -U lfuse:w:0xE2:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
@@ -54,6 +49,9 @@ xtal: atmega328p
 	$(CC) $(CFLAGS) $(LDFLAGS) -c -o spi.o cc1101/spi.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -c -o rfboot.o rfboot.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ rfboot.o xtea.o spi.o cc1101.o
+
+check:
+	@test -s rfb_settings.h || { echo "rfb_settings.h does not exist ! Exiting..."; exit 1; }
 
 clean:
 	rm -rf *.o *.elf *.lst *.map *.sym *.lss *.eep *.srec *.bin *.hex

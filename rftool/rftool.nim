@@ -21,7 +21,7 @@ const RFB_WRONG_CRC=5
 const RFB_SUCCESS=6
 
 const ApplicationSettingsFile = "app_settings.h"
-const RfbootParametersFile = "rfboot/parameters.h"
+const RfbootSettingsFile = "rfboot/rfb_settings.h"
 const MaxAppSize = 32*1024 - BOOTLOADER_SIZE
 const StartSignature = 0xd20f6cdf # This is expected from rfboot
 const Payload = 32 # The same as rfboot
@@ -174,7 +174,7 @@ proc getPortName() : string =
     var s: string
     try:
       s = f.readLine.strip
-      echo "line=",s
+      #echo "line=",s
     except IOError:
       break
     if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!") or not s.startsWith("/dev/"):
@@ -236,7 +236,7 @@ proc randomUint32(): uint32 =
   let randFile = open(RandomGen)
   discard readBuffer(randFile,addr result,4)
   randFile.close
-  
+
 
 
 proc randomXteaKey(): array[4,uint32] =
@@ -259,9 +259,9 @@ proc keyAsArrayC(key: array[4,uint32]): string =
 proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array[4,uint32] ] =
   var rfbootConf : string
   try:
-     rfbootConf = readFile(RfbootParametersFile)
+     rfbootConf = readFile(RfbootSettingsFile)
   except IOError:
-    stderr.writeLine "The file \"", RfbootParametersFile, "\" does not exist."
+    stderr.writeLine "The file \"", RfbootSettingsFile, "\" does not exist."
     quit QuitFailure
   for i in rfbootConf.splitLines:
     var line = i.strip()
@@ -274,7 +274,7 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
       elif line.contains("RFBOOT_ADDRESS"):
         let qnumber = line.count('\"')
         if qnumber != 2:
-          stderr.writeLine "In file \"", RfbootParametersFile, "\", the RFBOOT_ADDRESS line has ", qnumber, " \". Expected 2, enclosing the RF address"
+          stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RFBOOT_ADDRESS line has ", qnumber, " \". Expected 2, enclosing the RF address"
           quit QuitFailure
         let startl = line.find('\"')
         let endl = line.rfind('\"')
@@ -282,16 +282,16 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
         stderr.writeLine "rfboot_address=",result.rfbootAddress
       elif line.contains("RFBOOT_CHANNEL"):
         if line.count('=') != 1:
-          stderr.writeLine "In file \"", RfbootParametersFile, "\", the RF_CHANNEL line is missing a \"=\""
+          stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL line is missing a \"=\""
         let startl = line.find('=')
         let endl = line.find ';'
         if endl == -1:
-          stderr.writeLine "In file \"", RfbootParametersFile, "\", the RF_CHANNEL line is missing a \";\" at the end"
+          stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL line is missing a \";\" at the end"
           quit QuitFailure
         line = line[startl+1 .. endl-1].strip
         if line.len==0 or not line.isDigit:  #  or line.len>3 or line.parseInt>127
           echo '"',line,'"'
-          stderr.writeLine "In file \"", RfbootParametersFile, "\", the RF_CHANNEL must be an integer"
+          stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL must be an integer"
           quit QuitFailure
         result.rfbChannel = line.parseInt
       if line.contains("RFB_SYNCWORD"):
@@ -589,10 +589,11 @@ proc actionCreate() =
   block:
     let f = open(ApplicationSettingsFile, fmWrite)
     f.writeLine "// This file :"
-    f.writeLine "// 1. Is used by the Arduino .ino file to get RF settings"
-    f.writeLine "// 2. Is parsed at runtime by rftool to get the parameters (channel etc)"
-    f.writeLine "// to send the application the reset word"
-    f.writeLine "// The parameters are generated with"
+    f.writeLine "// - Is used by the Arduino .ino file to get RF settings"
+    f.writeLine "// - Is parsed at runtime by rftool to get app parameters (channel etc)"
+    #f.writeLine "// to send the application the reset word"
+    f.writeLine ""
+    f.writeLine "// These parameters are generated with"
     f.writeLine "// \"rftool create ", projectName, "\""
     f.writeLine "// The values of APP_SYNCWORD and APP_CHANNEL"
     f.writeLine "// are randomly generated with the system randomness generator"
@@ -603,7 +604,7 @@ proc actionCreate() =
     f.writeLine "const char RESET_STRING[] = \"RST_", projectName, "\";"
     f.close
   block:
-    let f = open(RfbootParametersFile, fmWrite)
+    let f = open(RfbootSettingsFile, fmWrite)
     f.writeLine "// XTEAKEY RFB_SYNCWORD APP_ADDRESS and RFBOOT_CHANNEL are randomly"
     f.writeLine "// generated with the system randomness generator /dev/urandom"
     f.writeLine "// After the bootloader is installed to the target module, you cannot"
@@ -649,7 +650,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       stderr.writeLine "WARNING : appAddress changed to ", newAppAddress.toArray, ". Using the old ", appAddress.toArray, " to send the reset signal"
     if newResetString != resetString:
       stderr.writeLine "WARNING : resetString changed to ", newResetString, ". Using the old ", resetString, " to send the reset signal"
-  #let encrypt = (key != [0'u32,0,0,0])
   var app = getApp(binaryFileName)
   let portname = getPortName()
   let port = portname.openPort()
@@ -662,7 +662,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   port.drain(5000)
   port.write(CommdModeStr & "Z")  # fast reset
   const USB2RF_START_MESSAGE = "USB2RF"
-  # & USB2RF_PROTOCOL_VERSION
   let p = port.getPacket(200000, len(USB2RF_START_MESSAGE) )
   if p!=USB2RF_START_MESSAGE:
     stderr.writeLine "Cannot contact usb2rf"
@@ -886,7 +885,7 @@ proc main() =
   let p = commandLineParams() # nim's standard library function
   if p.len == 0:
     stderr.writeLine "Usage : rftool create ProjectName"
-    stderr.writeLine "        rftool upload SomeFirmware.bin"
+    stderr.writeLine "        rftool upload|send SomeFirmware.bin"
     stderr.writeLine "        rftool monitor term_emulator_cmd arg arg -p"
     stderr.writeLine "        rftool resetLocal"
     quit QuitFailure
@@ -894,7 +893,13 @@ proc main() =
   case action
   of "create":
     actionCreate()
-  of "upload":
+  of "upload","send":
+    if p.len == 1:
+      stderr.writeLine "No firmware file given"
+      quit QuitFailure
+    elif p.len>=3:
+      stderr.writeLine "Too many arguments"
+      quit QuitFailure
     let binary = p[1].strip
     actionUpload(binary)
   of "monitor":
