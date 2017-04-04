@@ -52,8 +52,161 @@ AltSoftSerial debug_port;
 void(* resetFunc) (void) = 0;
 uint32_t silence_timer ;
 
-void upload_code() {
+void upload(uint16_t app_idx) {
+	// Upload mode
+	// Offloads some of the work rftool does
+	// to improve latency
+	// These are the status codes rfboot is sending back to the programmer
+	const uint8_t RFB_NO_SIGNATURE = 1;
+	const uint8_t RFB_INVALID_CODE_SIZE = 2;
+	//const uint8_t RFB_ROUND_IS = 3; not used anymore
+	const uint8_t RFB_SEND_PKT = 4;
+	const uint8_t RFB_WRONG_CRC=5;
+	const uint8_t RFB_SUCCESS=6;
 
+	uint32_t timer = millis();
+
+	byte outpacket[64];
+	bool rfboot_waiting = true;
+	bool sending_header = true;
+	bool outpacket_ready = false;
+	byte avail_packets = 2; // 0-2 arxiki timi 0
+	while (app_idx) { // and (millis()-timer<1000) TODO
+
+		if (avail_packets>0) {
+			Serial.write('S'); // TODO
+			avail_packets--;
+		}
+
+		if (millis()-timer>250) {
+			// TODO timeout abort
+			if (debug) debug_port.print(F("upload: Timeout"));
+			return;
+		}
+
+		if ( (not outpacket_ready) and (Serial.available()>=PAYLOAD) ) {
+			outpacket_ready = true;
+			Serial.readBytes((char*)outpacket, PAYLOAD);
+			avail_packets++;
+		}
+
+		if (rfboot_waiting and outpacket_ready) {
+			rf.sendPacket(outpacket,PAYLOAD);
+			// outpacket is not market as ready yet
+			rfboot_waiting=false;
+		}
+
+		if (rf.interrupt) {
+			byte inpacket[64];
+			byte pkt_size = rf.getPacket(inpacket);
+			rf.interrupt = false;
+			if (pkt_size==3 and rf.crc_ok) {
+				timer = millis(); // recharge the timer
+				// we just got a 3 byte packet from rfboot
+				byte cmd = inpacket[0];
+				if (sending_header) {
+					sending_header = false;
+					switch (cmd) {
+						case RFB_NO_SIGNATURE: case RFB_INVALID_CODE_SIZE:
+							Serial.write(cmd);
+							// TODO abort
+							if (debug) {
+								debug_port.print(__LINE__);
+								debug_port.println(F(": no_sign/invalide_size"));
+							}
+							return; // ABORT
+						break;
+
+						case RFB_SEND_PKT:
+							uint16_t i=inpacket[1]+inpacket[2]*256;
+							if (i==app_idx) { // OK this is the outer packet
+								rf.sendPacket(outpacket,PAYLOAD);
+								// we dont decrease app_idx
+								// the packet was the header
+								// and we are going to send the first
+								// packet now
+							}
+							else {
+								if (debug) {
+									debug_port.print(__LINE__);
+									debug_port.print(F(": send_pkt with wrong idx"));
+									debug_port.print(i);
+									debug_port.print(F(". Expected: "));
+									debug_port.println(app_idx);
+								}
+								return; // ABORT
+							}
+						break;
+					}
+				}
+				else {
+					if (cmd==RFB_SEND_PKT) {
+						uint16_t i=inpacket[1]+inpacket[2]*256;
+						if (i==app_idx) {
+							// rfboot needs the same packet
+							rf.sendPacket(outpacket,PAYLOAD);
+							Serial.write('R'); // inform the resent
+						}
+						else if (i==app_idx-PAYLOAD) { // next packet
+							if (rfboot_waiting) {
+								// TODO should not happen
+								// abort
+								if (debug) {
+									debug_port.print(__LINE__);
+									debug_port.print(F(": Programming Error"));
+									debug_port.print(F("rfboot_waiting=true"));
+								}
+								return; // ABORT
+							}
+							else {
+								rfboot_waiting = true;
+							}
+						}
+						else {
+							if (debug) {
+								debug_port.print(__LINE__);
+								debug_port.print(F(": Protocol error. app_idx="));
+								debug_port.print(i);
+								debug_port.print(F(", bute expected "));
+								debug_port.print(app_idx-PAYLOAD);
+								debug_port.print(F(" or "));
+								debug_port.print(app_idx);
+							}
+							return; // ABORT
+						}
+					}
+					else {
+						if (debug) {
+
+						}
+						
+						// Uncknown cmd
+						return; // ABORT
+					}
+				}
+			}
+		}
+	}
+	// All packets sent
+	// We wait for CRC report and we forward to PC
+	timer = millis();
+	while ( millis()-timer < 1200) {
+		if (rf.interrupt) {
+			byte inpacket[64];
+			byte pkt_size = rf.getPacket(inpacket);
+			rf.interrupt = false;
+			if (pkt_size==3 and rf.crc_ok) {
+				// we got a 3 byte packet from rfboot
+				byte cmd = inpacket[0];
+				if (cmd==RFB_SUCCESS or cmd==RFB_WRONG_CRC) {
+					Serial.write(cmd);
+				}
+				else {
+					Serial.write('E'); // TODO
+				}
+			}
+		}
+	}
 }
 
 void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
@@ -77,7 +230,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 				}
 			}
 		break;
-		
+
 		case 'C':  // We set channel
 			{
 				if (cmd_len!=2) {
@@ -138,136 +291,16 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 			}
 		break;
 
-		case 'U':
-			// Upload mode
-			// Offloads some of the work rftool does
-			// to improve latency
-			// TODO
 
+		case 'U':
 			if (cmd_len==3) {
 				if (debug) {
 					debug_port.println(F("Switch to upload mode"));
 					//debug_port.flush();
 				}
-
-				// This is the status codes rfboot is sending back to the programmer
-				const uint8_t RFB_NO_SIGNATURE = 1;
-				const uint8_t RFB_INVALID_CODE_SIZE = 2;
-				//const uint8_t RFB_ROUND_IS = 3;
-				const uint8_t RFB_SEND_PKT = 4;
-				const uint8_t RFB_WRONG_CRC=5;
-				const uint8_t RFB_SUCCESS=6;
 				// Perimeno size
 				uint16_t app_idx=cmd[1]+cmd[2]*256;
-				//byte i=0;
-				uint32_t timer = millis();
-				
-				byte outpacket[64];
-				bool rfboot_waiting = true;
-				bool sending_header = true;
-				bool outpacket_ready = false;
-				while (app_idx) { // and (millis()-timer<1000) TODO
-
-					if (millis()-timer>250) {
-						// TODO timeout abort
-					}
-					
-					if ( (not outpacket_ready) and (Serial.available()>=PAYLOAD) ) {
-						outpacket_ready = false;
-						Serial.readBytes((char*)outpacket, PAYLOAD);
-						Serial.write('S'); // TODO
-					}
-					
-					if (rfboot_waiting and outpacket_ready) {
-						rf.sendPacket(outpacket,PAYLOAD);
-						rfboot_waiting=false;
-					}
-
-					if (rf.interrupt) {
-						byte inpacket[64];
-						byte pkt_size = rf.getPacket(inpacket);
-						rf.interrupt = false;
-						if (pkt_size==3 and rf.crc_ok) {
-							timer = millis(); // recharge the timer
-							// we just got a byte packet from rfboot
-							byte cmd = inpacket[0];
-							if (sending_header) {
-								sending_header = false;
-								switch (cmd) {
-									case RFB_NO_SIGNATURE: case RFB_INVALID_CODE_SIZE:
-										Serial.write(cmd);
-										// TODO abort
-									break;
-
-									case RFB_SEND_PKT:
-										uint16_t i=inpacket[1]+inpacket[2]*256;
-										if (i==app_idx) { // OK this is the outer packet
-											rf.sendPacket(outpacket,PAYLOAD);
-											// we dont decrease app_idx
-											// the packet was the header
-											// and we are going to send the first
-											// packet now
-										}
-									break;
-								}
-							}
-							else {
-								if (cmd==RFB_SEND_PKT) {
-									uint16_t i=inpacket[1]+inpacket[2]*256;
-									if (i==app_idx) {
-										// rfboot needs the same packet
-										rf.sendPacket(outpacket,PAYLOAD);
-										Serial.write('R'); // inform the resent
-									}
-									else if (i==app_idx-PAYLOAD) { // next packet
-										if (rfboot_waiting) {
-											// TODO should not happen
-											// abort
-										}
-										else {
-											rfboot_waiting = true;
-										}
-									}
-								}
-								else {
-									// TODO should not happen
-									// Uncknown cmd
-								}
-
-
-							}
-						}
-					}
-				}
-
-				// All packets sent
-
-				timer = millis();
-				while ( millis()-timer < 1200) {
-					if (rf.interrupt) {
-						byte inpacket[64];
-						byte pkt_size = rf.getPacket(inpacket);
-						rf.interrupt = false;
-						if (pkt_size==3 and rf.crc_ok) {
-							// we got a byte packet from rfboot
-							byte cmd = inpacket[0];
-							if (cmd==RFB_SUCCESS or cmd==RFB_WRONG_CRC) {
-								Serial.write(cmd);
-							}
-							else {
-								Serial.write('E'); // TODO
-							}
-						}
-					}
-				}
-
-				// loop stelnoume paketa
-				// molis o buffer exei 32bytes i ligotera zitame paketo
-				// perimenoume apantisi. an to idx pou paroume einai mikrotero apo
-				// to proigoumeno stelnoume to epomeno paketo aliws to idio
-				// an paroume lathos to proothoume sto PC kai feugoume
-				// an teleiosoun ta paketa perimenoume CRC report kai to proothoume
-				
+				upload(app_idx);
 			}
 			else {
 				if (debug) {
@@ -275,7 +308,8 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					debug_port.println(cmd_len);
 				}
 			}
-		break;
+
+			break;
 
 		case 'W':
 			// TODO
@@ -313,10 +347,10 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 int main() {
 
 	init(); // mandatory, for arduino functions to work
-	
+
 	pinMode(DEBUG_PIN,INPUT_PULLUP);
 	Serial.begin(57600);
-	
+
 	debug_port.begin(19200);
 	delay(1);
 
@@ -333,7 +367,7 @@ int main() {
 	bool cmdmode = false;
 	delay(5);
 	Serial.write("USB2RF" );
-	
+
 	bool last_debug = not debug;
 	uint8_t packet[64];
 
@@ -409,11 +443,11 @@ int main() {
 						debug_port.write("out ");
 						debug_port.print(idx);
 					}
-					
+
 					bool succ;
-					
+
 					succ = rf.sendPacket(packet,idx);
-					
+
 					while (! rf.interrupt);
 					rf.interrupt = false;
 					if ( debug ) {
@@ -439,7 +473,7 @@ int main() {
 					// pantos o bootloader stelnei olososto paketo kai o kwdikas to vlepei kanonika
 					// wstoso to 4,224,19 stanei sto PC mono san 4,224
 					// if (ccpacket.length==3 and ccpacket.data[0]==4 and ccpacket.data[2]<=19) ccpacket.data[2]+=128;
-					
+
 					/* if (pkt_size==8) {
 						for (byte i=0;i<8;i++) {
 							if (packet[i]<16) Serial.write('0');
@@ -452,7 +486,7 @@ int main() {
 						Serial.write(packet, pkt_size);
 					} */
 					Serial.write(packet, pkt_size);
-					
+
 					if (debug) {
 						debug_port.write("in ");
 						//if (pkt_size != 3)
@@ -463,7 +497,7 @@ int main() {
 			else if (debug) {
 				debug_port.println("in 0 !");
 			}
-			
+
 		}
 
 	}
