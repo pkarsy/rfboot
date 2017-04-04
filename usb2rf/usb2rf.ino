@@ -70,13 +70,14 @@ void upload(uint16_t app_idx) {
 	bool rfboot_waiting = true;
 	bool sending_header = true;
 	bool outpacket_ready = false;
-	byte avail_packets = 2; // 0-2 arxiki timi 0
+	//byte avail_packets = 2; // 0-2 arxiki timi 0
+	Serial.write("PP"); // want 2 packets
 	while (app_idx) { // and (millis()-timer<1000) TODO
 
-		if (avail_packets>0) {
-			Serial.write('S'); // TODO
-			avail_packets--;
-		}
+		//if (avail_packets>0) {
+		//	Serial.write('S'); // TODO
+		//	avail_packets--;
+		//}	
 
 		if (millis()-timer>250) {
 			// TODO timeout abort
@@ -87,13 +88,19 @@ void upload(uint16_t app_idx) {
 		if ( (not outpacket_ready) and (Serial.available()>=PAYLOAD) ) {
 			outpacket_ready = true;
 			Serial.readBytes((char*)outpacket, PAYLOAD);
-			avail_packets++;
+			//avail_packets++;
+			Serial.write('P'); // TODO
 		}
 
 		if (rfboot_waiting and outpacket_ready) {
 			rf.sendPacket(outpacket,PAYLOAD);
 			// outpacket is not market as ready yet
 			rfboot_waiting=false;
+			if (debug) {
+				debug_port.print(F("pkt out : idx="));
+				debug_port.println(app_idx);
+				if (sending_header) debug_port.println(F("This was the header"));
+			}
 		}
 
 		if (rf.interrupt) {
@@ -125,6 +132,9 @@ void upload(uint16_t app_idx) {
 								// the packet was the header
 								// and we are going to send the first
 								// packet now
+								if (debug) {
+									debug_port.println(F(": Sending the first app packet"));
+								}
 							}
 							else {
 								if (debug) {

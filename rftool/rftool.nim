@@ -853,9 +853,9 @@ proc actionMonitor() =
   echo "Application SyncWord = ", appAddress.toArray
   echo "Channel = ", appChannel
   fd.setChannel appChannel
-  sleep(50)
+  sleep 50
   fd.setAddress appAddress
-  sleep(50)
+  sleep 50
   discard fd.close()
   if p.len >= 2:
     stderr.writeLine "/bin/fuser -s ", portName
@@ -887,7 +887,7 @@ proc main() =
     stderr.writeLine "Usage : rftool create ProjectName"
     stderr.writeLine "        rftool upload|send SomeFirmware.bin"
     stderr.writeLine "        rftool monitor term_emulator_cmd arg arg -p"
-    stderr.writeLine "        rftool resetLocal"
+    stderr.writeLine "        rftool resetlocal"
     quit QuitFailure
   let action = p[0].strip.normalize # mikra xoris _
   case action
