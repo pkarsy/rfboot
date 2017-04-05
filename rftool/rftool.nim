@@ -1,6 +1,7 @@
 import strutils
 import os
-import osproc, times
+import osproc
+import times
 import posix
 
 # This is the size of rfboot in atmega FLASH
@@ -28,8 +29,8 @@ const Payload = 32 # The same as rfboot
 const CommdModeStr = "COMMD" # This word, switches the usb2rf module to command mode
 const RandomGen = "/dev/urandom"
 
-var portName:string # This is global to be used by "fuser" external unix tool
-
+#var portName:string # This is global to be used by "fuser" external unix tool
+var LPID: int
 
 # packs a uint16 in 2 bytes, little endian
 proc toString(u: uint16): string =
@@ -39,15 +40,7 @@ proc toString(u: uint16): string =
 proc toString(u: uint32): string =
   return (u and 0xffff).uint16.toString & (u shr 16).uint16.toString
 
-# Stops other processess accessing the serial port
-# is used for code upload even with an open terminal (usually gtkterm)
-proc sendStopSignal() =
-  discard execProcess( "/bin/fuser", ["-s", "-k", "-STOP", portName] , options={ poStdErrToStdOut })
 
-# resumes the processes being stopped
-# see the previous function
-proc sendContSignal() {.noconv.} =
-  discard execProcess( "/bin/fuser", ["-s", "-k", "-CONT", portName], options={ poStdErrToStdOut } )
 
 # This code is from AVR gcc documentation avr/crc.h FIX TODO
 # converted with c2nim, and corrected by hand
@@ -177,25 +170,69 @@ proc getPortName() : string =
       #echo "line=",s
     except IOError:
       break
-    if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!") or not s.startsWith("/dev/"):
+    if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!"):
+      discard
+    elif not s.startsWith("/dev/"):
+      #stderr.writeLine(""
       discard
     elif not ( fileExists(s) or symlinkExists(s) ):
-      echo "Device ",s," is not connected"
+      stderr.writeLine "Device ",s," is not connected"
     else:
       hwID = s
       break
   if hwID==nil:
     stderr.writeLine "Config file does not point to any connected device"
     quit QuitFailure
-  stderr.writeLine "port = ",hwID
+  var portName = $realpath(hwID,nil)
+  #stderr.writeLine "port = ",portName
   # This is used by the sendStopSignal() sendContSignal()
-  portName = hwID
-  return hwID
+  #portName = hwID
+  return portName
 
+
+proc checkLockFile(portName:string): int =
+  let port = splitPath(portName)[1]
+  let lockfile = "/var/lock/LCK.." & port
+  if existsFile(lockfile):
+    echo "lockfile found : \"",lockfile,"\""
+    let info = lockfile.readFile.strip.split
+    let pid = info[0].parseInt
+    #echo "pid=",pid
+    #echo "/proc/xxx=", "/proc/" & info[0]
+    if existsDir( "/proc/" & info[0]):
+      return pid
+    else:
+      stderr.writeLine("Lockfile is stale")
+      discard unlink(lockfile)
+      return -1
+  else:
+    return -1
+
+
+# Stops other processess accessing the serial port
+# is used for code upload even with an open terminal (usually gtkterm)
+proc sendStopSignal(portname:string): bool =
+  #discard execProcess( "/bin/fuser", ["-s", "-k", "-STOP", portName] , options={ poStdErrToStdOut })
+  LPID = checkLockFile(portname)
+  if (LPID>0):
+    discard kill(LPID,SIGSTOP)
+    stderr.writeLine "Stop PID:",LPID," thad holds a LOCK on the serial port"
+    return true
+  else:
+    return false
+
+# resumes the processes being stopped
+# see the previous function
+proc sendContSignal() {.noconv.} =
+  #discard execProcess( "/bin/fuser", ["-s", "-k", "-CONT", portName], options={ poStdErrToStdOut } )
+  if (LPID)>0:
+    stderr.writeLine "Send a CONT signal to PID:", LPID
+    discard kill(LPID, SIGCONT)
+  
 
 proc openPort(portname: cstring): cint =
-    addQuitProc sendContSignal
-    sendStopSignal()
+    if sendStopSignal($portname):
+      addQuitProc sendContSignal
     result = c_openport(portname)
     if result<0 :
       stderr.writeLine "Cannot open serial port \"", portName, "\" . Error=", result
@@ -445,52 +482,6 @@ proc setAddress(port: cint, address: string) =
   port.drain 10000
 
 
-discard """proc sendHeader(port: ptr SpPort , header:string, timeout: float, encrypt: bool): int =
-  port.drain(2)
-  if header.len != Payload:
-    stderr.writeLine "Internal error, packet is not ", Payload, " bytes long"
-    quit QuitFailure
-  let startPingTime = epochTime()
-  var contact = false
-  var msg: string
-  while epochTime() - startPingTime < timeout:
-    port.write header
-    msg = port.getPacket(100,2)
-    if msg!=nil:
-      contact = true
-      break
-  if not contact:
-    stderr.writeLine("Cannot contact rfboot")
-    quit QuitFailure
-
-  if msg.len != 3:
-    stderr.writeLine "Invalid message from rfboot. len=", msg.len, " msg=\"",msg,"\""
-    for i in msg:
-      stderr.writeLine i.int
-    quit QuitFailure
-
-  let reply = msg[0].int
-  let data = msg[1].int + 256 * msg[2].int
-
-  if reply == RFB_NO_SIGNATURE:
-    stderr.writeLine "rfboot reports wrong signature"
-
-  elif reply == RFB_INVALID_CODE_SIZE:
-    stderr.writeLine "rfboot reports that application size is invalid"
-
-  elif reply == RFB_WRONG_ROUND:
-    stderr.writeLine "rfboot reports the round is wrong. The correct is ", data
-
-  elif reply == RFB_SEND_PKT:
-    stderr.writeLine "Rfboot contacted"
-    return reply #,data
-
-  else:
-    stderr.writeLine "Unknown response ", reply, " data=", data
-
-  quit QuitFailure"""
-
-
 proc actionCreate() =
   const SkelDir = "skel"
   const RfbDir = "rfboot"
@@ -628,10 +619,9 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   let (rfbChannel,rfbAddress,key) = getUploadParams()
   let (newAppChannel, newAppAddress, newResetString) = getAppParams()
   var appChannel: int
-  var appAddress: string
+  var appAddress = "12"
   var resetString: string
-  var round: int
-  appAddress = "12"
+  #var round: int
   try:
     let lastupload = open(".lastupload", fmRead)
     appChannel= lastupload.readline.strip.parseInt
@@ -655,7 +645,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   let port = portname.openPort()
 
   var header = StartSignature.uint32.toString & app.len.uint16.toString &
-    app.crc16.toString & app.crc16_rev.toString & round.uint16.toString &
+    app.crc16.toString & app.crc16_rev.toString & 0.uint16.toString &
     StartSignature.uint32.toString & randomString(16)
 
   var smallHeader = StartSignature.uint32.toString
@@ -731,8 +721,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     stderr.writeLine "Internal error, packet is not ", Payload, " bytes long"
     quit QuitFailure
 
-  
-  
   startPingTime = epochTime()
   while epochTime() - startPingTime < timeout:
     port.write header
@@ -764,7 +752,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     quit QuitFailure
   var pkt_idx = data
   var pkt_idx_prev=pkt_idx
-  
+
   const upload_method = 1
   ################################## METHOD 0 (The old) ##############################
   if upload_method==0:
@@ -847,7 +835,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     stderr.writeLine "Using the new method 1"
     var pkt_idx = app.len
     let applen = app.len.uint16.toString
-    
+
     port.write CommdModeStr & "U" & applen
     #port.drain(5000) # TODO .. better just a delay
     #port.write header # We send the header
@@ -884,11 +872,11 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     var resp:int
     while (resp!='E'.int):
       resp=port.getChar(250000)
-    
+
     stderr.writeLine "All packets sent"
     # end method 1
-    
-    
+
+
 
   #
   # We got success reply
@@ -907,26 +895,33 @@ proc actionMonitor() =
   let (appChannel, appAddress, resetString) = getAppParams()
   discard resetString
   let p = commandLineParams()
-  let portname = getPortName()
-  let fd = portname.openPort()
-  echo "Application SyncWord = ", appAddress.toArray
-  echo "Channel = ", appChannel
+  let portName = getPortName()
+  stderr.writeLine "portname=", portName
+  let fd = portName.openPort()
+  stderr.writeLine "Application SyncWord = ", appAddress.toArray
+  stderr.writeLine "Channel = ", appChannel
   fd.setChannel appChannel
-  sleep 50
+  sleep 20
   fd.setAddress appAddress
-  sleep 50
+  sleep 20
   discard fd.close()
   if p.len >= 2:
-    stderr.writeLine "/bin/fuser -s ", portName
-    let pr = startProcess( command="/bin/fuser", args=["-s", portName], options={poStdErrToStdOut} )
-    let e = waitForExit(pr)
-    if e == 0:
-      stderr.writeLine "Serial port ", portName, " is in use, not executing command"
+    let pid = checkLockFile(portName)
+    if (pid>0):
+      stderr.writeLine "Serial port \"", portName, "\" is in use, not executing command"
     else:
-      stderr.write "executing ", p[1..p.len-1]
+      #echo "TODO"
+      #stderr.writeLine "/bin/fuser -s ", portName
+      #let pr = startProcess( command="/bin/fuser", args=["-s", portName], options={poStdErrToStdOut} )
+      #let e = waitForExit(pr)
+      #if e == 0:
+      #  stderr.writeLine "Serial port ", portName, " is in use, not executing command"
+      #else:
+      #block:
+      stderr.write "Executing : \"" #, p[1..p.len-1]
       for i in p:
         stderr.write i, " "
-      stderr.writeLine("")
+      stderr.writeLine("\"")
       discard startProcess( command=p[1], args=p[2..p.len-1] & portName, options={poStdErrToStdOut,poUsePath} )
 
 

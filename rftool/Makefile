@@ -17,3 +17,7 @@ all:
 # strip -s rftool
 #nim -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
 #strip -s rftool
+
+musl:
+	nim -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
+	
