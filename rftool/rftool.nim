@@ -246,17 +246,6 @@ proc rand(): int =
   randFile.close
 
 
-discard """proc randomAdress(): string =
-  result=""
-  const validChar="0123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
-  const maxRan=(256 div validChar.len)*validChar.len
-  while result.len<5:
-    var r=rand()
-    if r>=maxRan:
-      continue
-    r = r mod validChar.len
-    result.add validChar[r]
-"""
 
 discard """proc randomChannel(): int =
   const channels = 79 # random 0..78 we add 1 -> 1..79

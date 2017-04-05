@@ -51,7 +51,7 @@ xtal: atmega328p
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ rfboot.o xtea.o spi.o cc1101.o
 
 check:
-	@test -s rfb_settings.h || { echo "rfb_settings.h does not exist ! Exiting..."; exit 1; }
+	@test -s rfboot_settings.h || { echo "rfb_settings.h does not exist ! Exiting..."; exit 1; }
 
 clean:
 	rm -rf *.o *.elf *.lst *.map *.sym *.lss *.eep *.srec *.bin *.hex
