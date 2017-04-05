@@ -16,24 +16,29 @@
 // module with a FTDI(or equivalent to FTDI) chip
 // with a unique device : /dev/serial/by-id/ddddddd
 
+#define PAYLOAD 32
+
 #include <CC1101.h>
 CC1101 rf;
 
 // a flag that a wireless packet has been received
-//volatile bool rf.interrupt = false;
+volatile bool interrupt = false;
 
 // Handle interrupt from CC1101 (INT0) gdo0 on pin2
 void cc1101signalsInterrupt(void) {
 	// set the flag that a packet is available
-	rf.interrupt = true;
+	interrupt = true;
 }
-
-#define PAYLOAD 32
 
 
 
 // Seems the AltSoftSerial does better than SoftSerial @ 8MHz
 // anything more than 19200 baud seams unreliable
+// Uses fixed pins
+// D8 RX
+// D9 TX
+// D10 pwm is unusable
+// https://www.pjrc.com/teensy/td_libs_AltSoftSerial.html
 #include <AltSoftSerial.h>
 AltSoftSerial debug_port;
 
@@ -52,27 +57,34 @@ AltSoftSerial debug_port;
 void(* resetFunc) (void) = 0;
 uint32_t silence_timer ;
 
+void drain_serial() {
+	//uint32_t timer=millis();
+	//while (
+	while ( Serial.read()!=-1 ) {};
+
+}
+
 void upload(uint16_t app_idx) {
 	// Upload mode
 	// Offloads some of the work rftool does
 	// to improve latency
 	// These are the status codes rfboot is sending back to the programmer
-	const uint8_t RFB_NO_SIGNATURE = 1;
-	const uint8_t RFB_INVALID_CODE_SIZE = 2;
+	//const uint8_t RFB_NO_SIGNATURE = 1;
+	//const uint8_t RFB_INVALID_CODE_SIZE = 2;
 	//const uint8_t RFB_ROUND_IS = 3; not used anymore
 	const uint8_t RFB_SEND_PKT = 4;
-	const uint8_t RFB_WRONG_CRC=5;
-	const uint8_t RFB_SUCCESS=6;
+	//const uint8_t RFB_WRONG_CRC=5;
+	//const uint8_t RFB_SUCCESS=6;
 
 	uint32_t timer = millis();
 
 	byte outpacket[64];
 	bool rfboot_waiting = true;
-	bool sending_header = true;
+	//bool sending_header = true;
 	bool outpacket_ready = false;
 	//byte avail_packets = 2; // 0-2 arxiki timi 0
-	Serial.write("PP"); // want 2 packets
-	while (app_idx) { // and (millis()-timer<1000) TODO
+	Serial.write("P"); // want 2 packets
+	while (1) { // and (millis()-timer<1000) TODO
 
 		//if (avail_packets>0) {
 		//	Serial.write('S'); // TODO
@@ -90,6 +102,10 @@ void upload(uint16_t app_idx) {
 			Serial.readBytes((char*)outpacket, PAYLOAD);
 			//avail_packets++;
 			Serial.write('P'); // TODO
+			if (debug) {
+				debug_port.print(F("S="));
+				debug_port.println(Serial.available());
+			}
 		}
 
 		if (rfboot_waiting and outpacket_ready) {
@@ -99,112 +115,94 @@ void upload(uint16_t app_idx) {
 			if (debug) {
 				debug_port.print(F("pkt out : idx="));
 				debug_port.println(app_idx);
-				if (sending_header) debug_port.println(F("This was the header"));
+				//if (sending_header) debug_port.println(F("This was the header"));
+			}
+			if (app_idx==PAYLOAD) {
+				Serial.write('E');
+				break;
 			}
 		}
 
-		if (rf.interrupt) {
+		if (interrupt) {
 			byte inpacket[64];
 			byte pkt_size = rf.getPacket(inpacket);
-			rf.interrupt = false;
+			interrupt = false;
 			if (pkt_size==3 and rf.crc_ok) {
-				timer = millis(); // recharge the timer
+				timer = millis(); // reset the timer
 				// we just got a 3 byte packet from rfboot
 				byte cmd = inpacket[0];
-				if (sending_header) {
-					sending_header = false;
-					switch (cmd) {
-						case RFB_NO_SIGNATURE: case RFB_INVALID_CODE_SIZE:
-							Serial.write(cmd);
-							// TODO abort
-							if (debug) {
-								debug_port.print(__LINE__);
-								debug_port.println(F(": no_sign/invalide_size"));
-							}
-							return; // ABORT
-						break;
-
-						case RFB_SEND_PKT:
-							uint16_t i=inpacket[1]+inpacket[2]*256;
-							if (i==app_idx) { // OK this is the outer packet
-								rf.sendPacket(outpacket,PAYLOAD);
-								// we dont decrease app_idx
-								// the packet was the header
-								// and we are going to send the first
-								// packet now
-								if (debug) {
-									debug_port.println(F(": Sending the first app packet"));
-								}
-							}
-							else {
-								if (debug) {
-									debug_port.print(__LINE__);
-									debug_port.print(F(": send_pkt with wrong idx"));
-									debug_port.print(i);
-									debug_port.print(F(". Expected: "));
-									debug_port.println(app_idx);
-								}
-								return; // ABORT
-							}
-						break;
+				
+				//else {
+				if (cmd==RFB_SEND_PKT) {
+					uint16_t i=inpacket[1]+inpacket[2]*256;
+					if (i==app_idx) {
+						// rfboot needs the same packet
+						rf.sendPacket(outpacket,PAYLOAD);
+						rfboot_waiting = false;
+						Serial.write('R'); // inform the resent
+						if (debug) {
+							debug_port.print(__LINE__); debug_port.print(F(": Resend"));
+						}
 					}
-				}
-				else {
-					if (cmd==RFB_SEND_PKT) {
-						uint16_t i=inpacket[1]+inpacket[2]*256;
-						if (i==app_idx) {
-							// rfboot needs the same packet
-							rf.sendPacket(outpacket,PAYLOAD);
-							Serial.write('R'); // inform the resent
-						}
-						else if (i==app_idx-PAYLOAD) { // next packet
-							if (rfboot_waiting) {
-								// TODO should not happen
-								// abort
-								if (debug) {
-									debug_port.print(__LINE__);
-									debug_port.print(F(": Programming Error"));
-									debug_port.print(F("rfboot_waiting=true"));
-								}
-								return; // ABORT
-							}
-							else {
-								rfboot_waiting = true;
-							}
-						}
-						else {
-							if (debug) {
-								debug_port.print(__LINE__);
-								debug_port.print(F(": Protocol error. app_idx="));
-								debug_port.print(i);
-								debug_port.print(F(", bute expected "));
-								debug_port.print(app_idx-PAYLOAD);
-								debug_port.print(F(" or "));
-								debug_port.print(app_idx);
-							}
-							return; // ABORT
-						}
+					else if (i==app_idx-PAYLOAD) { // next packet
+						//if (rfboot_waiting) {
+						//	// TODO should not happen
+						//	// abort
+						//	if (debug) {
+						//		debug_port.print(__LINE__); debug_port.print(F(": Programming Error. "));
+						//		debug_port.print(F("rfboot_waiting=true"));
+						//	}
+						//	return; // ABORT
+						//}
+						//else
+						if (debug) debug_port.println(F("ok next pkt"));
+						rfboot_waiting = true;
+						app_idx = i;
+						outpacket_ready = false;
 					}
 					else {
 						if (debug) {
-
+							debug_port.print(__LINE__);
+							debug_port.print(F(": Protocol error. app_idx="));
+							debug_port.print(i);
+							debug_port.print(F(", but expected "));
+							debug_port.print(app_idx-PAYLOAD);
+							debug_port.print(F(" or "));
+							debug_port.print(app_idx);
 						}
-						
-						// Uncknown cmd
+						drain_serial();
 						return; // ABORT
 					}
 				}
+				else {
+					if (debug) {
+						debug_port.print("app_idx="); debug_port.println(app_idx);
+						debug_port.print(F("ERROR: expected RFB_SEND_PKT"));
+						debug_port.print(F(" .Got "));
+						debug_port.println(cmd);
+					}
+					drain_serial();
+					// Uncknown cmd
+					return; // ABORT
+				}
+				//}
 			}
 		}
 	}
+	if (debug) {
+		debug_port.print("app_idx="); debug_port.println(app_idx);
+		debug_port.print(F("Serial.available()="));
+		debug_port.println(Serial.available());
+		//debug_port.println(cmd);	
+	}
 	// All packets sent
 	// We wait for CRC report and we forward to PC
-	timer = millis();
+	/* timer = millis();
 	while ( millis()-timer < 1200) {
-		if (rf.interrupt) {
+		if (interrupt) {
 			byte inpacket[64];
 			byte pkt_size = rf.getPacket(inpacket);
-			rf.interrupt = false;
+			interrupt = false;
 			if (pkt_size==3 and rf.crc_ok) {
 				// we got a 3 byte packet from rfboot
 				byte cmd = inpacket[0];
@@ -216,7 +214,7 @@ void upload(uint16_t app_idx) {
 				}
 			}
 		}
-	}
+	} */
 }
 
 void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
@@ -310,6 +308,7 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 				}
 				// Perimeno size
 				uint16_t app_idx=cmd[1]+cmd[2]*256;
+				//debug_port.println( Serial.available() );
 				upload(app_idx);
 			}
 			else {
@@ -370,7 +369,7 @@ int main() {
 	rf.setSyncWord(57,232);
 	attachInterrupt(0, cc1101signalsInterrupt, FALLING);
 
-	debug_port.println(F("Usb2rf debug port at 19200 bps"));
+	if (debug) debug_port.println(F("Usb2rf debug port at 19200 bps"));
 
 	uint8_t idx = 0;
 	uint32_t timer = micros();
@@ -378,7 +377,8 @@ int main() {
 	delay(5);
 	Serial.write("USB2RF" );
 
-	bool last_debug = not debug;
+	//bool last_debug = not debug;
+	bool last_debug = false;
 	uint8_t packet[64];
 
 	while (1) {
@@ -427,8 +427,8 @@ int main() {
 						if (succ)  debug_port.write("\r\n");
 						else debug_port.write(" F\r\n");
 					}
-					while (! rf.interrupt);
-					rf.interrupt = false;
+					while (! interrupt);
+					interrupt = false;
 
 
 					if ( debug and (!succ) ) debug_port.println(F("Sending packet failed"));
@@ -458,8 +458,8 @@ int main() {
 
 					succ = rf.sendPacket(packet,idx);
 
-					while (! rf.interrupt);
-					rf.interrupt = false;
+					while (! interrupt);
+					interrupt = false;
 					if ( debug ) {
 						if (succ)  debug_port.write("\r\n");
 						else debug_port.write(" F\r\n");
@@ -470,9 +470,9 @@ int main() {
 			}
 		}
 
-		if (rf.interrupt) {
+		if (interrupt) {
 			byte pkt_size = rf.getPacket(packet);
-			rf.interrupt = false;
+			interrupt = false;
 			//rf.setRxState();
 			if ( pkt_size > 0) {
 				if (not rf.crc_ok) {

@@ -21,7 +21,7 @@ const RFB_WRONG_CRC=5
 const RFB_SUCCESS=6
 
 const ApplicationSettingsFile = "app_settings.h"
-const RfbootSettingsFile = "rfboot/rfb_settings.h"
+const RfbootSettingsFile = "rfboot/rfboot_settings.h"
 const MaxAppSize = 32*1024 - BOOTLOADER_SIZE
 const StartSignature = 0xd20f6cdf # This is expected from rfboot
 const Payload = 32 # The same as rfboot
@@ -730,6 +730,9 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   if header.len != Payload:
     stderr.writeLine "Internal error, packet is not ", Payload, " bytes long"
     quit QuitFailure
+
+  
+  
   startPingTime = epochTime()
   while epochTime() - startPingTime < timeout:
     port.write header
@@ -761,76 +764,132 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     quit QuitFailure
   var pkt_idx = data
   var pkt_idx_prev=pkt_idx
-  while pkt_idx >= PAYLOAD:
-    port.write app[pkt_idx-32..pkt_idx-1]
-    var res: string
-    if (pkt_idx==PAYLOAD):
-      #perimenoume parapano giati mporei na argisei na apantisei logo tou CRC check
-      res = port.getPacket(1200000,3)
-      if res == nil:
-        stderr.writeLine "After sending the last packet got no reply"
-        quit QuitFailure
-      elif res.len != 3:
-        stderr.writeLine "Reply has wrong size : ", res.len
-        quit QuitFailure
-      let reply = res[0].int
-      pkt_idx = res[1].int + res[2].int*256
-      if reply == RFB_SEND_PKT:
-        stderr.writeLine "We resend the last packet"
-      elif reply == RFB_WRONG_CRC:
-        stderr.writeLine "CRC check failed"
-        quit QuitFailure
-      elif reply == RFB_SUCCESS:
-        stderr.writeLine "Success !"
-        stderr.writeLine "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3)
-        break;
+  
+  const upload_method = 1
+  ################################## METHOD 0 (The old) ##############################
+  if upload_method==0:
+    while pkt_idx >= PAYLOAD:
+      port.write app[pkt_idx-32..pkt_idx-1]
+      var res: string
+      if (pkt_idx==PAYLOAD):
+        #perimenoume parapano giati mporei na argisei na apantisei logo tou CRC check
+        res = port.getPacket(1200000,3)
+        if res == nil:
+          stderr.writeLine "After sending the last packet got no reply"
+          quit QuitFailure
+        elif res.len != 3:
+          stderr.writeLine "Reply has wrong size : ", res.len
+          quit QuitFailure
+        let reply = res[0].int
+        pkt_idx = res[1].int + res[2].int*256
+        if reply == RFB_SEND_PKT:
+          stderr.writeLine "We resend the last packet"
+        elif reply == RFB_WRONG_CRC:
+          stderr.writeLine "CRC check failed"
+          quit QuitFailure
+        elif reply == RFB_SUCCESS:
+          stderr.writeLine "Success !"
+          stderr.writeLine "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3)
+          break;
+        else:
+          stderr.writeLine "Unexpected reply code at the end of the upload process :", pkt_idx
+          quit QuitFailure
+        #
+      #
       else:
-        stderr.writeLine "Unexpected reply code at the end of the upload process :", pkt_idx
+        res = port.getPacket(200000,3)
+        if res == nil:
+          stderr.writeLine "Got no reply at pkt_idx : ", pkt_idx
+          quit QuitFailure
+        if res.len != 3:
+          stderr.writeLine "Wrong message length at pkt_idx : ", pkt_idx, "msglen = ", res.len, " ", res
+          quit QuitFailure
+        if res[0].int != RFB_SEND_PKT:
+          stderr.writeLine "Expected RFB_SEND_PKT command : pkt_idx=", pkt_idx , " reply=", res[0].int , " ", res[1].int, " ", res[2].int ##NEW EDIT
+          quit QuitFailure
+        # auto parakamptei to 5088 bug
+        #if res[2].int>=128:
+        #  pkt_idx = res[1].int + (res[2].int-128)*256
+        #else:
+        pkt_idx = res[1].int + res[2].int*256
+        #stderr.writeLine pkt_idx
+      if pkt_idx == pkt_idx_prev:
+        stderr.writeLine "Resend"
+      #elif pkt_idx == 30688:
+      #  stderr.writeLine "Fix the 119 to 19"
+      #  pkt_idx = 5088
+      elif pkt_idx  !=  (pkt_idx_prev - 32) :
+        stderr.writeLine "Protocol error: expected pkt_idx==", pkt_idx_prev - 32, ". Got ", pkt_idx
+        # To fovero 5088 bug !
+        # Protocol error: expected pkt_idx==5088. Got 1248
+        # pairnoume "4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224"
+        # pou vasika einai 10 fores to "4 224"
+        # enw tha prepe na einai "4 224 19"  opou 4 == RFB_SEND_PKT kai "224 19" == 5088
+        # O usb2rf to pairnei !!!
+        # O usb2rf  den to stelnei i to ftdi den to stelnei i to serial sto PC !!
+        # molis emfanistei to bug prepei na exw debug to usb2rf
+        # isws na exei sxesi me ta timings giati meta apo kapoio diastima douleuei xwris kapoia allagi
+        # alla kai pali giati emfanizetai sto idx = 5088 ?
+        #if pkt_idx_prev - 32 == 5088 and pkt_idx == 1248 :
+        #  stderr.writeLine "This is the fovero 5088 bug"
+          #pkt_idx = 5088
+        #else:
+        res = res & port.getPacket(1000000,100)
+        stderr.writeLine res.len
+        for c in res:
+          stderr.write c.int," "
         quit QuitFailure
-    else:
-      res = port.getPacket(200000,3)
-      if res == nil:
-        stderr.writeLine "Got no reply at pkt_idx : ", pkt_idx
+      pkt_idx_prev=pkt_idx
+      ################################# END upload method 0 ##################################
+  elif upload_method == 1:
+    # The method:1 offloads the job to usb2rf module
+    ###### The new method offload the send/receive functions to usb2rf module
+    stderr.writeLine "Using the new method 1"
+    var pkt_idx = app.len
+    let applen = app.len.uint16.toString
+    
+    port.write CommdModeStr & "U" & applen
+    #port.drain(5000) # TODO .. better just a delay
+    #port.write header # We send the header
+    #port.write app[pkt_idx-PAYLOAD..pkt_idx-1] # and 1 more packet in advance
+    #pkt_idx-=PAYLOAD
+    #port.write app[pkt_idx-PAYLOAD..pkt_idx-1] # and 1 more packet in advance
+    #pkt_idx-=PAYLOAD
+    while pkt_idx>0:
+      let resp=port.getChar()
+      if resp == -1:
+        continue
+      elif resp=='P'.int:
+        #stderr.writeLine pkt_idx
+        port.write app[pkt_idx-PAYLOAD..pkt_idx-1]
+        pkt_idx -= PAYLOAD
+      #elif resp==RFB_NO_SIGNATURE:
+      #  stderr.writeLine "rfboot reports the signature is wrong" # TODO
+      #  quit QuitFailure
+      #elif resp==RFB_INVALID_CODE_SIZE:
+      #  stderr.writeLine "rfboot reports the code size is invalid" # TODO
+      #  quit QuitFailure
+      elif resp=='A'.int:
+        discard
+        # TODO
+      elif resp=='R'.int:
+        stderr.writeLine "Resend"
+      else:
+        stderr.writeLine "Got unknown response", resp
         quit QuitFailure
-      if res.len != 3:
-        stderr.writeLine "Wrong message length at pkt_idx : ", pkt_idx, "msglen = ", res.len, " ", res
-        quit QuitFailure
-      if res[0].int != RFB_SEND_PKT:
-        stderr.writeLine "Expected RFB_SEND_PKT command : pkt_idx=", pkt_idx , " reply=", res[0].int , " ", res[1].int, " ", res[2].int ##NEW EDIT
-        quit QuitFailure
-      # auto parakamptei to 5088 bug
-      #if res[2].int>=128:
-      #  pkt_idx = res[1].int + (res[2].int-128)*256
-      #else:
-      pkt_idx = res[1].int + res[2].int*256
-      #stderr.writeLine pkt_idx
-    if pkt_idx == pkt_idx_prev:
-      stderr.writeLine "Resend"
-    #elif pkt_idx == 30688:
-    #  stderr.writeLine "Fix the 119 to 19"
-    #  pkt_idx = 5088
-    elif pkt_idx  !=  (pkt_idx_prev - 32) :
-      stderr.writeLine "Protocol error: expected pkt_idx==", pkt_idx_prev - 32, ". Got ", pkt_idx
-      # To fovero 5088 bug !
-      # Protocol error: expected pkt_idx==5088. Got 1248
-      # pairnoume "4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224"
-      # pou vasika einai 10 fores to "4 224"
-      # enw tha prepe na einai "4 224 19"  opou 4 == RFB_SEND_PKT kai "224 19" == 5088
-      # O usb2rf to pairnei !!!
-      # O usb2rf  den to stelnei i to ftdi den to stelnei i to serial sto PC !!
-      # molis emfanistei to bug prepei na exw debug to usb2rf
-      # isws na exei sxesi me ta timings giati meta apo kapoio diastima douleuei xwris kapoia allagi
-      # alla kai pali giati emfanizetai sto idx = 5088 ?
-      #if pkt_idx_prev - 32 == 5088 and pkt_idx == 1248 :
-      #  stderr.writeLine "This is the fovero 5088 bug"
-        #pkt_idx = 5088
-      #else:
-      res = res & port.getPacket(1000000,100)
-      stderr.writeLine res.len
-      for c in res:
-        stderr.write c.int," "
-      quit QuitFailure
-    pkt_idx_prev=pkt_idx
+      #
+    #
+    #port.drain(3000)
+    # TODO timeout
+    var resp:int
+    while (resp!='E'.int):
+      resp=port.getChar(250000)
+    
+    stderr.writeLine "All packets sent"
+    # end method 1
+    
+    
+
   #
   # We got success reply
   #
