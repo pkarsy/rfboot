@@ -55,7 +55,7 @@ noxtal: atmega328p
 xtal: atmega328p
 	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:0xFF:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
-burn: atmega328p
+isp: atmega328p
 	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:$(LFUSE):m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
 %.elf:

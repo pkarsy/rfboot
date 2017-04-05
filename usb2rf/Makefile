@@ -8,14 +8,10 @@ MONITOR_PORT := $(shell rftool getport)
 
 send: all
 send: portcheck
-	make
 	rftool resetLocal
 	fuser -s -v -k -STOP $(MONITOR_PORT) || true
 	$(MAKE) do_upload
 	fuser -s -v -k -CONT $(MONITOR_PORT) || true
-
-#terminal: portcheck
-#	gtkterm	-p ${MONITOR_PORT} -s 57600
 
 portcheck:
 ifeq ($(MONITOR_PORT),)
