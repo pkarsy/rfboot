@@ -1,17 +1,14 @@
-#NIM := $(shell nim --version 2>/dev/null)
+NIM := $(shell which nim)
 
+ifeq ($(NIM),)
+@$(error No nim compiler found. Install it from https://nim-lang.org )
+endif
 
 all:
-#ifndef NIM
-#	$(shell /bin/echo $(NIM) )
-#	@$(error "No nim compiler found")
-#else
 	rm -f rftool
 	nim c -d:release --opt:size -x:on rftool.nim
-	#nim c rftool.nim
 	strip rftool
 	ls -l rftool
-#endif
 
 # nim -d:release --opt:size --passL:-static --gcc.exe:diet --gcc.linkerexe:diet c rftool
 # strip -s rftool
@@ -20,4 +17,6 @@ all:
 
 musl:
 	nim -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
-	
+	strip rftool
+	ls -l rftool
+

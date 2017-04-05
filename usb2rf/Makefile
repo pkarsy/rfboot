@@ -2,19 +2,27 @@ BOARD_TAG = pro328
 EXTRA_FLAGS = -fshort-enums -g
 include /usr/share/arduino/Arduino.mk
  
-MONITOR_PORT  =  /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A800G6XK-if00-port0
-# MONITOR_PORT  =  /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AJV9MX1R-if00-port0
-# isws
-# cat ~/.usb2rf | grep -v "^#" | sort | tail -n 1
+#MONITOR_PORT  =  /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_YYYYYYYY-if00-port0
+# This is better
+MONITOR_PORT := $(shell rftool getport)
 
 send: all
+send: portcheck
 	make
 	rftool resetLocal
 	fuser -s -v -k -STOP $(MONITOR_PORT) || true
 	$(MAKE) do_upload
 	fuser -s -v -k -CONT $(MONITOR_PORT) || true
 
-terminal:
-	gtkterm	-p ${MONITOR_PORT} -s 57600
+#terminal: portcheck
+#	gtkterm	-p ${MONITOR_PORT} -s 57600
+
+portcheck:
+ifeq ($(MONITOR_PORT),)
+	@$(error No usb2rf device is connected )
+endif
+
+hex: all
+	cp -v build-pro328/usb2rf.hex .
 
 	

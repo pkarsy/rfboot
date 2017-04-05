@@ -355,6 +355,25 @@ int main(void) {
 	// Disable interrupts.
 	cli();
 
+	// Only HW reset allowed
+	#ifdef UPLOAD_AT_HW_RESET_ONLY
+	
+	if ( mcusr_mirror & _BV(EXTRF) ) {
+		// We load rfboot
+	}
+	else {
+		if (pgm_read_word(0) == 0xffff) { // Flash has no application. See explanation below
+			// We can't do anything. We just hang
+			while(1) ;
+		}
+		else { // Reset cause was no HW reset, and flash seems to have application
+			// Jump to the application
+			asm("jmp 0");
+		}
+	}
+	
+	#else // Normal mode, watchdog reset (and any other) loads rfboot
+	
 	// if the first 2 bytes of flash are 0xff, rfboot consider the flash
 	// empty and stays waiting for code indefinitely
 	// I searched the Internet and as I understand it, there is no
@@ -394,6 +413,8 @@ int main(void) {
 		// or to change watchdog settings
 		asm("jmp 0");
 	}
+	#endif
+
 
 	// The bootloader uses interrupts for 2 reasons:
 	// to use CC1101 (GDO0 is interrupt)

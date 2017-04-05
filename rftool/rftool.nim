@@ -29,7 +29,8 @@ const Payload = 32 # The same as rfboot
 const CommdModeStr = "COMMD" # This word, switches the usb2rf module to command mode
 const RandomGen = "/dev/urandom"
 
-#var portName:string # This is global to be used by "fuser" external unix tool
+# This holds the value of Serial terminal process, if one has opened the serial port
+# of the usb2rf module
 var LPID: int
 
 # packs a uint16 in 2 bytes, little endian
@@ -41,8 +42,7 @@ proc toString(u: uint32): string =
   return (u and 0xffff).uint16.toString & (u shr 16).uint16.toString
 
 
-
-# This code is from AVR gcc documentation avr/crc.h FIX TODO
+# This code is from AVR gcc documentation avr/crc.h
 # converted with c2nim, and corrected by hand
 # There seems to be a lot of crc algorithms floating around. However
 # as the other end (rfboot) is going to use this algorithm, (or the equivalent in asm)
@@ -66,7 +66,7 @@ proc crc16(buf: string): uint16 =
 # The same as above but with the reversed string. We use 2 crcs in order to
 # achieve (MUCH) better error detection. I tried to use a crc32 function
 # but then the size of rfboot (on the atmega side) becomes too large
-# EDIT: finally it should be viable to use CRC32 but for protocol
+# EDIT: it seems it should be viable to use CRC32, but for protocol
 # compatibility we leave it as is. It is working OK anyway
 proc crc16_rev(buf: string): uint16 =
   for i,c in buf:
@@ -80,6 +80,7 @@ proc parseKey(keyStr: string): array[4,uint32] =
     quit QuitFailure
   try:
     for i,k in key:
+      # parseBiggestInt is needed for 32bit systems
       let intval = k.replace('u',' ').replace('U',' ').strip().parseBiggestInt
       if intval>=0 and intval<=4294967295:
         result[i]=intval.uint32
@@ -595,6 +596,21 @@ proc actionCreate() =
     f.writeLine "// This key is only used when updating firmware. The application code does not use it"
     #f.writeLine "// Note also that there is no any guarantee that the encryption offers any confidenciality"
     f.writeLine "const uint32_t XTEAKEY[] = ", xteaKey.keyAsArrayC, ";"
+    f.writeLine """
+
+// If uncommented,  does not allow code to be uploaded, unless the reset button is pressed
+// Can be useful if the project has stable firmware but there is need for some
+// rare updades. Also if we do not want updates without physical contact
+//#define UPLOAD_AT_HW_RESET_ONLY
+
+// There may be cases we want the bootloader disabled unless a jumper is connected.
+// Rfboot sets the pin as INPUT with PULLUP enabled. At boot rfboot checks
+// the state of the PIN, and if it is LOW then rfboot enables the RF and waits for code
+// Not implemented yet
+// only 1 is accepted as true
+//#define ENABLE_AT_LOW_PIN_ONLY
+//#define ENABLE_PIN B,0
+"""
     f.close
   block:
     #echo "Project Name = ", projectName
@@ -922,6 +938,8 @@ proc actionResetLocal() =
   # string=" & CommdModeStr & "R"
   fd.write CommdModeStr & "R"
 
+proc actionGetPort() =
+  echo getPortName()
 
 # implements command line parsing and returns all the parameters in a tuple
 proc main() =
@@ -931,6 +949,7 @@ proc main() =
     stderr.writeLine "        rftool upload|send SomeFirmware.bin"
     stderr.writeLine "        rftool monitor term_emulator_cmd arg arg -p"
     stderr.writeLine "        rftool resetlocal"
+    stderr.writeLine "        rftool getport"
     quit QuitFailure
   let action = p[0].strip.normalize # mikra xoris _
   case action
@@ -949,6 +968,8 @@ proc main() =
     actionMonitor()
   of "resetlocal":
     actionResetLocal()
+  of "getport":
+    actionGetPort()
   else:
     stderr.writeLine "Unknown command \"", action,"\""
     quit QuitFailure

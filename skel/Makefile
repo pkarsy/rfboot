@@ -26,12 +26,10 @@ send:
 
 	rftool upload $(OBJDIR)/$(TARGET).bin
 
-terminal: check
+terminal:
 	@# rftool will append the actual serial port after "-p"
 	rftool monitor gtkterm -s 57600 -p
 
-usbasp:
-	make -C rfboot usbasp
+isp:
+	make -C rfboot isp
 
-usbtiny:
-	make -C rfboot usbtiny
