@@ -1,7 +1,7 @@
 NIM := $(shell which nim)
 
 ifeq ($(NIM),)
-@$(error No nim compiler found. Install it from https://nim-lang.org )
+@$(error No "nim" compiler found. Install it from https://nim-lang.org )
 endif
 
 all:
