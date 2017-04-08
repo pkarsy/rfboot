@@ -8,7 +8,7 @@ Also included
 - A powerful utility (rftool) to easily create new projects using rfboot as bootloader
 - An Arduino library for CC1101 (panStamp based)
 
-A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying workflow, by allowing the program to be uploaded via this RF link. The emphasis is on reliability, security and usability
+A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying workflow, by allowing the program to be uploaded via this RF link. The emphasis is on reliability, security and usability.
 
 - [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Rfboot-in-Action) A good starting point. And gives us an idea of what tools we need to use rfboot. **VIDEOS NOT READY YET**
 
