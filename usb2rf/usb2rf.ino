@@ -48,7 +48,7 @@ AltSoftSerial debug_port;
 // https://github.com/NicksonYap/digitalWriteFast
 #include <digitalWriteFast.h>
 
-#define RESET_TRIGGER 3
+#define RESET_TRIGGER_PIN 3
 
 #define DEBUG_PIN 4
 
@@ -69,30 +69,17 @@ void upload(uint16_t app_idx) {
 	// Offloads some of the work rftool does
 	// to improve latency
 	// These are the status codes rfboot is sending back to the programmer
-	//const uint8_t RFB_NO_SIGNATURE = 1;
-	//const uint8_t RFB_INVALID_CODE_SIZE = 2;
-	//const uint8_t RFB_ROUND_IS = 3; not used anymore
 	const uint8_t RFB_SEND_PKT = 4;
-	//const uint8_t RFB_WRONG_CRC=5;
-	//const uint8_t RFB_SUCCESS=6;
-
 	uint32_t timer = millis();
 
 	byte outpacket[64];
 	bool rfboot_waiting = true;
-	//bool sending_header = true;
 	bool outpacket_ready = false;
-	//byte avail_packets = 2; // 0-2 arxiki timi 0
 	Serial.write("P"); // want 2 packets
 	while (1) { // and (millis()-timer<1000) TODO
 
-		//if (avail_packets>0) {
-		//	Serial.write('S'); // TODO
-		//	avail_packets--;
-		//}	
 
-		if (millis()-timer>250) {
-			// TODO timeout abort
+		if (millis()-timer>100) {
 			if (debug) debug_port.print(F("upload: Timeout"));
 			return;
 		}
@@ -100,7 +87,6 @@ void upload(uint16_t app_idx) {
 		if ( (not outpacket_ready) and (Serial.available()>=PAYLOAD) ) {
 			outpacket_ready = true;
 			Serial.readBytes((char*)outpacket, PAYLOAD);
-			//avail_packets++;
 			Serial.write('P'); // TODO
 			if (debug) {
 				debug_port.print(F("S="));
@@ -111,6 +97,7 @@ void upload(uint16_t app_idx) {
 		if (rfboot_waiting and outpacket_ready) {
 			rf.sendPacket(outpacket,PAYLOAD);
 			// outpacket is not market as ready yet
+			// it will when rfboot asks for next packet
 			rfboot_waiting=false;
 			if (debug) {
 				debug_port.print(F("pkt out : idx="));
@@ -141,7 +128,7 @@ void upload(uint16_t app_idx) {
 						rfboot_waiting = false;
 						Serial.write('R'); // inform the resent
 						if (debug) {
-							debug_port.print(__LINE__); debug_port.print(F(": Resend"));
+							debug_port.print(F(": Resend"));
 						}
 					}
 					else if (i==app_idx-PAYLOAD) { // next packet
@@ -291,8 +278,8 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 					}
 					rf.setSyncWord(0,0);
 
-					digitalWriteFast(RESET_TRIGGER,LOW);
-					pinModeFast(RESET_TRIGGER, OUTPUT); // reset the module because D4 is connected with RESET pin. See circuit diagram
+					digitalWriteFast(RESET_TRIGGER_PIN,LOW);
+					pinModeFast(RESET_TRIGGER_PIN, OUTPUT); // reset the module because D4 is connected with RESET pin. See circuit diagram
 					// the following command will be executed only if the module fails to reset
 					debug_port.println(F("Usb2rf module failed to reset"));
 				}

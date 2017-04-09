@@ -176,13 +176,16 @@ proc getKnownPorts() : seq[string] =
     f = homeconfig.expandTilde.open
   except IOError:
     stderr.writeLine "failed to open file \"", homeconfig, "\""
-    return
+    #return
+    quit QuitFailure
   while true:
     var s: string
     try:
       s = f.readLine.strip
     except IOError:
-      break
+      #break
+      f.close
+      return
     if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!"):
       discard
     elif not s.startsWith("/dev/"):
@@ -221,7 +224,8 @@ proc getPortName() : string =
       #stderr.writeLine(""
       discard
     elif not ( fileExists(s) or symlinkExists(s) ):
-      stderr.writeLine "Device ",s," is not connected"
+      #stderr.writeLine "Device ",s," is not connected"
+      discard
     else:
       hwID = s
       break
@@ -459,10 +463,6 @@ proc getApp(fn : string): string =
     stderr.writeLine "The binary of the application cannot start with 0xffff"
     stderr.writeLine "This file cannot be an AVR binary(opcodes) file"
     quit QuitFailure
-  block:
-    let modulo = app.len mod Payload
-    if modulo != 0:
-      app.add '\xff'.repeat(Payload-modulo)
   return app
 
 
@@ -651,6 +651,27 @@ proc actionCreate() =
 
 
 proc actionUpload(binaryFileName: string, timeout=10.0) =
+  var lastbinarysize:Off
+  block:
+    var s:Stat
+    var statres = stat(".lastbinary", s)
+    if statres==0:
+      lastbinarysize = s.st_size
+      #echo "lastbinary size = ", s.st_size
+  var app = getApp(binaryFileName)
+  if app.len == lastbinarysize:
+    let lastapp = open(".lastbinary").readAll
+    #echo lastapp.len
+    if app == lastapp:
+      echo "The new firmware is identical to the last one. No need for upload"
+      quit QuitSuccess
+
+  # Pad the app with 0xFF to multiple of Payload
+  block:
+    let modulo = app.len mod Payload
+    if modulo != 0:
+      app.add '\xff'.repeat(Payload-modulo)
+
   let (rfbChannel,rfbAddress,key) = getUploadParams()
   let (newAppChannel, newAppAddress, newResetString) = getAppParams()
   var appChannel: int
@@ -675,7 +696,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       stderr.writeLine "WARNING : appAddress changed to ", newAppAddress.toArray, ". Using the old ", appAddress.toArray, " to send the reset signal"
     if newResetString != resetString:
       stderr.writeLine "WARNING : resetString changed to ", newResetString, ". Using the old ", resetString, " to send the reset signal"
-  var app = getApp(binaryFileName)
   let portname = getPortName()
   let port = portname.openPort()
 
@@ -919,6 +939,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   f.close()
   port.setChannel newAppChannel
   port.setAddress newAppAddress
+  copyFile(binaryFileName, ".lastbinary")
 
 
 proc actionMonitor() =

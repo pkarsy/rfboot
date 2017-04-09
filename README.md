@@ -24,4 +24,4 @@ A lot of electronic projects need to communicate with other components via an RF
 
 - [Encryption](https://github.com/pkarsy/rfboot/wiki/Encryption) Discuses how the firmware is encrypted over the air, and why this is useful
 
-- [Notes about the License](https://github.com/pkarsy/rfboot/wiki/Notes-about-the-License) This is a very important topic, but I Am Not A Lawyer. If you see some mistakes, pls inform me.
+- [Notes about the License](https://github.com/pkarsy/rfboot/wiki/Notes-about-the-License)
