@@ -5,12 +5,16 @@ I hope in a few days (say until 10 April 2017) the code, help pages, etc will be
 
 Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip.
 Also included
-- A powerful utility (rftool) to easily create new projects using rfboot as bootloader
+- A powerful utility (rftool) to easily create new projects using rfboot as bootloader.
+The same utility also sets RF channels etc. and uploads the code. 
 - An Arduino library for CC1101 (panStamp based)
+- Instructions to build a usb2rf module, wich allows us to upload code to the targe and
+-**equally important**- to use a Serial Terminal (ie gtkterm) to send and receive text just
+like Serial.print() and Serial.read()
 
 A lot of electronic projects need to communicate with other components via an RF module. This project aims at speeding up and simplifying workflow, by allowing the program to be uploaded via this RF link. The emphasis is on reliability, security and usability.
 
-- [Rfboot in Action](https://github.com/pkarsy/rfboot/wiki/Rfboot-in-Action) A good starting point. And gives us an idea of what tools we need to use rfboot. **VIDEOS NOT READY YET**
+- [Uploading code with rfboot](https://github.com/pkarsy/rfboot/wiki/Rfboot-in-Action) A demostration of what rfboot can do. **VIDEOS NOT READY YET**
 
 - [Installation](https://github.com/pkarsy/rfboot/wiki/Installation) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straightforward as possible.
 

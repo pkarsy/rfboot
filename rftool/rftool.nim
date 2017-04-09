@@ -28,8 +28,9 @@ const StartSignature = 0xd20f6cdf # This is expected from rfboot
 const Payload = 32 # The same as rfboot
 const CommdModeStr = "COMMD" # This word, switches the usb2rf module to command mode
 const RandomGen = "/dev/urandom"
+const homeconfig = "~/.usb2rf"
 
-# This holds the value of Serial terminal process, if one has opened the serial port
+# This holds the PID of Serial Terminal software, if one has opened the serial port
 # of the usb2rf module
 var LPID: int
 
@@ -153,11 +154,13 @@ proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] )
     pkt[7]=char(x1)
     result.add pkt
 
+proc getKnownPorts() : seq[string] =
+  discard
 
 proc getPortName() : string =
   var hwID: string
   var f: File
-  let homeconfig = "~/.usb2rf"
+  
   try:
     f = homeconfig.expandTilde.open
   except IOError:
@@ -941,15 +944,40 @@ proc actionResetLocal() =
 proc actionGetPort() =
   echo getPortName()
 
+proc actionAddPort() =
+  discard
+  stderr.writeLine "Waiting for a new module to be inserted to a USB port"
+  #var portList:seq[string]
+  var portListOld = newSeq[string](len=0)
+  var portList = newSeq[string](len=0)
+
+  for t in 0..59: # 60 sec
+    for e in walkDir("/dev/serial/by-id"):
+      if e.kind == pcLinkToFile:
+        if e.path in portListOld or t==0:
+          portList.add(e.path)
+        else:
+          stderr.writeLine "found:", e.path
+          return
+    echo portList
+    portListOld = portList
+    portList = @[]
+    sleep(1000)
+      
+
 # implements command line parsing and returns all the parameters in a tuple
 proc main() =
   let p = commandLineParams() # nim's standard library function
   if p.len == 0:
+    stderr.writeLine ""
+    stderr.writeLine "rftool: rfboot utility"
+    stderr.writeLine ""
     stderr.writeLine "Usage : rftool create ProjectName"
     stderr.writeLine "        rftool upload|send SomeFirmware.bin"
-    stderr.writeLine "        rftool monitor term_emulator_cmd arg arg -p"
+    stderr.writeLine "        rftool monitor term_emulator_cmd arg arg -p #opens a serial terminal with the correct parameters"
     stderr.writeLine "        rftool resetlocal"
     stderr.writeLine "        rftool getport"
+    stderr.writeLine "        rftool addport # Adds usb2rf module to ~/.usb2rf file"
     quit QuitFailure
   let action = p[0].strip.normalize # mikra xoris _
   case action
@@ -970,6 +998,8 @@ proc main() =
     actionResetLocal()
   of "getport":
     actionGetPort()
+  of "addport":
+    actionAddPort()
   else:
     stderr.writeLine "Unknown command \"", action,"\""
     quit QuitFailure
