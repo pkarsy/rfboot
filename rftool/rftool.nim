@@ -1,3 +1,10 @@
+#
+# (C) Panagiotis Karagiannis 
+# This file is part of rfboot
+# https://github.com/pkarsy/rfboot
+# Licence GPLv3
+#
+
 import strutils
 import os
 import osproc
@@ -29,6 +36,7 @@ const Payload = 32 # The same as rfboot
 const CommdModeStr = "COMMD" # This word, switches the usb2rf module to command mode
 const RandomGen = "/dev/urandom"
 const homeconfig = "~/.usb2rf"
+const serialPortDir = "/dev/serial/by-id"
 
 # This holds the PID of Serial Terminal software, if one has opened the serial port
 # of the usb2rf module
@@ -155,7 +163,40 @@ proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] )
     result.add pkt
 
 proc getKnownPorts() : seq[string] =
-  discard
+  result = @[]
+  if not homeconfig.expandTilde.existsFile:
+    stderr.writeLine "failed to open file \"", homeconfig, "\", creating an empty one."
+    #" rftool uses it to get the serial port device name."
+    var f = homeconfig.expandTilde.open(mode=fmWrite)
+    f.writeLine "# serial ports that rftool regards as usb2rf modules"
+    f.close
+    return
+  var f: File
+  try:
+    f = homeconfig.expandTilde.open
+  except IOError:
+    stderr.writeLine "failed to open file \"", homeconfig, "\""
+    return
+  while true:
+    var s: string
+    try:
+      s = f.readLine.strip
+    except IOError:
+      break
+    if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!"):
+      discard
+    elif not s.startsWith("/dev/"):
+      discard
+    else:
+      result.add(s)
+
+
+proc getConnectedPorts() : seq[string] =
+  result = @[]
+  for e in walkDir(serialPortDir):
+    if e.kind == pcLinkToFile:
+      result.add(e.path)
+
 
 proc getPortName() : string =
   var hwID: string
@@ -225,6 +266,7 @@ proc sendStopSignal(portname:string): bool =
   else:
     return false
 
+
 # resumes the processes being stopped
 # see the previous function
 proc sendContSignal() {.noconv.} =
@@ -266,7 +308,6 @@ proc randomUint32(): uint32 =
   let randFile = open(RandomGen)
   discard readBuffer(randFile,addr result,4)
   randFile.close
-
 
 
 proc randomXteaKey(): array[4,uint32] =
@@ -432,17 +473,6 @@ proc write( port: cint, data: string) =
     writeser(port, addr buf, 1)
 
 
-discard """
-proc getChar(port: cint, timeout: cuint = 100): int =
-  var c: char
-  let status = port.spBlockingRead(addr c,1,timeout)
-  if status.int < 0:
-    stderr.writeLine "Erron : ", status, " while reading serial port"
-    quit QuitFailure
-  elif status.int==0: return -1
-  else: return c.int
-  """
-
 proc getChar(port: cint, timeout: cint = 100000): int =
   let n = c_getchar(port, timeout)
   return n
@@ -479,7 +509,6 @@ proc actionCreate() =
   const SkelDir = "skel"
   const RfbDir = "rfboot"
   let fileSource = splitPath(splitPath(getAppFilename())[0])[0] & DirSep
-  #randFile = open("/dev/urandom")
   for d in [RfbDir, SkelDir]:
     if not existsDir(fileSource & d):
       stderr.writeLine "The root folder of rfboot \"", fileSource, "\" does not contain the \"", d ,"\" folder"
@@ -569,7 +598,6 @@ proc actionCreate() =
   for f in walkDirs("build-*"):
     removeDir(f)
   copyDir(fileSource & RfbDir, RfbDir)
-
   block:
     let f = open(ApplicationSettingsFile, fmWrite)
     f.writeLine "// This file :"
@@ -599,8 +627,7 @@ proc actionCreate() =
     f.writeLine "// This key is only used when updating firmware. The application code does not use it"
     #f.writeLine "// Note also that there is no any guarantee that the encryption offers any confidenciality"
     f.writeLine "const uint32_t XTEAKEY[] = ", xteaKey.keyAsArrayC, ";"
-    f.writeLine """
-
+    discard """
 // If uncommented,  does not allow code to be uploaded, unless the reset button is pressed
 // Can be useful if the project has stable firmware but there is need for some
 // rare updades. Also if we do not want updates without physical contact
@@ -873,8 +900,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       else:
         stderr.writeLine "Got unknown response", resp
         quit QuitFailure
-      #
-    #
     #port.drain(3000)
     # TODO timeout
     var resp:int
@@ -882,10 +907,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       resp=port.getChar(250000)
 
     stderr.writeLine "All packets sent"
-    # end method 1
-
-
-
+    ############# end method 1 #################
   #
   # We got success reply
   #
@@ -947,22 +969,36 @@ proc actionGetPort() =
 proc actionAddPort() =
   discard
   stderr.writeLine "Waiting for a new module to be inserted to a USB port"
-  #var portList:seq[string]
-  var portListOld = newSeq[string](len=0)
-  var portList = newSeq[string](len=0)
+  #let knownPorts = getKnownPorts()
+  var port:string
 
-  for t in 0..59: # 60 sec
-    for e in walkDir("/dev/serial/by-id"):
-      if e.kind == pcLinkToFile:
-        if e.path in portListOld or t==0:
-          portList.add(e.path)
-        else:
-          stderr.writeLine "found:", e.path
-          return
-    echo portList
-    portListOld = portList
-    portList = @[]
-    sleep(1000)
+  block GetNewPort:
+    var connectedPorts = getConnectedPorts()
+    for t in 1..60: # 60 sec
+      var oldConnectedPorts = connectedPorts
+      connectedPorts=getConnectedPorts()
+      if connectedPorts.len>oldConnectedPorts.len:
+        for p in connectedPorts:
+          if not (port in oldConnectedPorts):
+            
+            port = p
+            break GetNewPort
+      sleep(1000)
+    stderr.writeLine "Timeour"
+    quit QuitFailure
+
+  if port in getKnownPorts():
+    stderr.writeLine "The port is already in ", homeconfig
+  else:
+    stderr.writeLine "Adding port : ", port
+    let f=homeconfig.expandtilde.open(mode=fmAppend)
+    f.writeLine ""
+    f.writeLine "# port added with \"rftool addport\""
+    f.writeLine port
+    f.close
+
+
+  
       
 
 # implements command line parsing and returns all the parameters in a tuple
@@ -972,7 +1008,7 @@ proc main() =
     stderr.writeLine ""
     stderr.writeLine "rftool: rfboot utility"
     stderr.writeLine ""
-    stderr.writeLine "Usage : rftool create ProjectName"
+    stderr.writeLine "Usage : rftool create ProjectName # Creates a new Arduino based project"
     stderr.writeLine "        rftool upload|send SomeFirmware.bin"
     stderr.writeLine "        rftool monitor term_emulator_cmd arg arg -p #opens a serial terminal with the correct parameters"
     stderr.writeLine "        rftool resetlocal"
