@@ -8,7 +8,7 @@ Also included
 - A powerful utility (rftool) to easily create new projects using rfboot as bootloader.
 The same utility also sets RF channels etc. and uploads the code. 
 - An Arduino library for CC1101 (panStamp based)
-- Instructions to build a usb2rf module, wich allows us to upload code to the targe and
+- Instructions to build a usb2rf module, wich allows us to upload code to the target and
 -**equally important**- to use a Serial Terminal (ie gtkterm) to send and receive text just
 like Serial.print() and Serial.read()
 
