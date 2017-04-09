@@ -1,3 +1,5 @@
+### Reliability
+
 In the following section lets imagine a electronic project wich is problematic
 to attach wires such as a **weathering station on the roof** a **quadcopter**
 or a **model boat on a pool**. We use the cc1101 chip
