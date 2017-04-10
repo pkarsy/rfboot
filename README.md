@@ -16,7 +16,7 @@ A lot of electronic projects need to communicate with other components via an RF
 
 - [Uploading code with rfboot](https://github.com/pkarsy/rfboot/wiki/Rfboot-in-Action) A demostration of what rfboot can do. **VIDEOS NOT READY YET**
 
-- [Installation](https://github.com/pkarsy/rfboot/wiki/Installation) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straightforward as possible.
+- [Installation](help/Installation.md) A bootloader, and especially a wireless one, is a relatively complex topic. In this section instructions are given to make the process as straightforward as possible.
 
 - [The first project](https://github.com/pkarsy/rfboot/wiki/Fist-Project) Instructions to succesfully complete your first Arduino project using a ProMini 3.3V as target, and rfboot as bootloader. **NOT READY YET**
 
