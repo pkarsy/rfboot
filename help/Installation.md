@@ -2,54 +2,43 @@
 In order to use rfboot succesfully there are quite a few steps initially but after that
 the process is simple.
 You need to:
-- [Install the apropriate software and tools in your PC](https://github.com/pkarsy/rfboot/wiki/Installation#software)
+- Install the apropriate software
+- Download and install rfboot from github
 - Build the usb2rf module (Connects to a USB port of the PC) 
 - Build your target module(your project) with rfboot as bootloader
 
 ***
 
-# Software
-
-### Operating System
+### Install the apropriate software
 First of all a linux PC is needed, for the development. I don't use Windows neither MAC
 and is very difficult for me to support another platform. You can use VirtualBox if
 you really need to use rfboot from Windows or Mac. 
 I tried with Virtualbox (a Linux Mint 17.3 image) and it is working perfectly.
-
-See [Working from Virtualbox](https://github) NOT READY
-
 Of course if you are unfamiliar
 with linux and especially the command line the problem remains.
 
-### Software setup
 I did all development on a Linux Mint 17 box. Probably you need to adapt the procedure for your
 environment.
 
-sudo apt-get update ; sudo apt-get upgrade **# this is recommended before start**
+```
+> sudo apt-get update ; sudo apt-get upgrade **# this is recommended before start**
 
 > sudo apt-get install arduino-core arduino-mk   # Also installs avr compiler and avr-libc
 
 > sudo apt-get install geany # A programmers editor. You can use another if you like.
-
-### The instructions and videos in this site is for geany
+  The instructions use geany as text editor
 
 > sudo apt-get install git # To easily download rfboot.
+```
 
-### You can skip this if you use the 'Download ZIP' button
-of github
-
-download the rfboot repository in your PC. Place it in some relatively safe place in your PC like ~/programming/rfboot
+download the rfboot repository in your PC. Place it in some relatively safe place in your
+PC like ~/programming/rfboot
 The "rftool" utility needs to be in the PATH.
+```
 > cd ~/bin # if the ~/bin does not exist "mkdir ~/bin" and then logout and login again
 > chmod +x ~/programming/rfboot/rftool/rftool
-> ln -s ~/programming/rfboot/rftool/rftool # if you have a 64bit linux
-
-or
-
-> chmod +x ~/programming/rfboot/rftool/rftool32
-
-> ln -s ~/programming/rfboot/rftool/rftool32 rftool # if you have a 32bit linux
-
+> ln -s ~/programming/rfboot/rftool/rftool
+```
 ***
 
 # usb2rf module
