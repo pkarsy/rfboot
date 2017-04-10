@@ -4,8 +4,9 @@ the process is simple.
 You need to:
 - Install the apropriate software
 - Download and install rfboot from github
-- Build the usb2rf module (Connects to a USB port of the PC) 
-- Build your target module(your project) with rfboot as bootloader
+- Build the usb2rf module (Connects to a USB port of the PC)
+- Configure rftool to use the usb2rf module
+- Build your project with rfboot as bootloader
 
 ***
 
@@ -21,18 +22,24 @@ I did all development on a Linux Mint 17 box. Probably you need to adapt the pro
 environment.
 
 ```
-> sudo apt-get update ; sudo apt-get upgrade **# this is recommended before start**
+> sudo apt-get update ; sudo apt-get upgrade # this is recommended before start
 
-> sudo apt-get install arduino-core arduino-mk   # Also installs avr compiler and avr-libc
+> sudo apt-get install arduino-core arduino-mk   # This also installs avr compiler and avr-libc
 
 > sudo apt-get install geany # A programmers editor. You can use another if you like.
-  The instructions use geany as text editor
+                             # The instructions use geany as text editor
 
 > sudo apt-get install git # To easily download rfboot.
 ```
 
-download the rfboot repository in your PC. Place it in some relatively safe place in your
-PC like ~/programming/rfboot
+Download the rfboot repository in your PC. Place it in some relatively safe place in your
+PC like ~/programming/
+
+```
+mkdir ~/programming
+cd ~/programming
+git clone https://github.com/pkarsy/rfboot.git
+```
 The "rftool" utility needs to be in the PATH.
 ```
 > cd ~/bin # if the ~/bin does not exist "mkdir ~/bin" and then logout and login again
