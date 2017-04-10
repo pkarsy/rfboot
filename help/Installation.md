@@ -52,7 +52,7 @@ The "rftool" utility needs to be in the PATH.
 
 To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 module and some jumper wires.
 More information on 
-### [usb2rf module](https://github.com/pkarsy/rfboot/wiki/Building-the-usb2rf-module)
+### [usb2rf module](Building-the-usb2rf-module.md)
 
 ***
 
