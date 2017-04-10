@@ -1,3 +1,4 @@
+## Installation
 
 In order to use rfboot succesfully there are quite a few steps initially but after that
 the process is simple.
@@ -48,7 +49,7 @@ The "rftool" utility needs to be in the PATH.
 ```
 ***
 
-# usb2rf module
+### usb2rf module
 
 To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 module and some jumper wires.
 More information on 
@@ -56,7 +57,7 @@ More information on
 
 ***
 
-# Target (your electronics project)
+### Target (your electronics project)
 
 ### atmega328 MCU
 This  includes a bare atmega328 with some caps etc. It also includes
