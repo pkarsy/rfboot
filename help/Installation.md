@@ -50,9 +50,28 @@ The "rftool" utility needs to be in the PATH.
 ```
 Now if you type
 ```
-rftool
+> rftool
 ```
-Should give you a small usage message Software installation is done !
+Should give you a small usage message. Linux by default does not give permission to
+access the Serial ports, neither the ISP programmers
+- Serial port
+```
+> sudo adduser myusername dialout
+```
+You need to logout and login again for the changes to take effect
+- ISP programmer
+```
+# USBasp
+# Become root
+> sudo -i
+root> echo 'ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"' >> /etc/udev/rules.d/52-my.rules
+# USBtiny
+TODO
+```
+A logout is not enough. Although can be done on command line, is easier to just reboot
+you machine for the changes to take effect
+
+***Software installation is done !***
 
 ***
 
