@@ -60,17 +60,17 @@ access the Serial ports, neither the ISP programmers
 ```
 You need to logout and login again for the changes to take effect
 - ISP programmer
-```
 For USBasp
+```
 > sudo nano /etc/udev/rules.d/52-my.rules
 ```
 add the line
-***ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"***
+```ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"```
 
-and save
-For USBtiny add the line\n
-***ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="0666"***
-```
+and save.
+
+For USBtiny add the line
+```ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="0666"```
 A logout is not enough. Although can be done on command line, is easier to just reboot
 you machine for the changes to take effect
 
