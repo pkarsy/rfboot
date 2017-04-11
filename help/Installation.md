@@ -5,7 +5,7 @@ the process is simple.
 You need to:
 - Install the apropriate software in the PC
 - Download and install rfboot from github
-- Build the usb2rf module (Connects to a USB port of the PC)
+- Assemble and configure the usb2rf module (Connects to a USB port of the PC)
 - Configure rftool to use the usb2rf module
 - Burn the apropriate firmware usb2rf needs (An Arduino sketch)
 
@@ -48,6 +48,12 @@ The "rftool" utility needs to be in the PATH.
 > chmod +x ~/programming/rfboot/rftool/rftool
 > ln -s ~/programming/rfboot/rftool/rftool
 ```
+Now if you type
+```
+rftool
+```
+Should give you a small usage message Software installation is done !
+
 ***
 
 ### usb2rf module
