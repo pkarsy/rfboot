@@ -18,7 +18,7 @@ Probably this is a duplicate of the above
 - If you want to use rfboot to upload a proprietary/closed source application,
 it should be OK, and i fact I will be happy if rfboot helps you in your job.
 This is because the application (no matter if it is AVR assembler or Arduino sketch) and the bootloader
-use different source codes. 
+use different source code trees. 
 
 It should be obvious but to be really sure: channel, syncword, XTEA key are just numbers.
 They are not modifications to the code, and you don't publish them
