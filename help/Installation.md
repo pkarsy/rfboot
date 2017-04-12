@@ -97,6 +97,8 @@ More information on
 
 Serial connection.
 The FTDI module is configured for 3.3V output.
+
+
 FTDI | Pro Mini
 ---- | --------
 GND  | GND
@@ -105,6 +107,8 @@ VCC  | xxx
 TX   | xxx
 RX   | xxx
 DTR NC | GRN NC
+
+
 
 
 RF Module PIN | Cable COLOR | Arduino pin
