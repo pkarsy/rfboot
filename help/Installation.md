@@ -29,9 +29,9 @@ for your environment.
 > sudo apt-get install arduino-core arduino-mk   # This also installs avr compiler and avr-libc
 
 > sudo apt-get install geany # A programmers editor. You can use another if you like.
-                             # The instructions use geany as text editor
+                             # The instructions here, use geany as text editor
 
-> sudo apt-get install git # To easily download rfboot.
+> sudo apt-get install git   # To easily download rfboot.
 ```
 
 Download the rfboot repository in your PC. Place it in some relatively safe place in your
@@ -52,8 +52,11 @@ Now if you type
 ```
 > rftool
 ```
-Should give you a small usage message. Linux by default does not give permission to
-access the Serial ports, neither the ISP programmers
+Should give you a small usage message. This means rftool is in the PATH.
+
+Linux by default does not give permission (to regular users) to
+access the Serial ports, neither the ISP programmers. To fix it:
+
 - Serial port
 ```
 > sudo adduser myusername dialout
@@ -64,14 +67,15 @@ You need to logout and login again for the changes to take effect.
 ```
 > sudo nano /etc/udev/rules.d/52-my.rules
 ```
-For USBasp add the line
+Add the lines
 ```
+# USBasp
 ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"
-```
-For USBtiny add the line
-```
+
+#USBtiny
 ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="0666"
 ```
+
 In the command line
 ```
 > sudo service udev restart
