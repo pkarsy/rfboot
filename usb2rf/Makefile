@@ -21,7 +21,7 @@ endif
 hex: all
 	cp -v build-pro328/usb2rf.hex .
 
-precompiledHex:
+sendHEX:
 	rftool resetLocal
 	avrdude -q -V -D -p atmega328p -c arduino -b 57600 -P $(MONITOR_PORT) -U flash:w:usb2rf.hex:i
 	

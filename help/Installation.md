@@ -137,3 +137,14 @@ when we insert the usb2rf module, rftool detects it and saves the Serial port de
 to ~/.usb2rf file. You can have more than one usb2rf devices.
 
 ### Burn the apropriate firmware to usb2rf
+To send the precompiled .hex
+```
+> cd usb2rf
+> make sendHex
+```
+You need to press proMini reset button as autoreset does not work.
+Or you can build the sketch by yourself
+
+Hardware and software setup is done ! Continue with
+[The First Project](The-First-Project.md)
+
