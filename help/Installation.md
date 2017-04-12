@@ -100,7 +100,7 @@ To build the usb2rf module you need
 ```
 
 Here is a photo of the materials we need
-![usb2rf1](help/files/usb2rf1.jpg)
+![usb2rf1](files/usb2rf1.jpg)
 
 ***Serial connection.***
 The FTDI module is configured for 3.3V output.
