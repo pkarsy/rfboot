@@ -100,10 +100,10 @@ The FTDI module is configured for 3.3V output.
 FTDI | Pro Mini
 ---- | --------
 GND  | GND
-CTS  |
-VCC  |
-TX   |
-RX   |
+CTS  | xxx
+VCC  | xxx
+TX   | xxx
+RX   | xxx
 DTR NC | GRN NC
 
 
