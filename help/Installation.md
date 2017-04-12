@@ -73,7 +73,7 @@ Add the lines
 ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"
 
 #USBtiny
-ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="0666"
+ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="666"
 ```
 
 In the command line
@@ -158,13 +158,13 @@ when we insert the usb2rf module, rftool detects it and saves the Serial port de
 to ~/.usb2rf file. You can have more than one usb2rf devices.
 
 ### Burn the apropriate firmware to usb2rf
-You can build the sketch by yourself
-or send the precompiled .hex
+You can build the sketch by yourself. (see readme in the usb2rf folder)
+or upload the precompiled .hex
 ```
 > cd usb2rf
 > make sendHex
 ```
-You need to press proMini reset button as autoreset does not work.
+You may need to press proMini reset button as autoreset does not work.
 
 ***Hardware and software setup is done !***
 
