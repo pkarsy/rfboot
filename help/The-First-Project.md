@@ -4,7 +4,7 @@ Before you start it is required that you have completed the
 [Installation of rfboot](Installation)
 
 There is no need to use any prebuild example.
-"rftool create MyNewProject"
+"rftool create myProject"
 Creates a fully working rfboot based project, which will print the uptime on screen
 every second. There is no need to configure RF channels XTEA etc. They are selected at
 random and they are different at every project.
@@ -21,23 +21,11 @@ random and they are different at every project.
 for each project, to write rfboot to the target MCU. It is NOT needed for the usb2rf module. 
 - A breadboard. Note that a bad breadboard is the basic source of failures in a project.
 
-or
-
-### Bill of materials (pro mini target)
-- proMini 3.3V
-- A cc1101 RF module with 2.54 pin spacing.
-- Female to female 2.54 jumper wires.
-- ISP programmer with some Female-Female 2.54 cables.
-WARNING: intil you reinstall the old proMini bootloader (atmegaBoot) the proMini
-cannot be programmed with FTDI. Mark a "rfboot" in back side to be sure
-TODO description and photos not included, but should be easy if you followed the bare
-atmega option.
-
 Here is how our project is look like. The LED is not needed but you probabaly want to
 play a little with digitalWrite.
 ![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
 
-On the PC, probably in you sketchbook folder (not nesessarily however)
+On the PC, possibly in you sketchbook folder
 ```
 rftool create myProject
 ```
@@ -72,18 +60,28 @@ You will see uptime (in ms) to be printer in the gtkterm.
 
 Add this line to setup():
 ```
-PRINTLN("Hello world")l
+PRINTLN("Hello world");
 ```
-All arduino machinery is working as expected.
+All arduino machinery is working as expected with the exeption of Serial.print. The
+PRINT and PRINTLN macros can be used instead which use sprintf internally.
+```
+i=2;
+PRINT("i=%d",i);
+j=7;
+k=8;
+PRINTLN("j=%d k=%d",j,k);
+```
+As you can see they look like the standard printf function.
 
 ***The first rfboot based project is finished !***
 Spend 2 minitues to configure gtkterm to execute
 
-***make terminal***
+make terminal
 
-***make clean***
+make clean
 
-***make send***
+make send
 
 with a menu entry, or keyboard shortcut
+
 ![Gtkterm menu](https://github.com/pkarsy/rfboot/blob/master/help/files/MenuEntry.png)
