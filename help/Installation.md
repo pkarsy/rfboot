@@ -144,6 +144,8 @@ To send the precompiled .hex
 You need to press proMini reset button as autoreset does not work.
 Or you can build the sketch by yourself
 
-Hardware and software setup is done ! Continue with
+***Hardware and software setup is done !***
+
+Continue with
 [The First Project](The-First-Project.md)
 
