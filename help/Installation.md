@@ -94,16 +94,16 @@ More information on
    PC
 ```
 
-Signal | RF Module PIN | Cable COLOR | Arduino pin
------- | ------------- | ----------- | -----------
-GND | 1 | Brown | GND
-VCC | 2 | Red | 3.3V
-CE | 3 | Orange | 9
-CSN | 4 | Yellow | 10
-SCK | 5 | Green | 13
-MOSI | 6 | Blue | 11
-MISO | 7 | Violet | 12
-IRQ | 8 | Gray | N/C
+RF Module PIN | Cable COLOR | Arduino pin
+------------- | ----------- | -----------
+GND | Black | GND
+VCC | Red | 3.3V
+CE  | Orange | 9
+CSN | Yellow | 10
+SCK | Green | 13
+MOSI | Blue | 11
+MISO | Violet | 12
+GDO0 | White | 2
 
 
 ***
