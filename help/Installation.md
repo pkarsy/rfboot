@@ -137,10 +137,13 @@ GDO0 | Gray | 2
 GDO2 | NC | NC
 
 Finally, connect with a Female-Female cable the proMini pins D4 and RST.
+
 ![usb2rf2](files/usb2rf2.jpg)
+
 Note the missing DTR pin
 
 And here is the final module
+
 ![usb2rf2](files/usb2rf3.jpg)
 
 ### Configure rftool to use the usb2rf module
