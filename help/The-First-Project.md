@@ -35,7 +35,7 @@ atmega option.
 
 Here is how our project is look like. The LED is not needed but you probabaly want to
 play a little with digitalWrite.
-![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.png)
+![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
 
 On the PC, probably in you sketchbook folder (not nesessarily however)
 ```
@@ -46,6 +46,7 @@ as you can see rftool generates random parameters (using /dev/urandom)
 cd myProject
 ```
 Here is a photo of the USBasp programmer together with a ZIF developer board. (search ebay)
+![USBasp](https://github.com/pkarsy/rfboot/blob/master/help/files/usbasp.jpg)
 If you have USBtiny
 ```
 geany rfboot/compile_settings.mk
