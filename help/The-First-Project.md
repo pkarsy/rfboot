@@ -67,10 +67,12 @@ Power the board and then
 > make send # Sends the firmware
 ```
 After the upload is finished
-You will see uptime (in ms) to be printer in the gtkterm
+You will see uptime (in ms) to be printer in the gtkterm.
+
 Add this line to setup():
 ```
 PRINTLN("Hello world")l
 ```
 All arduino machinery is working as expected.
+
 ***The first rfboot based project is finished !***
