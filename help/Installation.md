@@ -87,12 +87,25 @@ More information on
 ### [usb2rf module](Building-the-usb2rf-module.md)
 ```
 +----------+
-|          |         +-------+     +----------+         +--------+
-| gtkterm  |  <--->  |  FTDI |     | Pro mini |  <--->  | CC1101 |
-| rftool   |   USB   +-------+     +----------+   SPI   +--------+
-+----------+           usb2rf
-   PC
+|          |         +-------+          +----------+         +--------+
+| gtkterm  |  <--->  |  FTDI |  <--->   | Pro mini |  <--->  | CC1101 |
+| rftool   |   USB   +-------+  Serial  +----------+   SPI   +--------+
++----------+          
+   PC                |                  usb2rf module                 |
+                     +------------------------------------------------+
 ```
+
+Serial connection.
+The FTDI module is configured for 3.3V output.
+FTDI | Pro Mini
+---- | --------
+GND  | GND
+CTS  |
+VCC  |
+TX   |
+RX   |
+DTR NC | GRN NC
+
 
 RF Module PIN | Cable COLOR | Arduino pin
 ------------- | ----------- | -----------
