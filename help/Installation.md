@@ -58,13 +58,14 @@ access the Serial ports, neither the ISP programmers
 ```
 > sudo adduser myusername dialout
 ```
-You need to logout and login again for the changes to take effect
+You need to logout and login again for the changes to take effect, but don't do it know.
+Proceed to the next step
 - ISP programmer
-For USBasp
+
 ```
 > sudo nano /etc/udev/rules.d/52-my.rules
 ```
-add the line
+For USBasp add the line
 ```
 ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"
 ```
@@ -84,6 +85,26 @@ you machine for the changes to take effect
 To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 module and some jumper wires.
 More information on 
 ### [usb2rf module](Building-the-usb2rf-module.md)
+```
++----------+
+|          |         +-------+     +----------+         +--------+
+| gtkterm  |  <--->  |  FTDI |     | Pro mini |  <--->  | CC1101 |
+| rftool   |   USB   +-------+     +----------+   SPI   +--------+
++----------+           usb2rf
+   PC
+```
+
+Signal | RF Module PIN | Cable COLOR | Arduino pin
+------ | ------------- | ----------- | -----------
+GND | 1 | Brown | GND
+VCC | 2 | Red | 3.3V
+CE | 3 | Orange | 9
+CSN | 4 | Yellow | 10
+SCK | 5 | Green | 13
+MOSI | 6 | Blue | 11
+MISO | 7 | Violet | 12
+IRQ | 8 | Gray | N/C
+
 
 ***
 

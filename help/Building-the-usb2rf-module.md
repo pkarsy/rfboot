@@ -7,7 +7,7 @@ Through you can build one module based on a custom PCB, it is recommended to bui
 
 Lets start with the simplest option, a module with :
 - FTDI module
-- ProMini 3.3V
+- ProMini 3.3V (With the standard bootloader)
 - CC1101 RF module
 - Some Female-to-Female jumper wires
 
