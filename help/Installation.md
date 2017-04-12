@@ -93,7 +93,7 @@ To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 m
    PC                |                  usb2rf module                 |
                      +------------------------------------------------+
 ```
-
+![usb2rf1](help/sb2rf1.jpg)
 
 ***Serial connection.***
 The FTDI module is configured for 3.3V output.
