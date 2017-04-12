@@ -7,7 +7,7 @@ You need to:
 - Download and install rfboot from github
 - Assemble and configure the usb2rf module (Connects to a USB port of the PC)
 - Configure rftool to use the usb2rf module
-- Burn the apropriate firmware usb2rf needs (An Arduino sketch)
+- Burn the apropriate firmware to usb2rf (An Arduino sketch)
 
 
 ***
@@ -102,28 +102,38 @@ The FTDI module is configured for 3.3V output.
 FTDI | Pro Mini
 ---- | --------
 GND  | GND
-CTS  | xxx
-VCC  | xxx
-TX   | xxx
-RX   | xxx
+CTS  | GND
+VCC  | VCC
+TX   | RX
+RX   | TX
 DTR NC | GRN NC
 
+Note the DTR is not connected wich means no autoreset. This is crycial for the
+intended use of the module
+No jumper cables are required. The male FTDI socket fits to the female proMini
+Just warp/cut the DTR pin to prevent connection. Another option is to leave the
+DTR pin connected and wire a 10uF capacitor between RST-GND pin in proMini
+Optional: A cable connects the proMini PIN 4 and RST.
 
+The SPI intreface
 
-
-RF Module PIN | Cable COLOR | Arduino pin
+RF Module PIN | Cable COLOR | ProMini pin
 ------------- | ----------- | -----------
 GND | Black | GND
 VCC | Red | 3.3V
-CE  | Orange | 9
 CSN | Yellow | 10
 SCK | Green | 13
 MOSI | Blue | 11
 MISO | Violet | 12
 GDO0 | White | 2
 
+And here is the final result TODO
 
-***
+### Configure rftool to use the usb2rf module
+```
+rftool addport
+```
+when we insert the usb2rf module, rftool detects it and saves the Serial port device
+to ~/.usb2rf file. You can have more than one usb2rf devices.
 
-
-
+### Burn the apropriate firmware to usb2rf

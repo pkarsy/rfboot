@@ -21,6 +21,7 @@ Although the source code is a standard Arduino project you need to install the l
 For the lazy there is precompiled the
 
 **usb2rf.hex** file in the usb2rf folder
+avrdude -q -V -D -p atmega328p -c arduino -b 57600 -P /dev/ttyUSB0
 
 ## Installing the firmware.
 
