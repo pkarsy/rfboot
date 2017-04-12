@@ -136,9 +136,12 @@ MISO | Violet | 12
 GDO0 | Gray | 2
 GDO2 | NC | NC
 
-Finally, connect with a Female-Female cable the proMini PIN 4 and RST.
+Finally, connect with a Female-Female cable the proMini pins D4 and RST.
+![usb2rf2](files/usb2rf2.jpg)
+Note the missing DTR pin
 
-And here is the final result TODO
+And here is the final module
+![usb2rf2](files/usb2rf3.jpg)
 
 ### Configure rftool to use the usb2rf module
 ```
@@ -148,13 +151,13 @@ when we insert the usb2rf module, rftool detects it and saves the Serial port de
 to ~/.usb2rf file. You can have more than one usb2rf devices.
 
 ### Burn the apropriate firmware to usb2rf
-To send the precompiled .hex
+You can build the sketch by yourself
+or send the precompiled .hex
 ```
 > cd usb2rf
 > make sendHex
 ```
 You need to press proMini reset button as autoreset does not work.
-You can also build the sketch by yourself
 
 ***Hardware and software setup is done !***
 
