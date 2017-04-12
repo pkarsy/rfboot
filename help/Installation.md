@@ -58,8 +58,7 @@ access the Serial ports, neither the ISP programmers
 ```
 > sudo adduser myusername dialout
 ```
-You need to logout and login again for the changes to take effect, but don't do it know.
-Proceed to the next step
+You need to logout and login again for the changes to take effect.
 - ISP programmer
 
 ```
@@ -73,8 +72,10 @@ For USBtiny add the line
 ```
 ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="0666"
 ```
-A logout is not enough. Although can be done on command line, is easier to just reboot
-you machine for the changes to take effect
+In the command line
+```
+> sudo service udev restart
+```
 
 ***Software installation is done !***
 
@@ -82,7 +83,11 @@ you machine for the changes to take effect
 
 ### usb2rf module
 
-To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 module and some jumper wires.
+To build the usb2rf module you need
+- FTDI module
+- ProMini 3.3V
+- CC1101 module
+- some jumper wires.
 
 ```
 +----------+
@@ -93,7 +98,9 @@ To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 m
    PC                |                  usb2rf module                 |
                      +------------------------------------------------+
 ```
-![usb2rf1](help/sb2rf1.jpg)
+
+Here is a photo of the materials we need
+![usb2rf1](help/files/usb2rf1.jpg)
 
 ***Serial connection.***
 The FTDI module is configured for 3.3V output.
@@ -114,7 +121,7 @@ No jumper cables are required. The male FTDI socket fits to the female proMini
 Just warp/cut the DTR pin to prevent connection. Another option is to leave the
 DTR pin connected and wire a 10uF capacitor between RST-GND pin in proMini.
 
-Finally, connect with a cable  the proMini PIN 4 and RST.
+
 
 ***The SPI intreface***
 
@@ -128,6 +135,8 @@ MOSI | Blue | 11
 MISO | Violet | 12
 GDO0 | Gray | 2
 GDO2 | NC | NC
+
+Finally, connect with a Female-Female cable the proMini PIN 4 and RST.
 
 And here is the final result TODO
 
