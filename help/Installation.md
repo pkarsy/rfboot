@@ -94,7 +94,8 @@ To build the usb2rf module you need an FTDI module a ProMini 3.3V and a CC1101 m
                      +------------------------------------------------+
 ```
 
-Serial connection.
+
+***Serial connection.***
 The FTDI module is configured for 3.3V output.
 
 
@@ -107,14 +108,15 @@ TX   | RX
 RX   | TX
 DTR NC | GRN NC
 
-Note the DTR is not connected wich means no autoreset. This is crycial for the
+Note the DTR is not connected wich means no autoreset. This is VERY importand for the
 intended use of the module.
 No jumper cables are required. The male FTDI socket fits to the female proMini
 Just warp/cut the DTR pin to prevent connection. Another option is to leave the
-DTR pin connected and wire a 10uF capacitor between RST-GND pin in proMini
-Optional: A cable connecting the proMini PIN 4 and RST.
+DTR pin connected and wire a 10uF capacitor between RST-GND pin in proMini.
 
-The SPI intreface
+Finally, connect with a cable  the proMini PIN 4 and RST.
+
+***The SPI intreface***
 
 RF Module PIN | Cable COLOR | ProMini pin
 ------------- | ----------- | -----------
@@ -124,7 +126,8 @@ CSN | Yellow | 10
 SCK | Green | 13
 MOSI | Blue | 11
 MISO | Violet | 12
-GDO0 | White | 2
+GDO0 | Gray | 2
+GDO2 | NC | NC
 
 And here is the final result TODO
 
@@ -142,7 +145,7 @@ To send the precompiled .hex
 > make sendHex
 ```
 You need to press proMini reset button as autoreset does not work.
-Or you can build the sketch by yourself
+You can also build the sketch by yourself
 
 ***Hardware and software setup is done !***
 

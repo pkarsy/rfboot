@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2016 Panagiotis Karagiannis
+ * This is a modification of the Panstamp cc1101 library
+ * No ccpacket. No EEPROM. A lot of other modifications
+ * And a few new functions
+ * LGPLv3+ Licence as the original
+*/
+
 /**
  * Copyright (c) 2011 panStamp <contact@panstamp.com>
  *

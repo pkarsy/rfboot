@@ -1,17 +1,19 @@
 /*
  * TODO cc1101 reset before application starts
+ * TODO if cc1101 is not detected proceed immediatelly to application code
  *
  * 2015 (C) Panagiotis Karagiannis
  * This software is distributed with the GPLv3+ Licence
  *
- * rfboot v0.6 wireless bootloader for atmega328p with the TI cc1101 chip
+ * rfboot wireless bootloader for atmega328p with the TI cc1101 chip
+ * https://github.com/pkarsy/rfboot
+ * 
  * this file implements the bootloader part of rfboot
  *
- * - it is not based on optiboot or other bootloasers but is
+ * It is not based on optiboot or other bootloasers but is
  * written from scrach.
  * Uses the last 2 bytes of EEPROM as seed for the generation of the Initialization Vector.
- * Configurable settings can only
- * be changed at compile time.
+ * Configurable settings can only be changed at compile time.
  * Cannot be used to send code with serial port. In fact does not even touch the Rx Tx pins wich can be used
  * for other purposes (as GPIO pins) or to connect to another serial device (GPS for example)
  * RELIABILITY. This is where rfboot really shines.
@@ -19,107 +21,28 @@
  * In the following note "brick" the device we mean that we cannot upload firmware
  * REMOTELY. We can always upload code with physical access to the reset pin or by power cycle the atmega chip.
  *
- * And before all we need
- * to define what we want from rfboot
- * Here is the scenario:
- * We have a atmega328p powered device buried in a wall, in a roof, in a robot, or whatever
- * We have it running an application wich we can remotely control (possibly via the RF chip but this is not necessary), and tell it
- * to reset in order to remotely update the application code. This is the intended use
- * of rfboot. There are other bootloaders doing the same, free like rfboot and most are
- * compatible with avrdude which obviously is a plus (rfboot isn't) .
- * In order to update the firmware of our appliance, we need first to tell to the app we want to reset the chip
- * in order the bootloader to take control.
- * most bootloaders (wireless or not) is that even if the upload process fails, finally the control
- * passes to the half written app.
- * Of course the app will crash with probability ~100% and then you cannot tell to
- * the application, PLEASE reboot again ! I cannot access the reset button !
- * optiboot-rf solves it by a very clever trick. Before bootloader gives control to the application
- * bootloader enables Watchdog 4 sec timer. If the application really crashes the watchdog reset MCU
- * and gives us the time to update the code. This approach requires of course that the app resets the watchdog timer periodically. Which is a good thing anyway.
- * At this stage you need hammers, screwdrivers etc to have
- * physical access to the device
- * rfboot also enables watchdog timer (see comment below)
- * rfboot however does it differently. The first info it receives from our side is the size
- * and the checksum of the application. (This is the reason I could not do rfboot to
- * be compatible with stk500/avrdude.)
- * if for some reason the upload fails, rfboot knows the app is not correctly
- * written and will never try to execute such an app. Instead it is waiting patiently
- * for you
- * to send new code until you succeed. Note that it not only withstands failures from
- * our side (bad RF signal for example, or a Laptop with the battery
- * failing at the wrong time) It also withstands failures from the avr side,
- * like power loss, brownout , hardware resets etc.
- * So the only way to brick the device is to upload a malfunctioning app witch refuses
- * to reset the device due to a software bug. Given that you already tested the app in
- * your lab and you are not trying to send the wrong app to the wrong chip, this
- * possibility can be quite small.
- *
- * Bootloader for atmega328 mcu for wireless and optionally encrypted
- * code uploads using the cc1101 module. It is very speedy
- * and according to my tests very reliable.
- * Even if you kill the upload process in the middle, rfboot detect it
- * and waits for a new upload session. Even if cut the power from the
- * atmega at the time of programming, when the power comes back rfboot
- * will detect it and will not try to start any corrupted code but
- * instead stays waiting for new code. When eventually the upload
- * process finishes, rfboot reads back the flashed program, calculates
- * the crc, and checks if it is equal with the crc came from the
- * programmer.
- * only then the program starts
- * if you like the idea of encryption, you have to also disable code
- * extraction  using an ISP programmer. The encryption key is saved
- * somewhere in the bootloader area. Using OTA encryption and at the
- * same time allow code extraction from the chip doesnt make a lot of
- * sense except when developing-debugging. Start with Lock fuse
- * setting 0x0C. I read in many forums that the code can be read with
- * the correct equipment and there are companies doing this for you for
- * a premium. So again the confidentiality of the code is not guaranteed.
- * I mainly added encryption because it was very easy. I really have no
- * idea of the level of "security" it offers
- * this bootloader can be very useful when the mcu is hard to
- * disassemble from the installed location, but you still need to make code changes.
- * we send a signal to the loaded application to (possibly save any settings to eeprom and) reboot the mcu via watchdog
- *
- * Then the programmer (the equivalent of avrdude) sends the code_size the CRC and finally the code in packets of 32 bytes
- *
- * checksum of the app. The bootloader writes the code to flash and in the end reads the writen flash
- * contents and recalculates the CRC. if is correct, jumps to the newly uploaded
- * app. The upload process is happening in reverse order and if for some reason is interrupted, then the first pages of flash have the known 0xFF pattern of an unprogrammed chip,
- *
- * Of course if the flash is empty the bootloader stays waiting for code upload
  *
  * if the mcu reset with the reset pin rfboot wait for code upload for 0.25 sec.
- *
- * uses cc1101 module for code upload
  *
  * rfboot cannot initialize a reset by itself. The duty for this is in the application. I consider this not a problem  because of the intended use of this bootloader.  if you are developing a non "hello world" program the hassle to add some code for this function is not an issue. Also -generally speaking- a real life program probably wont like unconditional resets with the hardware reset pin because maybe some variables need to be saved in EEPROM. So a polite "reset" request to the application has better results for a useful in real life,  but still possible to update application.
  *
  *
- * WARNING ! Don't install this bootloader to an arduino board. It does not use serial UART. This means, if you burn this bootoader to a ProMini 3.3V for example, you will not be able to program it over serial any more. Only via cc1101 module.
+ * WARNING  if you burn this bootoader to a ProMini 3.3V for example, you will not be able to program it over serial any more. Only via cc1101 module.
  *
  * rfboot is designed to be used on bare atmega328p chips. Of course you can still -as I do- develop Arduino applications, a bootloader is code agnostic.
  *
  * WARNING ! rfboot cannot protect you from buggy code. You can upload anything to the MCU, a prog that freezes or fails to communicate with you or just ignores a reboot command from your side. Or a code written for another station/project. Then you need physical access to the mcu to be able to reset it. test your code first.
 
- * The hardware for rfboot is typical is atmega328p 8Mhz@3.3V
+ * The hardware for rfboot is typically an atmega328p 8Mhz@3.3V
  * because CC1101 chip does not tolerate 5V on any pin and atmega328
- * DOES NOT RUN at 16Mh at 3.3V
+ * DOES NOT RUN at 16Mh @ 3.3V
  * FUSES = E2 DA 05 without crystal
  * FUSES = E2 DA 05 with crystal
  * TODO
  *
- *
- *
- * The fact that rfboot does not initialize UART has an interesting effect.
- * You can use Hardware Serial to connect to a serial device (a GSM
- * modem for example) instead of relying on software serial. My tests show that software serial must run on slow speeds like 9600 or 4800 to be reliable, especially at 8Mhz or 1Mhz.
- *
- * not compatible unfortunately with avrdude. rfboot uses a companion program rftool instead of avrdude. Moreover it also needs a USB to RF adapter connected to the PC. This module is easy enough to build but adds to the effort to make this bootloader working in the first time.
- *
- * Arduino users: You can continue to use arduino sketces because a bootloader is code agnostic.
- *
+ * not compatible unfortunately with avrdude. rfboot uses a companion program rftool instead of avrdude.
  * Encrypts the packets on the air see
- * https://github.com/pkarsy/rfboot/wiki/Encryption
+ * https://github.com/pkarsy/rfboot/blob/master/help/Encryption.md
  *
  * TODO cc1101 reset before app start
  * */
