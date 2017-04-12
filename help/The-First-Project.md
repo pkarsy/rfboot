@@ -76,3 +76,13 @@ PRINTLN("Hello world")l
 All arduino machinery is working as expected.
 
 ***The first rfboot based project is finished !***
+Spend 2 minitues to configure gtkterm to execute
+
+***make terminal***
+
+***make clean***
+
+***make send***
+
+with a menu entry, or keyboard shortcut
+![Gtkterm menu](https://github.com/pkarsy/rfboot/blob/master/help/files/MenuEntry.png)
