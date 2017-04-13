@@ -1,5 +1,5 @@
 #
-# (C) Panagiotis Karagiannis 
+# (C) Panagiotis Karagiannis
 # This file is part of rfboot
 # https://github.com/pkarsy/rfboot
 # Licence GPLv3
@@ -204,7 +204,7 @@ proc getConnectedPorts() : seq[string] =
 proc getPortName() : string =
   var hwID: string
   var f: File
-  
+
   try:
     f = homeconfig.expandTilde.open
   except IOError:
@@ -265,7 +265,7 @@ proc sendStopSignal(portname:string): bool =
   LPID = checkLockFile(portname)
   if (LPID>0):
     discard kill(LPID,SIGSTOP)
-    stderr.writeLine "Stop PID:",LPID," thad holds a LOCK on the serial port"
+    stderr.writeLine "Stopping process ",LPID," thad holds a LOCK on the serial port"
     return true
   else:
     return false
@@ -276,9 +276,9 @@ proc sendStopSignal(portname:string): bool =
 proc sendContSignal() {.noconv.} =
   #discard execProcess( "/bin/fuser", ["-s", "-k", "-CONT", portName], options={ poStdErrToStdOut } )
   if (LPID)>0:
-    stderr.writeLine "Send a CONT signal to PID:", LPID
+    stderr.writeLine "Resuming process ", LPID
     discard kill(LPID, SIGCONT)
-  
+
 
 proc openPort(portname: cstring): cint =
     if sendStopSignal($portname):
@@ -887,7 +887,12 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   elif upload_method == 1:
     # The method:1 offloads the job to usb2rf module
     ###### The new method offload the send/receive functions to usb2rf module
-    stderr.writeLine "Using the new method 1"
+
+    const USB_SEND_PACKET = 20
+    const USB_INFO_RESEND = 21
+    const USB_INFO_END = 22
+
+    #stderr.writeLine "Using the new method 1"
     var pkt_idx = app.len
     let applen = app.len.uint16.toString
 
@@ -898,35 +903,59 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     #pkt_idx-=PAYLOAD
     #port.write app[pkt_idx-PAYLOAD..pkt_idx-1] # and 1 more packet in advance
     #pkt_idx-=PAYLOAD
-    while pkt_idx>0:
+
+    #while pkt_idx>0:
+    while true:
       let resp=port.getChar()
       if resp == -1:
         continue
-      elif resp=='P'.int:
-        #stderr.writeLine pkt_idx
+      elif resp==USB_SEND_PACKET:
+        #stderr.writeLine "pkt_idx=", pkt_idx
+        if pkt_idx==0:
+          stderr.writeLine "pkt_len", app[pkt_idx-PAYLOAD..pkt_idx-1].len
         port.write app[pkt_idx-PAYLOAD..pkt_idx-1]
         pkt_idx -= PAYLOAD
+        #stderr.writeLine "pkat_idx=", pkt_idx
       #elif resp==RFB_NO_SIGNATURE:
       #  stderr.writeLine "rfboot reports the signature is wrong" # TODO
       #  quit QuitFailure
       #elif resp==RFB_INVALID_CODE_SIZE:
       #  stderr.writeLine "rfboot reports the code size is invalid" # TODO
       #  quit QuitFailure
-      elif resp=='A'.int:
-        discard
-        # TODO
-      elif resp=='R'.int:
+      #elif resp=='A'.int:
+      #  discard
+      #  # TODO
+      elif resp==USB_INFO_RESEND:
         stderr.writeLine "Resend"
+      elif resp==USB_INFO_END:
+        #stderr.writeLine "Got END from usb2rf, pkt_idx=", pkt_idx
+        if pkt_idx>0:
+          stderr.writeLine "WARNING: usb2rf termination"
+        break
       else:
         stderr.writeLine "Got unknown response", resp
         quit QuitFailure
     #port.drain(3000)
     # TODO timeout
-    var resp:int
-    while (resp!='E'.int):
-      resp=port.getChar(250000)
+    #if pkt_idx>0:
 
-    stderr.writeLine "All packets sent"
+    #var resp:int
+    #while (resp!=USB_INFO_END):
+    #  resp=port.getChar(250000)
+    let resp = port.getPacket(1200000,3)
+    if resp.len<3:
+      stderr.writeLine "No response from usb2rf module"
+      quit QuitFailure
+
+    let reply = resp[0].int
+
+    if reply == RFB_WRONG_CRC:
+      stderr.writeLine "CRC check failed"
+      quit QuitFailure
+    elif reply == RFB_SUCCESS:
+      stderr.writeLine "CRC OK. Success !"
+      stderr.writeLine "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3)
+
     ############# end method 1 #################
   #
   # We got success reply
@@ -1001,7 +1030,7 @@ proc actionAddPort() =
       if connectedPorts.len>oldConnectedPorts.len:
         for p in connectedPorts:
           if not (port in oldConnectedPorts):
-            
+
             port = p
             break GetNewPort
       sleep(1000)
@@ -1019,8 +1048,8 @@ proc actionAddPort() =
     f.close
 
 
-  
-      
+
+
 
 # implements command line parsing and returns all the parameters in a tuple
 proc main() =

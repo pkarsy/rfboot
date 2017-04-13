@@ -12,17 +12,16 @@ random and they are different at every project.
 ### Bill of materials (bare atmega)
 - atmega328p-pu
 - 2 ceramic caps 1uF (4 if you use a 3.3V regulator)
-- A breadboard Pushbutton
+- A momentary pushbutton
 - A cc1101 RF module with 2.54 pin spacing
 - Male to female 2.54 jumper wires, and some simple striped wires
 - A 3.3V stabilized power source. Alternatively A lithium-ion cell with a 3.3V regulator
 . See photo
 - ISP programmer with a 28pin ZIF socket. WARNING the isp programmer is needed only once
-for each project, to write rfboot to the target MCU. It is NOT needed for the usb2rf module. 
+for each project, to write rfboot to the target MCU. It is NOT needed for the usb2rf module.
 - A breadboard. Note that a bad breadboard is the basic source of failures in a project.
 
-Here is how our project is look like. The LED is not needed but you probabaly want to
-play a little with digitalWrite.
+Here is how our project looks like.
 ![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
 
 On the PC, possibly in you sketchbook folder
@@ -43,11 +42,11 @@ and uncomment the USBtiny line
 ```
 make isp
 ```
-If your project uses a crystal you can edit again "rfboot/compile_settings.mk" or
+If your project uses a crystal you can edit again "rfboot/compile_settings.mk" or simply
 ```
 make xtal
 ```
-Rfboot works perfectly with (uncalibrated 10% error) internal oscillator because the SPI
+Rfboot works perfectly with (uncalibrated up to 10% error) internal oscillator because the SPI
 interface does not need a +-2% accurate clock source as Serial needs.
 Now put the atmega and the other components in the breadboard.
 Power the board and then
@@ -72,6 +71,11 @@ k=8;
 PRINTLN("j=%d k=%d",j,k);
 ```
 As you can see they look like the standard printf function.
+
+Press '0' to '9' to see the response.
+
+Now uncomment the lines related to the LED, inside setup()
+and loop()
 
 ***The first rfboot based project is finished !***
 Spend 2 minitues to configure gtkterm to execute

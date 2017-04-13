@@ -148,7 +148,7 @@ MISO | Violet | 12
 GDO0 | Gray | 2
 GDO2 | NC | NC
 
-Finally, connect with a Female-Female cable the proMini pins D4 and RST.
+Finally, connect with a Female-Female cable the proMini pins D3 and RST.
 
 ![usb2rf2](files/usb2rf2.jpg)
 
