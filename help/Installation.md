@@ -15,7 +15,7 @@ You need to:
 ### Install the apropriate software
 First of all a linux PC is needed, for the development. I don't use Windows neither MAC
 and is very difficult for me to support another platform. You can use VirtualBox if
-you really need to use rfboot from Windows or Mac. 
+you really need to use rfboot from Windows or Mac.
 I tried with Virtualbox (a Linux Mint 17.3 image) and it is working perfectly.
 Of course if you are unfamiliar with linux and especially the command line the problem
 remains.
@@ -44,7 +44,8 @@ git clone https://github.com/pkarsy/rfboot.git
 ```
 The "rftool" utility needs to be in the PATH.
 ```
-> cd ~/bin # if the ~/bin does not exist "mkdir ~/bin" and then logout and login again
+# if the ~/bin does not exist "mkdir ~/bin" and then logout and login again
+> cd ~/bin
 > chmod +x ~/programming/rfboot/rftool/rftool
 > ln -s ~/programming/rfboot/rftool/rftool
 ```
@@ -53,6 +54,13 @@ Now if you type
 > rftool
 ```
 Should give you a small usage message. This means rftool is in the PATH.
+Now it is time to install mCC1101, a modified (and simplified) panStamp
+CC1101 library. Change "~/sketchbook" with your actual sketchbook folder.
+
+```
+> cd ~/sketchbook
+> git clone https://github.com/pkarsy/mCC1101.git
+```
 
 Linux by default does not give permission (to regular users) to
 access the Serial ports, neither the ISP programmers. To fix it:
@@ -72,7 +80,7 @@ Add the lines
 # USBasp
 ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"
 
-#USBtiny
+# USBtiny
 ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="666"
 ```
 
@@ -98,7 +106,7 @@ To build the usb2rf module you need
 |          |         +-------+          +----------+         +--------+
 | gtkterm  |  <--->  |  FTDI |  <--->   | Pro mini |  <--->  | CC1101 |
 | rftool   |   USB   +-------+  Serial  +----------+   SPI   +--------+
-+----------+          
++----------+
    PC                |                  usb2rf module                 |
                      +------------------------------------------------+
 ```
