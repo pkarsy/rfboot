@@ -5,7 +5,7 @@ Before you proceed it is required that you have completed the
 
 There is no need to use any prebuild example.
 
-"rftool create myProject"
+```rftool create myProject```
 
 creates a fully working rfboot based project, which will print the uptime on screen
 every second. There is no need to configure RF channels XTEA etc. They are selected at
