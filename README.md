@@ -1,8 +1,5 @@
 # rfboot
 
-**Notice: The bootloader is in a quite workable state. However the site is incomplete and a lot of modifications need to be done.
-I hope in a few days (say until 15 April 2017) the code, help pages, etc will be added and this notice will be removed.**
-
 Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip.
 Included :
 
@@ -24,4 +21,4 @@ development can be very useful.
 - [The first project](help/The-First-Project.md) Instructions to successfully complete your first Arduino project using a bare atmega328 as target, and rfboot as bootloader.
 - [Reliability](help/Reliability.md) Explains how rfboot does the job, under an inherently unreliable link(RF)
 - [Encryption](help/Encryption.md) Discuses how the firmware is encrypted over the air, and why this is useful
-- [Notes about the License](help/Notes-about-the-License.md)
+- [Notes about the License](help/Notes-about-the-License.md) Some clarifications of the License.

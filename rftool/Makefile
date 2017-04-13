@@ -16,7 +16,7 @@ all:
 # strip -s rftool
 
 musl:
-	nim --cpu:i386 -d:release --opt:size --passL:-static --gcc.exe:/usr/local/musl/bin/musl-gcc --gcc.linkerexe:/usr/local/musl/bin/musl-gcc c rftool
+	nim -d:release --opt:size --passL:-static --gcc.exe:/usr/local/musl/bin/musl-gcc --gcc.linkerexe:/usr/local/musl/bin/musl-gcc c rftool
 	strip rftool
 	ls -l rftool
 
