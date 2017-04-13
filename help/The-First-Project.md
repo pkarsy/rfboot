@@ -1,11 +1,13 @@
 ### The First project
 
-Before you start it is required that you have completed the
+Before you proceed it is required that you have completed the
 [Installation of rfboot](Installation.md)
 
 There is no need to use any prebuild example.
+
 "rftool create myProject"
-Creates a fully working rfboot based project, which will print the uptime on screen
+
+creates a fully working rfboot based project, which will print the uptime on screen
 every second. There is no need to configure RF channels XTEA etc. They are selected at
 random and they are different at every project.
 
@@ -61,7 +63,7 @@ Add this line to setup():
 ```
 PRINTLN("Hello world");
 ```
-All arduino machinery is working as expected with the exeption of Serial.print. The
+All arduino machinery is working as expected with the exception of Serial.print. The
 PRINT and PRINTLN macros can be used instead which use sprintf internally.
 ```
 i=2;
