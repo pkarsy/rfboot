@@ -56,7 +56,7 @@ Power the board and then
 > make send # Sends the firmware
 ```
 After the upload is finished
-You will see uptime (in ms) to be printer in the gtkterm.
+You will see uptime (in ms) in gtkterm.
 
 Add this line to setup():
 ```
