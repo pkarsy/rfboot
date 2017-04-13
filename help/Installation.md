@@ -51,6 +51,7 @@ Now if you type
 > rftool
 ```
 Should give you a small usage message. This means rftool is in the PATH.
+
 Now it is time to install mCC1101, a modified (and simplified) panStamp
 CC1101 library. Change "~/sketchbook/libraries" with your actual sketchbook folder.
 
