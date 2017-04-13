@@ -28,25 +28,25 @@ Here is how our project looks like.
 
 On the PC, possibly in you sketchbook folder
 ```
-rftool create myProject
+> rftool create myProject
 ```
 as you can see rftool generates random parameters (using /dev/urandom)
 ```
-cd myProject
+> cd myProject
 ```
 Here is a photo of the USBasp programmer together with a ZIF developer board. (search ebay)
 ![USBasp](https://github.com/pkarsy/rfboot/blob/master/help/files/usbasp.jpg)
 If you have USBtiny
 ```
-geany rfboot/compile_settings.mk
+> geany rfboot/compile_settings.mk
 ```
 and uncomment the USBtiny line
 ```
-make isp
+> make isp
 ```
 If your project uses a crystal you can edit again "rfboot/compile_settings.mk" or simply
 ```
-make xtal
+> make xtal
 ```
 Rfboot works perfectly with (uncalibrated up to 10% error) internal oscillator because the SPI
 interface does not need a +-2% accurate clock source as Serial needs.
