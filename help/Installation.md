@@ -52,10 +52,10 @@ Now if you type
 ```
 Should give you a small usage message. This means rftool is in the PATH.
 Now it is time to install mCC1101, a modified (and simplified) panStamp
-CC1101 library. Change "~/sketchbook" with your actual sketchbook folder.
+CC1101 library. Change "~/sketchbook/libraries" with your actual sketchbook folder.
 
 ```
-> cd ~/sketchbook
+> cd ~/sketchbook/libraries
 > git clone https://github.com/pkarsy/mCC1101.git
 ```
 
@@ -128,11 +128,9 @@ No jumper cables are required. The male FTDI socket fits to the female proMini
 Just warp/cut the DTR pin to prevent connection. Another option is to leave the
 DTR pin connected and wire a 10uF capacitor between RST-GND pin in proMini.
 
-
-
 ***The SPI intreface***
 
-RF Module PIN | Cable COLOR | ProMini pin
+CC1101 PIN | Cable COLOR | ProMini pin
 ------------- | ----------- | -----------
 GND | Black | GND
 VCC | Red | 3.3V
@@ -155,7 +153,7 @@ And here is the final module
 
 ### Configure rftool to use the usb2rf module
 ```
-rftool addport
+> rftool addport
 ```
 when we insert the usb2rf module, rftool detects it and saves the Serial port device
 to ~/.usb2rf file. You can have more than one usb2rf devices.
