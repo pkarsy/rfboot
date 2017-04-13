@@ -9,9 +9,6 @@ You need to:
 - Configure rftool to use the usb2rf module
 - Burn the apropriate firmware to usb2rf (An Arduino sketch)
 
-
-***
-
 ### Install the apropriate software
 First of all a linux PC is needed, for the development. I don't use Windows neither MAC
 and is very difficult for me to support another platform. You can use VirtualBox if
@@ -90,8 +87,6 @@ In the command line
 ```
 
 ***Software installation is done !***
-
-***
 
 ### usb2rf module
 
