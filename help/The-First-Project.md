@@ -36,15 +36,14 @@ as you can see rftool generates random parameters (using /dev/urandom)
 ```
 Here is a photo of the USBasp programmer together with a ZIF developer board. (search ebay)
 ![USBasp](https://github.com/pkarsy/rfboot/blob/master/help/files/usbasp.jpg)
-If you have USBtiny
-```
-> geany rfboot/compile_settings.mk
-```
-and uncomment the USBtiny line
+If you have USBtiny edit the file "rfboot/hardware_settings.mk" and uncomment
+the USBtiny line. Now:
+
 ```
 > make isp
 ```
-If your project uses a crystal you can edit again "rfboot/compile_settings.mk" or simply
+To write th bootloader.
+If your project uses a crystal you can edit again "rfboot/hardware_settings.mk" or simply
 ```
 > make xtal
 ```
@@ -77,16 +76,17 @@ As you can see they look like the standard printf function.
 Press '0' to '9' to see the response.
 
 Now uncomment the lines related to the LED, inside setup()
-and loop()
+and loop(). Please read the notes.
 
 ***The first rfboot based project is finished !***
+
 Spend 2 minitues to configure gtkterm to execute
 
-make terminal
+"make terminal"
 
-make clean
+"make clean"
 
-make send
+"make send"
 
 with a menu entry, or keyboard shortcut
 
