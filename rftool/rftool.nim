@@ -346,15 +346,15 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
         let brend = line.find('}')
         line = line[brstart+1..brend-1]
         result.key = parseKey(line)
-      elif line.contains("RFBOOT_ADDRESS"):
-        let qnumber = line.count('\"')
-        if qnumber != 2:
-          stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RFBOOT_ADDRESS line has ", qnumber, " \". Expected 2, enclosing the RF address"
-          quit QuitFailure
-        let startl = line.find('\"')
-        let endl = line.rfind('\"')
-        result.rfbootAddress = line[startl+1..endl-1]
-        stderr.writeLine "rfboot_address=",result.rfbootAddress
+      #elif line.contains("RFBOOT_ADDRESS"):
+      #  let qnumber = line.count('\"')
+      #  if qnumber != 2:
+      #    stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RFBOOT_ADDRESS line has ", qnumber, " \". Expected 2, enclosing the RF address"
+      #    quit QuitFailure
+      #  let startl = line.find('\"')
+      #  let endl = line.rfind('\"')
+      #  result.rfbootAddress = line[startl+1..endl-1]
+      #  stderr.writeLine "rfboot_address=",result.rfbootAddress
       elif line.contains("RFBOOT_CHANNEL"):
         if line.count('=') != 1:
           stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL line is missing a \"=\""
@@ -398,16 +398,16 @@ proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: stri
   for i in conf.splitLines:
     var line = i.strip()
     if (line.len > 0) and not (line[0] in "/"):
-      if line.contains("APP_ADDRESS"):
-        let qnumber = line.count('\"')
-        if qnumber != 2:
-          stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the APP_ADDRESS line has ", qnumber, " \". Expected 2, enclosing the RF address"
-          quit QuitFailure
-        let startl = line.find('\"')
-        let endl = line.rfind('\"')
-        result.appAddress = line[startl+1..endl-1]
-        stderr.writeLine "appAddress=", result.appAddress.toArray
-      elif line.contains("RESET_STRING"):
+      #if line.contains("APP_ADDRESS"):
+      #  let qnumber = line.count('\"')
+      #  if qnumber != 2:
+      #    stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the APP_ADDRESS line has ", qnumber, " \". Expected 2, enclosing the RF address"
+      #    quit QuitFailure
+      #  let startl = line.find('\"')
+      #  let endl = line.rfind('\"')
+      #  result.appAddress = line[startl+1..endl-1]
+      #  stderr.writeLine "appAddress=", result.appAddress.toArray
+      if line.contains("RESET_STRING"):
         let qnumber = line.count('\"')
         if qnumber != 2:
           stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the RESET_STRING line has ", qnumber, " \". Expected 2, enclosing the string"
@@ -719,7 +719,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   else:
     stderr.writeLine "App channel = ", appChannel
     port.setChannel appChannel
-    stderr.writeLine "App address = ", appAddress.toArray
+    stderr.writeLine "App SyncWord = ", appAddress.toArray
     port.setAddress appAddress
     stderr.writeLine "Reset String = ", resetString
     port.write resetString
@@ -729,7 +729,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       stderr.writeLine "Ok the target reported reset"
     else:
       stderr.writeLine "Target did not answer the reset command, trying to send code anyway"
-  stderr.writeLine "rfboot address = ", rfbAddress.toArray
+  stderr.writeLine "rfboot SyncWord = ", rfbAddress.toArray
   port.setAddress rfbAddress
   stderr.writeLine "rfboot channel = ", rfbChannel
   port.setChannel rfbChannel
