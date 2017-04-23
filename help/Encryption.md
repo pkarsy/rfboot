@@ -46,7 +46,7 @@ The firmware is not encrypted in the atmega flash. When the bootloader is first 
 but I have no solid information if atmega328 can withstand FLASH read attacks.
 
 There is also the possibility that rfboot has some bug, and an exploit can trick it to
-reveal the code somehow. Or that the data are badly encrypted and can easily decrypted, and so on
+reveal the code somehow. Or that the data are badly encrypted and can easily decrypted, and so on.
 
 Generally speaking, no warranties that the code works, offers any security, confidentiality,
 it is useful to any particular purpose, etc.
