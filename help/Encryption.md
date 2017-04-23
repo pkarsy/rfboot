@@ -1,4 +1,4 @@
-###Εncryption
+### Εncryption
 
 When a new project is created with **"rftool create ProjectName"** a new rfboot instance is created
 with a unique RF channel, SyncWord, and XTEA key.
