@@ -1,4 +1,4 @@
-As software outside of this repository is evolving rapidly, some of these comparisons may be outdated when you are reading this.
+As software outside of this repository is evolving, some of these comparisons may be outdated/incorrect when you are reading this.
 
 # differences with optiboot / atmegaboot
 
