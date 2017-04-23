@@ -1,16 +1,17 @@
 ### Εncryption
 
-When a new project is created with **"rftool create ProjectName"** a new rfboot instance is created
-with a unique RF channel, SyncWord, and XTEA key.
+When a new project is created with **"rftool create ProjectName"** a new rfboot .hex file is created
+with a unique RF channel, SyncWord, and XTEA key. These paramaters are stored in the FLASH (inside the hex file)
+and NOT in the eeprom.
 
 The idea of encryption emerged as a way to learn some things about encryption. The AES
-cipher resulted in an oversized bootloader, more than the 4Kb limit of atmega328 so
-I choose XTEA because is very small and the code in wikipedia is in public domain by the
-algorithm creators
+cipher resulted in an oversized bootloader, more than the 4Kb limit of atmega328 so XTEA
+is used because is very small and the code in wikipedia is in public domain by the
+algorithm creators.
 
 The use of encryption may seem overkill . Who cares to steal the firmware from the air, you may ask.
 In most cases the answer is nobody.
-But for a commercial project this can be a real concern.
+But for a commercial project this can be a concern, and encryption offers peace in mind.
 
 And it turns out,  even for a completely open
 source project the use of encryption is essential. The reason is that without encryption,
@@ -38,7 +39,8 @@ is no possibility that a project needs so many firmware updates, I think the sec
 is OK with this approach.
 Maybe later I will use a method to collect entropy at boot, so rfboot can choose a unique IV
 without the need to store the previous value in the EEPROM.
-The most promising method seems to be
+The most promising method seems to be:
+
 https://gist.github.com/endolith/2568571
 
 The firmware is not encrypted in the atmega flash. When the bootloader is first installed with
