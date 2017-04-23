@@ -18,7 +18,7 @@ solutions (see Arduino shiftOut() )
 
 ### Easy of use
 
-The daily use of rfboot is surprisingly simple. Edit the code click "send" and the code is sent to the correct
+The daily use of rfboot is surprisingly simple. Edit the code then "make send" and the code is sent to the correct
 MCU even if you happen to have 10 open projects in the editor.
 The first installation can be a problem however. Certainly a user should be familiar with basic concepts of MCU (and bootloaders) before try to use a different bootloader than the stock one witch is coming with the Arduinos for example.
 
