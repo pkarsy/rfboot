@@ -29,6 +29,6 @@ used however. Instead the excelllent arduino-makefile is used, witch gives us th
 "rftool create ProjectName" creates a new arduino project with unique RF channel and SyncWord (To prevent RF collitions with other modules) and a unique XTEA key. All this customization is saved in the app_settings.h
 file inside the project's folder.
 
-A "make isp" burns the bootloader to the target MCU. This is done once.
+A "make isp" burns the bootloader to the target MCU. This is done once per project.
 
 From now on a "make send" sends the code to the module wirelesly. Most editors can be customized to execute such commands with a click.
