@@ -8,10 +8,10 @@ Included :
 ISP programmer.
 - A powerful utility (rftool) to easily create new projects using rfboot as bootloader.
 The same utility also sets RF channels etc. and uploads the code. Every new project has
-preconfigured the Makefiles, and "make isp" and "make send" do all the job  needed
+preconfigured the Makefiles, and "make isp" and "make send" do all the job  needed.
 - Instructions to build a usb2rf module, witch allows us to upload code to the target and
 -**equally important**- to use a Serial Terminal (ie gtkterm) to send and receive text
-analogous to Serial.print()  and Serial.read()
+analogous to Serial.print()  and Serial.read() .
 
 This project aims at speeding up and simplifying work-flow, by allowing the program to be
 uploaded via the RF link. The emphasis is on reliability, security and usability. Even
