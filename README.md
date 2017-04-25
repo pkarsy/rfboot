@@ -4,7 +4,7 @@ Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip.
 
 Included :
 
-- The actual bootloader, intended to be installed to the projects MCU(atmega328), via an
+- The actual bootloader, intended to be installed to the project's MCU(atmega328), via an
 ISP programmer.
 - A powerful utility (rftool) to easily create new projects using rfboot as bootloader.
 The same utility also sets RF channels etc. and uploads the code. Every new project has
