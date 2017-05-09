@@ -29,7 +29,7 @@ for your environment.
                              # The instructions here, use geany as text editor
 
 > sudo apt-get install gtkterm # a serial terminal. I suggest to use this serial terminal
-                               # before try you luck with another one.
+                               # before try your luck with another one.
 
 > sudo apt-get install git   # To easily download rfboot.
 ```
