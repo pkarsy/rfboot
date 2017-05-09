@@ -156,7 +156,7 @@ And here is the final module
 ```
 > rftool addport
 ```
-when we insert the usb2rf module, rftool detects it and saves the Serial port device
+and insert the usb2rf module. rftool detects it and saves the Serial port device
 to ~/.usb2rf file. You can have more than one usb2rf devices.
 
 ### Burn the apropriate firmware to usb2rf
