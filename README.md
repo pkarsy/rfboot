@@ -18,8 +18,8 @@ uploaded via the RF link. The emphasis is on reliability, security and usability
 if the final project has a different bootloader, or no bootloader at all, at the phase of
 development can be very useful.
 
-- [Installation](help/Installation.md) Instructions to make the process as straightforward as possible.
-- [The first project](help/The-First-Project.md) Instructions to successfully complete your first Arduino project using a bare atmega328 as target, and rfboot as bootloader.
-- [Reliability](help/Reliability.md) Explains how rfboot does the job, under an inherently unreliable link (RF).
-- [Encryption](help/Encryption.md) Discuses how the firmware is encrypted over the air, and why this is useful.
-- [Notes about the License](help/Notes-about-the-License.md) Some clarifications of the License.
+- [Installation.](help/Installation.md) Instructions to make the process as straightforward as possible.
+- [The first project.](help/The-First-Project.md) Instructions to successfully complete your first Arduino project using a bare atmega328 as target, and rfboot as bootloader.
+- [Reliability.](help/Reliability.md) Explains how rfboot does the job, under an inherently unreliable link (RF).
+- [Encryption.](help/Encryption.md) Discuses how the firmware is encrypted over the air, and why this is useful.
+- [Notes about the License.](help/Notes-about-the-License.md) Some clarifications of the License.
