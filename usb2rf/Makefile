@@ -1,7 +1,7 @@
 BOARD_TAG = pro328
 EXTRA_FLAGS = -fshort-enums -g
 include /usr/share/arduino/Arduino.mk
- 
+
 #MONITOR_PORT  =  /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_YYYYYYYY-if00-port0
 # This is better
 MONITOR_PORT := $(shell rftool getport)
@@ -24,4 +24,4 @@ hex: all
 sendHex:
 	rftool resetLocal
 	avrdude -q -V -D -p atmega328p -c arduino -b 57600 -P $(MONITOR_PORT) -U flash:w:usb2rf.hex:i
-	
+
