@@ -28,6 +28,9 @@ for your environment.
 > sudo apt-get install geany # A programmers editor. You can use another if you like.
                              # The instructions here, use geany as text editor
 
+> sudo apt-get install gtkterm # a serial terminal. I suggest to use this serial terminal
+                               # before try you luck with another one.
+
 > sudo apt-get install git   # To easily download rfboot.
 ```
 
