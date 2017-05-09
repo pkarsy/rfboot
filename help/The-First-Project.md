@@ -43,7 +43,8 @@ the USBtiny line. Now:
 > make isp
 ```
 To write th bootloader.
-If your project uses a crystal you can edit again "rfboot/hardware_settings.mk" or simply
+If your project uses a crystal you can edit "rfboot/hardware_settings.mk" before burn
+or simply
 ```
 > make xtal
 ```
@@ -80,7 +81,7 @@ and loop(). Please read the notes.
 
 ***The first rfboot based project is finished !***
 
-Spend 2 minitues to configure gtkterm to execute
+Spend 2 minitues to configure geany (or your editor) to execute
 
 "make terminal"
 
