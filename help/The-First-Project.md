@@ -18,7 +18,8 @@ random and they are different at every project.
 - A cc1101 RF module with 2.54 pin spacing. The photos show a D-SUN module
 - A LED with a suitable resistor.
 - Male to female 2.54 jumper wires, and some simple striped wires
-- A 3.3V stabilized power source. For example A lithium-ion cell with a 3.3V regulator and 2 additional 1uF caps
+- A 3.3V stabilized power source. For example A lithium-ion cell with a 3.3V regulator and
+2 additional 1uF caps. LP2950-3.3 and especially HT7333 are very good for this purpose.
 . See picture.
 - ISP programmer with a 28pin ZIF socket. The isp programmer is used only once
 for each project, to write rfboot to the target MCU. After this no cables are necessary for upload.
