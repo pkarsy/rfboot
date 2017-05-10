@@ -14,8 +14,9 @@ random and they are different at every project.
 ### Bill of materials (bare atmega)
 - atmega328p-pu
 - 2 ceramic caps 1uF (Optional, for voltage stability near MCU)
-- A momentary pushbutton
+- A momentary pushbutton (optional, for reset)
 - A cc1101 RF module with 2.54 pin spacing. The photos show a D-SUN module
+- A LED with a suitable resistor.
 - Male to female 2.54 jumper wires, and some simple striped wires
 - A 3.3V stabilized power source. For example A lithium-ion cell with a 3.3V regulator and 2 additional 1uF caps
 . See photo
