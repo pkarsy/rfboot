@@ -19,7 +19,7 @@ random and they are different at every project.
 - A LED with a suitable resistor.
 - Male to female 2.54 jumper wires, and some simple striped wires
 - A 3.3V stabilized power source. For example A lithium-ion cell with a 3.3V regulator and 2 additional 1uF caps
-. See photo
+. See picture.
 - ISP programmer with a 28pin ZIF socket. The isp programmer is used only once
 for each project, to write rfboot to the target MCU. After this no cables are necessary for upload.
 - A breadboard. Note that a bad breadboard is the basic source of failures in a project.
