@@ -52,6 +52,7 @@ or simply
 Don't do this on this first project however, as we are not using a crystal. 
 Rfboot works perfectly with (uncalibrated up to 10% error) internal oscillator because the SPI
 interface does not need a +-2% accurate clock source as Serial needs.
+
 Now put the atmega and the other components in the breadboard.
 Power the board and then
 ```
