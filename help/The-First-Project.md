@@ -35,10 +35,12 @@ as you can see rftool generates random parameters (using /dev/urandom)
 ```
 > cd myProject
 ```
+Now it is time to burn the atmega with rfboot, using the ISP programmer.
+
 Here is a photo of the USBasp programmer together with a ZIF developer board. (search ebay)
 ![USBasp](https://github.com/pkarsy/rfboot/blob/master/help/files/usbasp.jpg)
 If you have USBtiny edit the file "rfboot/hardware_settings.mk" and uncomment
-the USBtiny line. Now:
+the USBtiny line. Put the atmega328p-pu chip on the ZIF socket and :
 
 ```
 > make isp
