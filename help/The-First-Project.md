@@ -13,14 +13,14 @@ random and they are different at every project.
 
 ### Bill of materials (bare atmega)
 - atmega328p-pu
-- 2 ceramic caps 1uF (4 if you use a 3.3V regulator)
+- 2 ceramic caps 1uF (Optional, for voltage stability near MCU)
 - A momentary pushbutton
-- A cc1101 RF module with 2.54 pin spacing
+- A cc1101 RF module with 2.54 pin spacing. The photos show a D-SUN module
 - Male to female 2.54 jumper wires, and some simple striped wires
-- A 3.3V stabilized power source. Alternatively A lithium-ion cell with a 3.3V regulator
+- A 3.3V stabilized power source. For example A lithium-ion cell with a 3.3V regulator and 2 additional 1uF caps
 . See photo
-- ISP programmer with a 28pin ZIF socket. WARNING the isp programmer is needed only once
-for each project, to write rfboot to the target MCU. It is NOT needed for the usb2rf module.
+- ISP programmer with a 28pin ZIF socket. The isp programmer is used only once
+for each project, to write rfboot to the target MCU. After this no cables are necessary for upload.
 - A breadboard. Note that a bad breadboard is the basic source of failures in a project.
 
 Here is how our project looks like.
