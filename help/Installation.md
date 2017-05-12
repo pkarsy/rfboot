@@ -126,7 +126,7 @@ TX   | RX
 RX   | TX
 DTR NC | GRN NC
 
-**Note the DTR is not connected wich means no autoreset.** This is VERY importand for the
+**Note the DTR is not connected, wich means no autoreset.** This is VERY importand for the
 intended use of the module.
 No jumper cables are required. The male FTDI socket fits to the female proMini.
 Just warp/cut the DTR pin to prevent connection.
