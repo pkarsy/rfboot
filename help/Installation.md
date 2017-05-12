@@ -111,7 +111,7 @@ To build the usb2rf module you need :
 ```
 
 Here is a photo of the materials we need
-![usb2rf1](files/usb2rf1.jpg)
+![usb2rf](files/usb2rf1.jpg)
 
 ***Serial connection.***
 The FTDI module is configured for 3.3V output.
@@ -126,11 +126,10 @@ TX   | RX
 RX   | TX
 DTR NC | GRN NC
 
-Note the DTR is not connected wich means no autoreset. This is VERY importand for the
+**Note the DTR is not connected wich means no autoreset.** This is VERY importand for the
 intended use of the module.
-No jumper cables are required. The male FTDI socket fits to the female proMini
-Just warp/cut the DTR pin to prevent connection. Another option is to leave the
-DTR pin connected and wire a 10uF capacitor between RST-GND pin in proMini.
+No jumper cables are required. The male FTDI socket fits to the female proMini.
+Just warp/cut the DTR pin to prevent connection.
 
 ***The SPI intreface***
 
