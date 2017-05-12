@@ -94,7 +94,7 @@ In the command line
 
 ### usb2rf module
 
-To build the usb2rf module you need
+To build the usb2rf module you need:
 - FTDI module
 - ProMini 3.3V
 - CC1101 module
