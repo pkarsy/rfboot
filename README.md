@@ -7,7 +7,7 @@ Included :
 - The actual bootloader, intended to be installed to the project's MCU (atmega328), via an
 ISP programmer.
 - A powerful utility (rftool) to easily create new projects using rfboot as bootloader.
-The same utility also sets RF channels etc. and uploads the code. Every new project has
+The same utility used for code upload. Every new project has
 preconfigured the Makefiles, and "make isp" and "make send" do all the job  needed.
 - Instructions to build a usb2rf module, witch allows us to upload code to the target and,
 **equally important**, to use a Serial Terminal (like gtkterm) to send and receive text
