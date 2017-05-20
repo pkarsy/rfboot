@@ -120,12 +120,12 @@ Here is a photo of the materials we need (It will change with CP2102)
 ***Serial connection.***
 Four jumper cables are required:
 
-CP2102 | Pro Mini
----- | --------
-GND  | GND
-5V   | RAW
-TX   | RX
-RX   | TX
+CP2102 | Cable COLOR | Pro Mini
+---- | ----- | --------
+GND  | Black |GND
+5V   | Red | RAW
+TX   | Yellow | RX
+RX   | Green |TX
 
 Note that DTR is not connected, wich means no autoreset. This is VERY importand for the
 intended use of the module.
