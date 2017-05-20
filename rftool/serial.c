@@ -77,7 +77,7 @@ void  ALARMhandler(int sig)
 }
 
 int readser(const int fd, unsigned char* buf, const int nbytes, const int timeout) {
-	//
+    //
     // prepei se 100ms na exoume 3chars
     int idx = 0;
     siginterrupt(SIGALRM, 1);
@@ -94,7 +94,7 @@ int readser(const int fd, unsigned char* buf, const int nbytes, const int timeou
         if (rdlen == 1) {
 
             buf[idx] = inp;
-			idx++;
+            idx++;
             if (idx==nbytes) break;
 
             // printf("Read %d: \"%s\"\n", rdlen, buf);
@@ -108,7 +108,7 @@ int readser(const int fd, unsigned char* buf, const int nbytes, const int timeou
     alarm(0);
 
     //buf[idx]=0;
-	return idx;
+    return idx;
 }
 
 int c_getchar(const int fd,  const int timeout) {
@@ -128,8 +128,8 @@ int c_getchar(const int fd,  const int timeout) {
 }
 
 void writeser(const int fd, char* buf, const int nbytes) {
-	int n = write(fd,buf,nbytes);
-//	//printf("write=%d\n",n);
+    int n = write(fd,buf,nbytes);
+//  //printf("write=%d\n",n);
 }
 
 int c_openport(char *portname)
@@ -137,7 +137,7 @@ int c_openport(char *portname)
     // = "/dev/ttyACM0";
     int fd;
 
-	signal(SIGALRM, ALARMhandler);
+    signal(SIGALRM, ALARMhandler);
 
     fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
     if (fd < 0) {
@@ -145,8 +145,8 @@ int c_openport(char *portname)
         return fd;
     }
     // baudrate 38400, 8 bits, no parity, 1 stop bit
-    // set_interface_attribs(fd, B38400);
-    set_interface_attribs(fd, B57600);
+    set_interface_attribs(fd, B38400);
+    //set_interface_attribs(fd, B57600);
 
     //wlen = write(fd, "Hello!\n", 7);
     //if (wlen != 7) {
@@ -163,5 +163,5 @@ int c_openport(char *portname)
 
 
 //    unsigned char buf[4];
-//	int b = readser(fd, buf, 3, 50000);
+//  int b = readser(fd, buf, 3, 50000);
 //   if (b>0) printf("Read %d: \"%s\"\n", b, buf);

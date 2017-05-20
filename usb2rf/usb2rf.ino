@@ -318,8 +318,11 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
             break;
 
         case 'W':
-            // TODO
             // send wake up 1 sec pulse
+            if (cmd_len==1) {
+                const byte w='*';
+                rf.sendBurstPacket(&w,1,1050);
+            }
         break;
 
         case 'Z':
@@ -355,7 +358,8 @@ int main() {
     init(); // mandatory, for arduino functions to work
 
     pinMode(DEBUG_PIN,INPUT_PULLUP);
-    Serial.begin(57600);
+    //Serial.begin(57600);
+    Serial.begin(38400);
 
     debug_port.begin(19200);
     delay(1);
