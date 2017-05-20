@@ -127,11 +127,8 @@ GND  | GND
 TX   | RX
 RX   | TX
 
-
-**Note the DTR is not connected, wich means no autoreset.** This is VERY importand for the
+Note that DTR is not connected, wich means no autoreset. This is VERY importand for the
 intended use of the module.
-No jumper cables are required. The male FTDI socket fits to the female proMini.
-Just warp/cut the DTR pin to prevent connection.
 
 ***The SPI intreface***
 
