@@ -96,7 +96,7 @@ In the command line
 
 ***Update: The FTDI modules are very unreliable (at least the ebay ones). A lot of failed uploads, and mysterious CRC errors, 
 dissapeared by using a CP2102 or Pl2303 USB-to-Serial module (again from ebay). The FTDI modules probably have non-genuine FTDI's
-but I dont know if this is the reason of the problems. In the next few days I will update this tutorial with the new instructions***
+but I dont know if this is the reason of the problems (seems likely). In the next few days I will update this tutorial with the new instructions***
 
 To build the usb2rf module you need :
 - FTDI module (Now CP2102)
