@@ -119,6 +119,7 @@ Here is a photo of the materials we need (It will change with CP2102)
 
 ***Serial connection.***
 Four jumper cables are required:
+
 CP2102 | Pro Mini
 ---- | --------
 GND  | GND
