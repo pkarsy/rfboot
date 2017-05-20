@@ -99,36 +99,33 @@ dissapeared by using a CP2102 or Pl2303 USB-to-Serial module (again from ebay). 
 but I dont know if this is the reason of the problems. In the next few days I will update this tutorial with the new instructions***
 
 To build the usb2rf module you need :
-- FTDI module (I use a D-SUN module)
+- FTDI module (Now CP2102)
 - ProMini 3.3V
-- CC1101 module
-- some jumper wires.
+- CC1101 module (I use D-SUN modules)
+- some female-female jumper wires.
 
 ```
 +----------+
 |          |         +-------+          +----------+         +--------+
-| gtkterm  |  <--->  |  FTDI |  <--->   | Pro mini |  <--->  | CC1101 |
+| gtkterm  |  <--->  |CP2102 |  <--->   | Pro mini |  <--->  | CC1101 |
 | rftool   |   USB   +-------+  Serial  +----------+   SPI   +--------+
 +----------+
    PC                |                  usb2rf module                 |
                      +------------------------------------------------+
 ```
 
-Here is a photo of the materials we need
+Here is a photo of the materials we need (It will change with CP2102)
 ![usb2rf](files/usb2rf1.jpg)
 
 ***Serial connection.***
-The FTDI module is configured for 3.3V output.
-
-
-FTDI | Pro Mini
+Four jumper cables are required:
+CP2102 | Pro Mini
 ---- | --------
 GND  | GND
-CTS  | GND
-VCC  | VCC
+5V   | RAW
 TX   | RX
 RX   | TX
-DTR NC | GRN NC
+
 
 **Note the DTR is not connected, wich means no autoreset.** This is VERY importand for the
 intended use of the module.
@@ -146,7 +143,7 @@ SCK | Green | 13
 MOSI | Blue | 11
 MISO | Violet | 12
 GDO0 | Gray | 2
-GDO2 | NC | NC
+GDO2 |  | Not Connected
 
 Finally, connect with a Female-Female cable the proMini pins D3 and RST.
 This is no critical and is only useful if you want to tweak the usb2rf sketch. The D3-RST connection
