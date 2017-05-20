@@ -145,7 +145,7 @@ GDO2 |  | Not Connected
 
 Finally, connect with a Female-Female cable the proMini pins D3 and RST.
 This is no critical and is only useful if you want to tweak the usb2rf sketch. The D3-RST connection
-allows the firmware to reset the module, for easy development. The Makefile try to reset the module with this mechanism.
+allows the firmware to reset the module, for easy development. The usb2rf/Makefile try to reset the module with this mechanism.
 
 ![usb2rf2](files/usb2rf2.jpg)
 
