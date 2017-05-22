@@ -126,7 +126,7 @@ GND  | Black |GND
 TX   | Yellow | RX
 RX   | Green |TX
 
-ProMino converts the 5V (RAW pin) to 3.3V. CP2101 has also a 3.3 regulator and the 2 modules
+ProMini converts the 5V (RAW pin) to 3.3V. CP2101 has also a 3.3 regulator and the 2 modules
 can communicate without the need for logic level conversion.
 
 ***The SPI intreface***
@@ -146,7 +146,9 @@ GDO2 |  | Not Connected
 
 CC1101 is working fine with 3.3V, so again no level conversion is needed.
 
-Finally, connect with a Female-Female cable the proMini pins D3 and RST. This is no critical and is only useful if you modify the usb2rf sketch frequently (unlikely as you probably you want to program the module only once)
+***Finally, connect with a Female-Female cable the proMini pins D3 and RST.***
+
+This is no critical and is only useful if you modify the usb2rf sketch frequently (unlikely as you probably you want to program the module only once)
 Explanation: (skip this if you are not interested for the mechanism) D3-RST plays the same role as the DTR-RST
 connection, in arduinos, to support the autoreset feature. The difference is that the reset is triggered by the firmware and not
 by the Serial module. This is very importat because we do not want the module to reset every time the serial port is accessed by a
