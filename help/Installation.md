@@ -94,31 +94,30 @@ In the command line
 
 ### usb2rf module
 
-***Update: The FTDI modules are very unreliable (at least the ebay ones). A lot of failed uploads, and mysterious CRC errors, 
-dissapeared by using a CP2102 or Pl2303 USB-to-Serial module (again from ebay). The FTDI modules probably have non-genuine FTDI's
-but I dont know if this is the reason of the problems (seems likely). In the next few days I will update this tutorial with the new instructions***
+***Update: The FTDI modules (with the fake FTDI chip) are very unreliable. A lot of failed uploads, and mysterious CRC errors, 
+dissapeared by using a CP2102 or Pl2303 USB-to-Serial module (again from ebay). I dont't have a genuine FTDI module to test it. In the next few days I will update this tutorial with the new instructions***
 
 To build the usb2rf module you need :
-- FTDI module (Now CP2102)
-- ProMini 3.3V
+- A CP2102 module ( A Pl2303 is also OK)
+- ProMini 3.3V. Do not use a 5V ProMini. CC1101 cannot tolerate 5V.
 - CC1101 module (I use D-SUN modules)
-- some female-female jumper wires.
+- some female-female jumper wires (2.54mm spacing).
 
 ```
 +----------+
-|          |         +-------+          +----------+         +--------+
-| gtkterm  |  <--->  |CP2102 |  <--->   | Pro mini |  <--->  | CC1101 |
-| rftool   |   USB   +-------+  Serial  +----------+   SPI   +--------+
+|          |         +--------+          +----------+         +--------+
+| gtkterm  |  <--->  | CP2102 |  <--->   | Pro mini |  <--->  | CC1101 |
+| rftool   |   USB   +--------+  Serial  +----------+   SPI   +--------+
 +----------+
-   PC                |                  usb2rf module                 |
-                     +------------------------------------------------+
+   PC                |                   usb2rf module                 |
+                     +-------------------------------------------------+
 ```
 
 Here is a photo of the materials we need (It will change with CP2102)
 ![usb2rf](files/usb2rf1.jpg)
 
 ***Serial connection.***
-Four jumper cables are required:
+4 cables are required :
 
 CP2102 | Cable COLOR | Pro Mini
 ---- | ----- | --------
@@ -127,10 +126,12 @@ GND  | Black |GND
 TX   | Yellow | RX
 RX   | Green |TX
 
-Note that DTR is not connected, wich means no autoreset. This is VERY importand for the
-intended use of the module.
+ProMino converts the 5V (RAW pin) to 3.3V. CP2101 has also a 3.3 regulator and the 2 modules
+can communicate without the need for logic level conversion.
 
 ***The SPI intreface***
+
+7 cables are required :
 
 CC1101 PIN | Cable COLOR | ProMini pin
 ------------- | ----------- | -----------
@@ -143,13 +144,15 @@ MISO | Violet | 12
 GDO0 | Gray | 2
 GDO2 |  | Not Connected
 
-Finally, connect with a Female-Female cable the proMini pins D3 and RST.
-This is no critical and is only useful if you want to tweak the usb2rf sketch. The D3-RST connection
-allows the firmware to reset the module, for easy development. The usb2rf/Makefile try to reset the module with this mechanism.
+CC1101 is working fine with 3.3V, so again no level conversion is needed.
+
+Finally, connect with a Female-Female cable the proMini pins D3 and RST. This is no critical and is only useful if you modify the usb2rf sketch frequently (unlikely as you probably you want to program the module only once)
+Explanation: (skip this if you are not interested for the mechanism) D3-RST plays the same role as the DTR-RST
+connection, in arduinos, to support the autoreset feature. The difference is that the reset is triggered by the firmware and not
+by the Serial module. This is very importat because we do not want the module to reset every time the serial port is accessed by a
+program. However the usb2rf firmware asserts D3 LOW when we want to update (the firmware). The usb2rf/Makefile resets the module with this mechanism.
 
 ![usb2rf2](files/usb2rf2.jpg)
-
-Note the missing DTR pin
 
 And here is the final module
 
