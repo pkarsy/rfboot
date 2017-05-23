@@ -1,4 +1,4 @@
---- What the D3 to RST cable does in ProMini (usb2rf module)
+### What the D3 to RST cable does in ProMini (usb2rf module)
 
 This is no critical and is only useful if you modify the usb2rf sketch frequently. This is unlikely as you probably want to program the module only once.
 
