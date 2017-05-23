@@ -18,7 +18,7 @@ Of course if you are unfamiliar with linux and especially the command line the p
 remains.
 
 I did all development on a Linux Mint 17 box. Probably you need to adapt the procedure
-for your environment.
+for your environment. Open a terminal:
 
 ```
 > sudo apt-get update ; sudo apt-get upgrade # this is recommended before start
@@ -38,15 +38,16 @@ Download the rfboot repository in your PC. Place it in some relatively safe plac
 PC like ~/programming/
 
 ```
-mkdir ~/programming
-cd ~/programming
-git clone https://github.com/pkarsy/rfboot.git
+> mkdir ~/programming
+> cd ~/programming
+> git clone https://github.com/pkarsy/rfboot.git
 ```
 The "rftool" utility needs to be in the PATH.
 ```
 # if the ~/bin does not exist "mkdir ~/bin" and then logout and login again
 > cd ~/bin
 > chmod +x ~/programming/rfboot/rftool/rftool
+# Do NOT copy rftool, just symlink it
 > ln -s ~/programming/rfboot/rftool/rftool
 ```
 Now if you type
