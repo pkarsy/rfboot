@@ -148,7 +148,7 @@ GDO2 |  | Not Connected
 CC1101 is working fine with 3.3V, so again no level conversion is needed.
 
 ***Optional: connect with a Female-Female cable the proMini pins D3 and RST.***
-See [Explanation](usb2rf_reset.md)
+See [Explanation](usb2rf-reset.md)
 
 This is no critical and is only useful if you modify the usb2rf sketch frequently (unlikely as you probably you want to program the module only once)
 Explanation: (skip this if you are not interested for the mechanism) D3-RST plays the same role as the DTR-RST
