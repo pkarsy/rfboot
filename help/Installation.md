@@ -95,11 +95,10 @@ In the command line
 
 ### usb2rf module
 
-***Update: The FTDI modules (with the fake FTDI chip) are very unreliable. A lot of failed uploads, and mysterious CRC errors, 
-dissapeared by using a CP2102 or Pl2303 USB-to-Serial module (again from ebay). I dont't have a genuine FTDI module to test it. In the next few days I will update this tutorial with the new instructions***
+***WARNING: The red FTDI modules in the picture (it seams they have a fake FTDI chip) are very unreliable. A lot of failed uploads, and mysterious CRC errors, dissapeared by using a CP2102 or Pl2303 USB-to-Serial module. I dont't have a genuine FTDI module to test it. In the next few days I will update this tutorial with the new instructions***
 
 To build the usb2rf module you need :
-- A CP2102 module ( A Pl2303 is also OK)
+- A CP2102 module ( A PL2303 is also OK)
 - ProMini 3.3V. Do not use a 5V ProMini. CC1101 cannot tolerate 5V.
 - CC1101 module (I use D-SUN modules)
 - some female-female jumper wires (2.54mm spacing).
@@ -118,6 +117,7 @@ Here is a photo of the materials we need (It will change with CP2102)
 ![usb2rf](files/usb2rf1.jpg)
 
 ***Serial connection.***
+
 4 cables are required :
 
 CP2102 | Cable COLOR | Pro Mini
@@ -127,7 +127,7 @@ GND  | Black |GND
 TX   | Yellow | RX
 RX   | Green |TX
 
-ProMini converts the 5V (RAW pin) to 3.3V. CP2101 has also a 3.3 regulator and the 2 modules
+ProMini regulates the 5V from RAW pin to 3.3V. CP2101 has also an internal 3.3 regulator and the 2 modules
 can communicate without the need for logic level conversion.
 
 ***The SPI intreface***
@@ -147,7 +147,8 @@ GDO2 |  | Not Connected
 
 CC1101 is working fine with 3.3V, so again no level conversion is needed.
 
-***Finally, connect with a Female-Female cable the proMini pins D3 and RST.***
+***Optional: connect with a Female-Female cable the proMini pins D3 and RST.***
+See [Explanation](usb2rf_reset.md)
 
 This is no critical and is only useful if you modify the usb2rf sketch frequently (unlikely as you probably you want to program the module only once)
 Explanation: (skip this if you are not interested for the mechanism) D3-RST plays the same role as the DTR-RST
