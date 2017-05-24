@@ -24,7 +24,7 @@ random and they are different at every project.
 for each project, to write rfboot to the target MCU.
 - A breadboard. Note that a bad breadboard is the basic source of failures in a project.
 
-Here is how our project looks like.
+Here is how our project looks like. It is not connected with anything, and we are going to program it wirelessly.
 ![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
 
 On the PC, possibly in you sketchbook folder
