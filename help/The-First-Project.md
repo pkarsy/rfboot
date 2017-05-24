@@ -32,7 +32,7 @@ On the PC, possibly in you sketchbook folder
 > rftool create myProject
 ```
 as you can see rftool generates random parameters (using /dev/urandom), and of course
-a "myProject" folder containing all inormation our project needs.
+a "myProject" folder containing all information/data our project needs.
 ```
 > cd myProject
 ```
