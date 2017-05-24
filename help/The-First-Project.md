@@ -21,7 +21,7 @@ random and they are different at every project.
 - A 3.3V stabilized power source. For example A lithium-ion cell with a 3.3V regulator and
 2 additional 1uF caps. LP2950-3.3 and especially HT7333 are very good for this purpose. See picture.
 - ISP programmer with a 28pin ZIF socket. The isp programmer is used only once
-for each project, to write rfboot to the target MCU. After this no cables are necessary for upload.
+for each project, to write rfboot to the target MCU.
 - A breadboard. Note that a bad breadboard is the basic source of failures in a project.
 
 Here is how our project looks like.
@@ -31,7 +31,8 @@ On the PC, possibly in you sketchbook folder
 ```
 > rftool create myProject
 ```
-as you can see rftool generates random parameters (using /dev/urandom)
+as you can see rftool generates random parameters (using /dev/urandom), and of course
+a "myProject" folder containing all inormation our project needs.
 ```
 > cd myProject
 ```
@@ -51,7 +52,7 @@ or simply
 ```
 > make xtal
 ```
-Don't do this on this first project however, as we are not using a crystal. 
+Don't do this on this first project however, to keep things simple. 
 Rfboot works perfectly with (uncalibrated up to 10% error) internal oscillator because the SPI
 interface does not need a +-2% accurate clock source as Serial needs.
 
@@ -61,14 +62,14 @@ Power the board and then
 > make terminal # Opens gtkterm with all apropriate options
 > make send # Sends the firmware
 ```
-After the upload is finished
-You will see uptime (in ms) in gtkterm.
+After the upload is finished, you will see uptime (in ms) in gtkterm.
+If you are succesful, you can start playing with the code.
 
-Add this line to setup():
+For example, add this line to setup():
 ```
 PRINTLN("Hello world");
 ```
-All arduino machinery is working as expected with the exception of Serial.print. The
+All arduino code is working as expected, with the exception of Serial.print(). The
 PRINT and PRINTLN macros can be used instead which use sprintf internally.
 ```
 i=2;
