@@ -3,12 +3,7 @@
 Before you proceed, it is required that you have completed the
 [Installation of rfboot](Installation.md)
 
-Let's start :
-```
-> rftool create myProject
-```
-
-### Bill of materials (bare atmega)
+### Bill of materials
 - atmega328p-pu
 - 2 ceramic caps 1uF (Optional, for voltage stability near MCU)
 - A momentary pushbutton (optional, for reset)
