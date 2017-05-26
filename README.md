@@ -1,6 +1,6 @@
 # rfboot
 
-Bootloader for Atmega328 over the air (OTA) using the TI CC1101 chip.
+# Atmega328 Bootloader for wireless (OTA) code uploads, using the CC1101 RF chip.
 
 Included :
 
