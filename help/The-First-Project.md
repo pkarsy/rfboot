@@ -7,9 +7,6 @@ Let's start :
 ```
 > rftool create myProject
 ```
-creates a fully working rfboot based project, which will print the uptime on screen
-every second. There is no need to configure RF channels XTEA etc. They are selected at
-random and they are different at every project.
 
 ### Bill of materials (bare atmega)
 - atmega328p-pu
@@ -27,12 +24,15 @@ for each project, to write rfboot to the target MCU.
 Here is how our project looks like. It is not connected with anything, and we are going to program it wirelessly.
 ![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
 
-On the PC, possibly in you sketchbook folder
+On the PC, prefferably in you sketchbook folder type :
 ```
 > rftool create myProject
 ```
-as you can see rftool generates random parameters (using /dev/urandom), and of course
-a "myProject" folder containing all information/data our project needs.
+as you can see rftool generates random parameters (using /dev/urandom), and creates
+a "myProject" folder containing all information/data our project needs. As is, the projects will print the uptime on screen
+every second. There is no need to configure RF channels XTEA etc. They are selected at
+random and they are different every time you create a new project.
+
 ```
 > cd myProject
 ```
