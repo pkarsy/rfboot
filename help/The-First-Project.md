@@ -1,9 +1,9 @@
 ### The First project
 
-Before you proceed it is required that you have completed the
+Before you proceed, it is required that you have completed the
 [Installation of rfboot](Installation.md)
 
-There is no need to use any prebuild example.
+Let's start :
 ```
 > rftool create myProject
 ```
