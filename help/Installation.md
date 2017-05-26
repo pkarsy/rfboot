@@ -3,21 +3,20 @@
 In order to use rfboot succesfully there are quite a few steps initially but after that
 the process is simple.
 You need to:
-- Install the apropriate software in the PC
-- Download and install rfboot from github
+- Install the needed software in the PC
 - Assemble and configure the usb2rf module (Connects to a USB port of the PC)
 - Configure rftool to use the usb2rf module
-- Burn the apropriate firmware to usb2rf (An Arduino sketch)
+- Upload the apropriate firmware to usb2rf (An Arduino sketch)
 
 ### Install the apropriate software
 First of all a linux PC is needed, for the development. I don't use Windows neither MAC
 and is very difficult for me to support another platform. You can use VirtualBox if
 you really need to use rfboot from Windows or Mac.
 I tried with Virtualbox (a Linux Mint 17.3 image) and it is working perfectly.
-Of course if you are unfamiliar with linux and especially the command line the problem
+Of course if you are unfamiliar with linux and especially the command line, the problem
 remains.
 
-I did all development on a Linux Mint 17 box. Probably you need to adapt the procedure
+I do all development on a Linux Mint 17.3 box. Maybe you need to adapt the procedure
 for your environment. Open a terminal:
 
 ```
