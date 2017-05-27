@@ -1,4 +1,4 @@
-### The First project
+### The First Project
 
 Before you proceed, it is required that you have completed the
 [Installation of rfboot](Installation.md)
