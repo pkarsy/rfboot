@@ -14,7 +14,7 @@ Before you proceed, it is required that you have completed the
 2 additional 1uF caps. LP2950-3.3 and especially HT7333 are very good for this purpose. See picture.
 - ISP programmer with a 28pin ZIF socket. The isp programmer is used only once
 for each project, to write rfboot to the target MCU.
-- A breadboard. Note that a bad breadboard is the basic source of failures in a project.
+- A breadboard. Note that a bad breadboard is the basic source of failures when prototyping.
 
 Here is how our project looks like. It is not connected with anything, and we are going to program it wirelessly.
 ![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
