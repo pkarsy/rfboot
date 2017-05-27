@@ -39,7 +39,7 @@ the USBtiny line. Put the atmega328p-pu chip on the ZIF socket and :
 ```
 > make isp
 ```
-To write th bootloader.
+To write the bootloader.
 If your project uses a crystal you can edit "rfboot/hardware_settings.mk" before burn
 or simply
 ```
@@ -47,7 +47,7 @@ or simply
 ```
 Don't do this on this first project however, to keep things simple. 
 Rfboot works perfectly with (uncalibrated up to 10% error) internal oscillator because the SPI
-interface does not need a +-2% accurate clock source as Serial needs.
+interface does not need a +-2% accurate clock source as Serial Communication needs.
 
 Now put the atmega and the other components in the breadboard.
 Power the board and then
