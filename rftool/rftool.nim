@@ -102,7 +102,7 @@ proc parseKey(keyStr: string): array[4,uint32] =
 
 # This proc comes form the wikipedia article about xtea. again converted with
 # c2nim amd modified by hand
-# Note that this one, instead of modifying the input, returns the encrypted result
+# Note that this one, instead of modifying the input, returns the encrypted result.
 # xtea works with 8 byte  blocks, and treats them as 2 uint32 numbers
 proc xteaEncipher(v: array[2, uint32]; key: array[4, uint32]) : array[2, uint32] =
 
@@ -265,7 +265,7 @@ proc sendStopSignal(portname:string): bool =
   LPID = checkLockFile(portname)
   if (LPID>0):
     discard kill(LPID,SIGSTOP)
-    stderr.writeLine "Stopping process ",LPID," thad holds a LOCK on the serial port"
+    stderr.writeLine "Stopping process ",LPID," that holds a LOCK on the serial port"
     return true
   else:
     return false
