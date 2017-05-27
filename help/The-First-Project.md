@@ -24,9 +24,7 @@ On the PC, prefferably in you sketchbook folder type :
 > rftool create myProject
 ```
 as you can see rftool generates random parameters (using /dev/urandom), and creates
-a "myProject" folder containing all information/data our project needs. As is, the projects will print the uptime on screen
-every second. There is no need to configure RF channels XTEA etc. They are selected at
-random and they are different every time you create a new project.
+a "myProject" folder containing all information/data our project needs. As is, the project prints the uptime on screen (the serial terminal) every second.
 
 ```
 > cd myProject
