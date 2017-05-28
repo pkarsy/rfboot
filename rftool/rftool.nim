@@ -264,7 +264,7 @@ proc sendStopSignal(portname:string): bool =
   #discard execProcess( "/bin/fuser", ["-s", "-k", "-STOP", portName] , options={ poStdErrToStdOut })
   LPID = checkLockFile(portname)
   if (LPID>0):
-    discard kill(LPID,SIGSTOP)
+    discard kill(LPID.cint,SIGSTOP)
     stderr.writeLine "Stopping process ",LPID," that holds a LOCK on the serial port"
     return true
   else:
@@ -277,7 +277,7 @@ proc sendContSignal() {.noconv.} =
   #discard execProcess( "/bin/fuser", ["-s", "-k", "-CONT", portName], options={ poStdErrToStdOut } )
   if (LPID)>0:
     stderr.writeLine "Resuming process ", LPID
-    discard kill(LPID, SIGCONT)
+    discard kill(LPID.cint, SIGCONT)
 
 
 proc openPort(portname: cstring): cint =
