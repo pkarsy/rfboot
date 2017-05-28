@@ -931,6 +931,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
         #stderr.writeLine "Got END from usb2rf, pkt_idx=", pkt_idx
         if pkt_idx>0:
           stderr.writeLine "WARNING: usb2rf termination"
+          quit QuitFailure
         break
       else:
         stderr.writeLine "Got unknown response", resp

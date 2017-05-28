@@ -4,6 +4,8 @@
 #F_CPU = 8000000L
 
 # Uncomment to enable external crystal
+# if you uncomment this setting you MUST
+# include a crystal in your project
 # default is internal oscillator @ 8Mhz
 # only 1 is accepted as true
 #CRYSTAL = 1
