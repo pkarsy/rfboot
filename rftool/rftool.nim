@@ -14,11 +14,21 @@ import posix
 # This is the size of rfboot in atmega FLASH
 const BOOTLOADER_SIZE = 4096
 
+# A few serial handling functions (public domain), grabbbed from various
+# Internet sources plus some handling routines.
 {.compile: "serial.c".}
 proc c_openport*(port: cstring):cint {.importc.}
 proc readser*(fd: cint, buf: cstring, nbytes: cint, timeout: cint): cint {.importc.}
 proc writeser(fd: cint, buf: cstring, nbytes: cint) {.importc.}
 proc c_getchar(fd: cint, timeout: cint): cint {.importc.}
+
+# We use the same .c file as rfboot for xtea functions
+
+{.compile: "../rfboot/xtea/xtea.c".}
+#proc xtea_encipher(v: var array[2,uint32], key : array[4,uint32] ) {.importc.}
+proc xtea_encipher_cbc( v: var array[2,uint32], key : array[4,uint32], iv: var array[2,uint32] ) {.importc.}
+proc xtea_decipher(v: var array[2,uint32], key : array[4,uint32] ) {.importc.}
+#proc xtea_decipher_cbc( v: var array[2,uint32], key : array[4,uint32], iv: var array[2,uint32] ) {.importc.}
 
 
 const RFB_NO_SIGNATURE = 1
@@ -100,12 +110,12 @@ proc parseKey(keyStr: string): array[4,uint32] =
     stderr.writeLine "Value or overflow error while parsing KEY: ", keyStr
     quit QuitFailure
 
+# TODO allagi
 # This proc comes form the wikipedia article about xtea. again converted with
 # c2nim amd modified by hand
 # Note that this one, instead of modifying the input, returns the encrypted result.
 # xtea works with 8 byte  blocks, and treats them as 2 uint32 numbers
-proc xteaEncipher(v: array[2, uint32]; key: array[4, uint32]) : array[2, uint32] =
-
+discard """proc xteaEncipher(v: array[2, uint32]; key: array[4, uint32]) : array[2, uint32] =
   const delta: uint32 = 0x9E3779B9'u32
   const num_rounds = 32
   var
@@ -116,25 +126,32 @@ proc xteaEncipher(v: array[2, uint32]; key: array[4, uint32]) : array[2, uint32]
     v0 += (((v1 shl 4) xor (v1 shr 5)) + v1) xor (sum + key[sum.int and 3])
     sum += delta
     v1 += (((v0 shl 4) xor (v0 shr 5)) + v0) xor (sum + key[(sum shr 11).int and 3])
-  return [v0,v1]
+  return [v0,v1]"""
+#proc xteaEncipher(v: array[2, uint32]; key: array[4, uint32]) : array[2, uint32] =
+#  result = v
+#  xtea_encipher( result, key )
 
 # for use with "echo"
 proc `$`(a:array[2, uint32]): string =
   return "{" & $a[0] & "," & $a[1] & "}"
 
 # TODO I tested with some python XTEA-implementations and it is OK
-proc xteaEncipherCbc(v: array[2, uint32]; key: array[4, uint32], iv: var array[2,uint32]) : array[2, uint32] =
-  result = xteaEncipher([v[0] xor iv[0],v[1] xor iv[1]] ,key)
-  iv = result
+#proc xteaEncipherCbc(v: array[2, uint32]; key: array[4, uint32], iv: var array[2,uint32]) : array[2, uint32] =
+#  result = xteaEncipher([v[0] xor iv[0],v[1] xor iv[1]] ,key)
+#  iv = result
+
+#proc xteaEncipherCbc(v: array[2, uint32]; key: array[4, uint32], iv: var array[2,uint32]) : array[2, uint32] =
+#  result = v
+#  xtea_encipher_cbc( result, key, iv )
 
 
-# xtea encrypt a string. The string is treated as a series of little endian
+# xtea encpher a string. The string is treated as a series of little endian
 # uint32 numbers. The string must have a size multiple of 8
 # [ BYTE0(LSB) BYTE1 BYTE2 BYTE3(MSB) ] -> uint32
 # ie "1000" -> 1'u32
-proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
-  result = ""
+discard """proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
   assert(st.len mod 8 == 0,"String to be encrypted must have size multiple of 8 bytes")
+  result = ""
   for i in countup(0 , st.len - 1, step=8):
     var x0,x1:uint32
     let s = st[i .. i+7]
@@ -146,7 +163,6 @@ proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] )
       x1+=s[i].uint32
       x1 = x1 shl 8
     x1 += s[4].uint32
-
     block:
       let x = xteaEncipherCbc([x0,x1],key,iv)
       x0=x[0]
@@ -160,13 +176,38 @@ proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] )
       pkt[i]=char(x1 and 0xff)
       x1 = x1 shr 8
     pkt[7]=char(x1)
+    result.add pkt"""
+
+proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
+  assert(st.len mod 8 == 0,"String to be encrypted must have size multiple of 8 bytes")
+  result = ""
+  for i in countup(0 , st.len - 1, step=8):
+    var x:array[2,uint32]
+    let s = st[i .. i+7]
+    for i in countdown(3,1):
+      x[0]+=s[i].uint32
+      x[0] = x[0] shl 8
+    x[0] += s[0].uint32
+    for i in countdown(7,5):
+      x[1]+=s[i].uint32
+      x[1] = x[1] shl 8
+    x[1] += s[4].uint32
+    xtea_encipher_cbc(x,key,iv)
+    var pkt = "00000000"
+    for i in 0..2:
+      pkt[i]=char(x[0] and 0xff)
+      x[0] = x[0] shr 8
+    pkt[3]=char(x[0])
+    for i in 4..6:
+      pkt[i]=char(x[1] and 0xff)
+      x[1] = x[1] shr 8
+    pkt[7]=char(x[1])
     result.add pkt
 
 proc getKnownPorts() : seq[string] =
   result = @[]
   if not homeconfig.expandTilde.existsFile:
     stderr.writeLine "failed to open file \"", homeconfig, "\", creating an empty one."
-    #" rftool uses it to get the serial port device name."
     var f = homeconfig.expandTilde.open(mode=fmWrite)
     f.writeLine "# serial ports that rftool regards as usb2rf modules"
     f.close
@@ -176,14 +217,12 @@ proc getKnownPorts() : seq[string] =
     f = homeconfig.expandTilde.open
   except IOError:
     stderr.writeLine "failed to open file \"", homeconfig, "\""
-    #return
     quit QuitFailure
   while true:
     var s: string
     try:
       s = f.readLine.strip
     except IOError:
-      #break
       f.close
       return
     if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!"):
@@ -294,7 +333,6 @@ proc rand(): int =
   let randFile = open(RandomGen)
   result = randFile.readChar.int
   randFile.close
-
 
 
 discard """proc randomChannel(): int =
@@ -755,6 +793,11 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       iv[0]=msg[0].uint32+msg[1].uint32*256+msg[2].uint32*256*256+msg[3].uint32*256*256*256
       iv[1]=msg[4].uint32+msg[5].uint32*256+msg[6].uint32*256*256+msg[7].uint32*256*256*256
       stderr.writeLine "IV=", iv
+      var ivdec = iv
+      xtea_decipher(ivdec,key)
+      if ivdec[1]!=0:
+        stderr.writeLine "Upload Counter = ", ivdec[0]
+        stderr.writeLine "Bootloader compile time = ", fromSeconds(ivdec[1].int64).getLocalTime.format("yyyy-MM-dd   HH:mm")
       #let ivdecrypted=xtea_decipher(iv);
       #TODO
       # if msg.len==9 neos rfboot thelei CRC 32+1 byte
