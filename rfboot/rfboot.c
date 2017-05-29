@@ -100,15 +100,16 @@ struct start_packet {
 #define XTEA_BLOCK_SIZE 8
 
 // rfboot is designed to be a little smaller than this size
-// FUSES for this bootloader size
-// TODO
+// AVR FUSES for this bootloader size are set from Makefile
 #define BOOTLOADER_SECTION_SIZE 4096
 
 // This is the status codes rfboot is sending back to the programmer
 const uint8_t RFB_NO_SIGNATURE = 1;
 const uint8_t RFB_INVALID_CODE_SIZE = 2;
 
-//const uint8_t RFB_ROUND_IS = 3;
+// As development of rfboot evolved, the value is not used anymore
+// const uint8_t RFB_ROUND_IS = 3;
+
 const uint8_t RFB_SEND_PKT = 4;
 
 const uint8_t RFB_WRONG_CRC=5;
