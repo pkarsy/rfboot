@@ -41,12 +41,13 @@ const RFB_SUCCESS=6
 const ApplicationSettingsFile = "app_settings.h"
 const RfbootSettingsFile = "rfboot/rfboot_settings.h"
 const MaxAppSize = 32*1024 - BOOTLOADER_SIZE
-const StartSignature = 0xd20f6cdf # This is expected from rfboot
+const StartSignature = 0xd20f6cdf.uint32 # This is expected from rfboot
 const Payload = 32 # The same as rfboot
 const CommdModeStr = "COMMD" # This word, switches the usb2rf module to command mode
 const RandomGen = "/dev/urandom"
 const homeconfig = "~/.usb2rf"
 const serialPortDir = "/dev/serial/by-id"
+#var PingSignature = StartSignature
 
 # This holds the PID of Serial Terminal software, if one has opened the serial port
 # of the usb2rf module
@@ -209,7 +210,7 @@ proc getKnownPorts() : seq[string] =
   if not homeconfig.expandTilde.existsFile:
     stderr.writeLine "failed to open file \"", homeconfig, "\", creating an empty one."
     var f = homeconfig.expandTilde.open(mode=fmWrite)
-    f.writeLine "# serial ports that rftool regards as usb2rf modules"
+    f.writeLine "# serial ports known to be usb2rf modules"
     f.close
     return
   var f: File
@@ -369,7 +370,8 @@ proc keyAsArrayC(key: array[4,uint32]): string =
   return "{ " & $key[0] & "u , " & $key[1] & "u , " & $key[2] & "u , " & $key[3] & "u }"
 
 
-proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array[4,uint32] ] =
+proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array[4,uint32], pingSignature: uint32 ] =
+  result.pingSignature = START_SIGNATURE
   var rfbootConf : string
   try:
      rfbootConf = readFile(RfbootSettingsFile)
@@ -407,7 +409,7 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
           stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL must be an integer"
           quit QuitFailure
         result.rfbChannel = line.parseInt
-      if line.contains("RFB_SYNCWORD"):
+      elif line.contains("RFB_SYNCWORD"):
         let brstart = line.find('{')
         let brend = line.find('}')
         line = line[brstart+1..brend-1]
@@ -415,7 +417,20 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
         for i in 0..1:
           sw[i] = line.split(',')[i].strip.parseInt.char
         result.rfbootAddress = sw
-
+      elif line.contains("PING_SIGNATURE"):
+        if line.count('=') != 1:
+          stderr.writeLine "In file \"", RfbootSettingsFile, "\", the PING_SIGNATURE line is missing a \"=\""
+        let startl = line.find('=')
+        let endl = line.find ';'
+        if endl == -1:
+          stderr.writeLine "In file \"", RfbootSettingsFile, "\", the PING_SIGNATURE line is missing a \";\" at the end"
+          quit QuitFailure
+        line = line[startl+1 .. endl-1].strip.toLowerAscii.replace("u","")
+        if line.len==0 or not line.isDigit:  #  or line.len>3 or line.parseInt>127
+          echo '"',line,'"'
+          stderr.writeLine "In file \"", RfbootSettingsFile, "\", the PING_SIGNATURE must be a uint32"
+          quit QuitFailure
+        result.pingSignature = line.parseUint.uint32
 
 proc toArray(s:string): string =
   result = "{"
@@ -663,8 +678,11 @@ proc actionCreate() =
     f.writeLine "const uint8_t RFBOOT_CHANNEL = ", rfbChannel, ";"
     f.writeLine "const uint8_t RFB_SYNCWORD[] = {", rfbSyncWord0,",", rfbSyncWord1, "};"
     f.writeLine "// This key is only used when updating firmware. The application code does not use it"
+
     #f.writeLine "// Note also that there is no any guarantee that the encryption offers any confidenciality"
     f.writeLine "const uint32_t XTEAKEY[] = ", xteaKey.keyAsArrayC, ";"
+    f.writeLine "// This is a 4 byte packet rfboot expects before answering"
+    f.writeLine "const uint32_t PING_SIGNATURE = ", randomUint32(), "u;"
     discard """
 // If uncommented,  does not allow code to be uploaded, unless the reset button is pressed
 // Can be useful if the project has stable firmware but there is need for some
@@ -710,7 +728,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     if modulo != 0:
       app.add '\xff'.repeat(Payload-modulo)
 
-  let (rfbChannel,rfbAddress,key) = getUploadParams()
+  let (rfbChannel,rfbAddress,key,pingSignature) = getUploadParams()
   let (newAppChannel, newAppAddress, newResetString) = getAppParams()
   var appChannel: int
   var appAddress = "12"
@@ -741,7 +759,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     app.crc16.toString & app.crc16_rev.toString & 0.uint16.toString &
     StartSignature.uint32.toString & randomString(16)
 
-  var smallHeader = StartSignature.uint32.toString
+  var smallHeader = pingSignature.toString
   port.drain(5000)
   port.write(CommdModeStr & "Z")  # fast reset
   const USB2RF_START_MESSAGE = "USB2RF"

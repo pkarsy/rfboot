@@ -107,7 +107,7 @@ struct start_packet {
 const uint8_t RFB_NO_SIGNATURE = 1;
 const uint8_t RFB_INVALID_CODE_SIZE = 2;
 
-// As development of rfboot evolved, the value is not used anymore
+// As development of rfboot evolved, this variable is not used anymore
 // const uint8_t RFB_ROUND_IS = 3;
 
 const uint8_t RFB_SEND_PKT = 4;
@@ -131,16 +131,11 @@ const uint8_t RFB_SUCCESS=6;
 // rfboot knows that ITSELF triggered a wdog reset with
 // the intention to start the application and not load itself again.
 // memory is preserved across resets so apart from EEPROM (witch
-// we don't want to use as little as possible) is the only way to send info from one instance
+// we want to use as little as possible) is the only way to send info from one instance
 // of rfboot to the next (after a reset)
 // this variable cannot be declared register !!!
 const uint32_t RESET_BY_RFBOOT=0xd8317bc2;
 volatile uint32_t reset_origin __attribute__ ((section (".noinit")));
-
-// there is a very small possibility this mechanism can fail: The app
-// can trigger a wdog reset and happens the memory contents of this variable
-// to be equal with RESET_BY_RFBOOT due to random manipulations in memory.
-// if happens, the upload can always be done with the hardware reset.
 
 // the next variable is also preserved between 2 continuous rfboot executions
 // It is used to report correct reset causes EXTRF WDRF OWR BROWNOUT to the app
@@ -148,7 +143,6 @@ volatile uint32_t reset_origin __attribute__ ((section (".noinit")));
 // Technically a watchdog reset is triggered from rfboot itself
 // before the app starts. But we don't of course want to report this to the
 // application code.
-
 volatile uint8_t previous_reset_cause __attribute__ ((section (".noinit")));
 
 // if we don't want to be a register then we MUST put a line
@@ -158,7 +152,7 @@ volatile uint8_t previous_reset_cause __attribute__ ((section (".noinit")));
 register uint8_t mcusr_mirror asm("r2") __attribute__ ((section (".noinit")));
 
 // recommended code from avr-libc documentation
-// MCUSR manipulation is VERY tricky so better leave it as is
+// MCUSR manipulation is very tricky so better leave it as is
 void get_mcusr(void) __attribute__((naked)) __attribute__((section(".init3")));
 void get_mcusr(void) {
     mcusr_mirror = MCUSR;
@@ -378,9 +372,6 @@ int main(void) {
         xtea_encipher( (byte*)iv,XTEAKEY);
     #endif
 
-
-    //wdt_enable(WDTO_2S);
-
     // here we set RF channel, SyncWord etc
     radio_init();
     // no need for sei() : radio_init() does it
@@ -388,23 +379,18 @@ int main(void) {
         // 250 iterations before give up
         uint8_t i=250;
         while(1) {
-
             if (data_ready) {
                 data_ready = false;
                 if ( get_data() == 4 && ccpacket.crc_ok) {
-
                     break;
                 }
-                //else i=250;
             }
-
             i--;
             if (!i) reset_mcu();
             _delay_us(1000);
-
         }
         uint32_t* p = packet;
-        if (*p != START_SIGNATURE) reset_mcu();
+        if (*p != PING_SIGNATURE) reset_mcu();
     }
 
     send_iv(iv);
