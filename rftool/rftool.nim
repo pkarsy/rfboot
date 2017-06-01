@@ -590,7 +590,7 @@ proc actionCreate() =
   var appSyncWord1 = rand()
   var rfbSyncWord0 = rand()
   var rfbSyncWord1 = rand()
-  var rfbChannel = 4
+  var rfbChannel = 0
   discard """
   var options_table = initTable[string,string]()
   for i in countup(2,p.len-1,step=2):
@@ -670,10 +670,13 @@ proc actionCreate() =
     f.close
   block:
     let f = open(RfbootSettingsFile, fmWrite)
-    f.writeLine "// XTEAKEY RFB_SYNCWORD APP_ADDRESS and RFBOOT_CHANNEL are randomly"
+    f.writeLine "// XTEAKEY and PING_SIGNATURE are randomly"
     f.writeLine "// generated with the system randomness generator /dev/urandom"
+    f.writeLine "// RFBOOT_CHANNEL is 0 but you can change it before write to the MCU"
+    f.writeLine "// TODO. At the moment and RFB_SYNCWORD are choosen at random"
+    f.writeLine "// But must be selected with good \"autocorrelation\" properties"
     f.writeLine "// After the bootloader is installed to the target module, you cannot"
-    f.writeLine "// change the parameters, otherwise, the upload process will fail"
+    f.writeLine "// change the parameters"
     f.writeLine ""
     f.writeLine "const uint8_t RFBOOT_CHANNEL = ", rfbChannel, ";"
     f.writeLine "const uint8_t RFB_SYNCWORD[] = {", rfbSyncWord0,",", rfbSyncWord1, "};"

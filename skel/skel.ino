@@ -10,7 +10,7 @@
 mCC1101 rf;
 
 // These macros enables us to "print" messages via the RF
-// link. They use the rf.print(..) which is implemented in CC1101.cpp
+// link. They use the rf.print(..) which is implemented in mCC1101.cpp
 #define PRINT(format, ...) rf.print( F(format), ##__VA_ARGS__)
 #define PRINTLN(format, ...) rf.print( F(format "\r\n"), ##__VA_ARGS__)
 
@@ -67,8 +67,9 @@ void loop() {
             if (pkt_size==1 and packet[0]>='0' and packet[0]<='9') {
                 // This is a test. Generally do not overdo it with messages, as the link is
                 // half duplex.
-                // PRINT(LN) Use the F() operator, so the string literals do not
-                // consume precious RAM
+                // PRINT and PRINTLN use the F() operator, so the string literals do not
+                // consume precious RAM. It is equivalent to
+                // rf.print(F("formatString"), arg1, arg2, ..)
                 PRINTLN("Key %c detected", packet[0]);
             }
         }
