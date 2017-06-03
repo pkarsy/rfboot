@@ -4,17 +4,16 @@
 // Again: Do not replace the bootloader of the USB-to-RF module
 
 // WARNING:
-// Each FTDI chip has a unique Serial ID wich allows us to use the
-// /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_XXXXXXXX-if00-port0
-// as a permanenent device name no matter what other devices are connected
-// to the PC
 // Some USB to serial adapters do not
 // have a unique serial ID. If we only have one such module then is OK
 // but if we have more than one connected to the PC at the same time
 // it will be hard to choose the correct one.
-// Invest  1-2$ more and get a
-// module with a FTDI(or equivalent to FTDI) chip
-// with a unique device : /dev/serial/by-id/ddddddd
+// FTDI chips have unique serial IDs but at least the red modules (probably fake chips)
+// have some reliability problems.
+// I prefet to use CP2102 which does not ship with unique ID but you can program
+// one very easily
+// http://cp210x-program.sourceforge.net/
+
 
 #define PAYLOAD 32
 
@@ -22,21 +21,23 @@
 mCC1101 rf;
 
 // a flag that a wireless packet has been received
-
-
 // Handle interrupt from CC1101 GDO0 <--> D2(INT0)
 void cc1101signalsInterrupt(void) {
     rf.interrupt = true;
 }
 
 
-
 // Seems the AltSoftSerial does better than SoftSerial @ 8MHz
-// anything more than 19200 baud seams unreliable
+// Anything more than 19200 baud @ 8MHz seems unreliable
 // Uses fixed pins
-// D8 RX
-// D9 TX
-// D10 pwm is unusable
+// To enable debug output you need to attach a second USB serial dongle "debug serial module"
+// open with gtkterm 19200 baud. F7 enables/disables debug output
+// D8(RX) <---> Debug SerialModule TX (no need to connect)
+// D9(TX) <---> SerialModule2 RX
+// D10 pwm is unusable (no problem, we dont need it, and it is used by SPI anyway)
+// D4 <----> DTR (to enable disable debug with F7)
+// GND <----> GND no need if both usb2serial are connected to the same PC. All USB ports share
+// the same ground
 // https://www.pjrc.com/teensy/td_libs_AltSoftSerial.html
 #include <AltSoftSerial.h>
 AltSoftSerial debug_port;
@@ -57,9 +58,7 @@ void(* resetFunc) (void) = 0;
 uint32_t silence_timer ;
 
 void drain_serial() {
-    //uint32_t timer=millis();
     while ( Serial.read()!=-1 ) {};
-
 }
 
 void upload(uint16_t app_idx) {
@@ -106,10 +105,6 @@ void upload(uint16_t app_idx) {
                 debug_port.println(app_idx);
                 //if (sending_header) debug_port.println(F("This was the header"));
             }
-            //if (app_idx==PAYLOAD) { // Lathos TODO TODO TODO
-            //    Serial.write(USB_INFO_END);
-            //    break;
-            //}
         }
 
         if (rf.interrupt) {
@@ -133,16 +128,7 @@ void upload(uint16_t app_idx) {
                         }
                     }
                     else if (i==app_idx-PAYLOAD) { // next packet
-                        //if (rfboot_waiting) {
-                        //  // TODO should not happen
-                        //  // abort
-                        //  if (debug) {
-                        //      debug_port.print(__LINE__); debug_port.print(F(": Programming Error. "));
-                        //      debug_port.print(F("rfboot_waiting=true"));
-                        //  }
-                        //  return; // ABORT
-                        //}
-                        //else
+
                         if (debug) debug_port.println(F("ok next pkt"));
                         rfboot_waiting = true;
                         app_idx = i;
@@ -165,12 +151,7 @@ void upload(uint16_t app_idx) {
                     }
                 }
                 else {
-                    //if (debug) {
-                    //    debug_port.print("app_idx="); debug_port.println(app_idx);
-                    //    debug_port.print(F("ERROR: expected RFB_SEND_PKT"));
-                    //    debug_port.print(F(" .Got "));
-                    //    debug_port.println(cmd);
-                    //}
+
                     drain_serial();
                     // Uncknown cmd
                     Serial.write(USB_INFO_END);
@@ -190,33 +171,27 @@ void upload(uint16_t app_idx) {
         debug_port.print("app_idx="); debug_port.println(app_idx);
         debug_port.print(F("Serial.available()="));
         debug_port.println(Serial.available());
-        //debug_port.println(cmd);
     }
-    // All packets sent
-    // We wait for CRC report and we forward to PC
-    /* timer = millis();
-    while ( millis()-timer < 1200) {
-        if (rf.interrupt) {
-            byte inpacket[64];
-            byte pkt_size = rf.getPacket(inpacket);
-            rf.interrupt = false;
-            if (pkt_size==3 and rf.crc_ok) {
-                // we got a 3 byte packet from rfboot
-                byte cmd = inpacket[0];
-                if (cmd==RFB_SUCCESS or cmd==RFB_WRONG_CRC) {
-                    Serial.write(cmd);
-                }
-                else {
-                    Serial.write('E'); // TODO
-                }
-            }
-        }
-    } */
 }
 
 void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 
     switch (cmd[0]) {
+
+        case '0':
+            if (cmd_len==1) {
+                if (debug) {
+                    debug_port.print(F("CC1101 register = "));
+                    debug_port.println(rf.readConfigReg(CC1101_MDMCFG2),HEX);
+                }
+            }
+            else {
+                if (debug) {
+                    debug_port.print(F("Custom command, bad length : "));
+                    debug_port.println(cmd_len);
+                }
+            }
+        break;
 
         case 'A':
             if (cmd_len==3) {
@@ -320,8 +295,14 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
         case 'W':
             // send wake up 1 sec pulse
             if (cmd_len==1) {
+                if (debug) {
+                    debug_port.println(F("Sending WakeUp burst 1050ms"));
+                }
                 const byte w='*';
                 rf.sendBurstPacket(&w,1,1050);
+                if (debug) {
+                    debug_port.println(F("Done"));
+                }
             }
         break;
 
@@ -370,13 +351,16 @@ int main() {
     rf.setSyncWord(57,232);
     attachInterrupt(0, cc1101signalsInterrupt, FALLING);
 
-    if (debug) debug_port.println(F("Usb2rf debug port at 19200 bps"));
+    rf.writeReg(CC1101_MDMCFG2, 0x97);
+
+    //if (debug)
+    debug_port.println(F("Usb2rf debug port at 19200 bps"));
 
     uint8_t idx = 0;
     uint32_t timer = micros();
     bool cmdmode = false;
     delay(5);
-    Serial.write("USB2RF" );
+    Serial.println(F("USB2RF"));
 
     //bool last_debug = not debug;
     bool last_debug = false;
@@ -474,12 +458,10 @@ int main() {
         if (rf.interrupt) {
             byte pkt_size = rf.getPacket(packet);
             rf.interrupt = false;
-            //rf.setRxState();
-            if ( pkt_size > 0) {
-                if (not rf.crc_ok) {
-                    if (debug) debug_port.write("in CRC error\r\n");
-                }
-                else {
+
+            if (rf.crc_ok) {
+                if ( pkt_size > 0) {
+                    //else {
                     // Afti i grammi diorthonei to 5088 bug pou akoma den kserw pou ofeiletai
                     // pantos o bootloader stelnei olososto paketo kai o kwdikas to vlepei kanonika
                     // wstoso to 4,224,19 stanei sto PC mono san 4,224
@@ -503,12 +485,18 @@ int main() {
                         //if (pkt_size != 3)
                         debug_port.println(pkt_size);
                     }
+                    //}
+                }
+                else if (debug) {
+                    debug_port.println("in 0 !");
                 }
             }
-            else if (debug) {
-                debug_port.println("in 0 !");
+            else {
+                if (debug) {
+                    debug_port.write("in CRC error. pkt_size=");
+                    debug_port.println(pkt_size);
+                }
             }
-
         }
 
     }

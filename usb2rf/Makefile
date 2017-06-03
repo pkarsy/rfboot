@@ -2,8 +2,6 @@ BOARD_TAG = pro328
 EXTRA_FLAGS = -fshort-enums -g
 include /usr/share/arduino/Arduino.mk
 
-#MONITOR_PORT  =  /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_YYYYYYYY-if00-port0
-# This is better
 MONITOR_PORT := $(shell rftool getport)
 
 send: all

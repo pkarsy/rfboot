@@ -288,6 +288,11 @@ int main(void) {
             while(1) ;
         }
         else { // Reset cause was no HW reset, and flash seems to have application
+
+            // Althrough XTEAKEY is read only, the RAM can be written
+            // We erase XTEAKEY
+            memset((void*)XTEAKEY,0,sizeof(XTEAKEY));
+
             // Jump to the application
             asm("jmp 0");
         }
@@ -325,6 +330,11 @@ int main(void) {
         // be the reset cause of the previous reset, otherwise the application
         // will see as reset cause always WDOG
         mcusr_mirror = previous_reset_cause;
+
+        // Althrough XTEAKEY is read only, the RAM can be written
+        // We erase XTEAKEY
+        memset((void*)XTEAKEY,0,sizeof(XTEAKEY));
+
 
         // finally we start the application
         // note that we come from a WDOG reset

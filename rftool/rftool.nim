@@ -689,7 +689,7 @@ proc actionCreate() =
     discard """
 // If uncommented,  does not allow code to be uploaded, unless the reset button is pressed
 // Can be useful if the project has stable firmware but there is need for some
-// rare updades. Also if we do not want updates without physical contact
+// rare updates. Also if we do not want updates without physical contact
 //#define UPLOAD_AT_HW_RESET_ONLY
 
 // There may be cases we want the bootloader disabled unless a jumper is connected.
@@ -869,9 +869,9 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   else:
     stderr.writeLine "Unknown response ", reply, " data=", data
     quit QuitFailure
-  var pkt_idx = data
-  var pkt_idx_prev=pkt_idx
 
+  discard """var pkt_idx = data
+  var pkt_idx_prev=pkt_idx
   const upload_method = 1
   ################################## METHOD 0 (The old) ##############################
   if upload_method==0:
@@ -948,7 +948,8 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
         quit QuitFailure
       pkt_idx_prev=pkt_idx
       ################################# END upload method 0 ##################################
-  elif upload_method == 1:
+  elif upload_method == 1:"""
+  block:
     # The method:1 offloads the job to usb2rf module
     ###### The new method offload the send/receive functions to usb2rf module
 
@@ -1077,6 +1078,10 @@ proc actionResetLocal() =
   stderr.writeLine "reseting the usb2rf module"
   # string=" & CommdModeStr & "R"
   fd.write CommdModeStr & "R"
+  #fd.flush
+  #fd.flushFile
+  sleep 10
+  discard fd.close
 
 proc actionGetPort() =
   echo getPortName()
@@ -1099,13 +1104,13 @@ proc actionAddPort() =
             port = p
             break GetNewPort
       sleep(1000)
-    stderr.writeLine "Timeour"
+    stderr.writeLine "Timeout"
     quit QuitFailure
 
   if port in getKnownPorts():
     stderr.writeLine "The port is already in ", homeconfig
   else:
-    stderr.writeLine "Adding port : ", port
+    stdout.writeLine "Adding port : ", port
     let f=homeconfig.expandtilde.open(mode=fmAppend)
     f.writeLine ""
     f.writeLine "# port added with \"rftool addport\""
