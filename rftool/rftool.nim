@@ -291,7 +291,7 @@ proc checkLockFile(portName:string): int =
     if existsDir( "/proc/" & info[0]):
       return pid
     else:
-      stderr.writeLine("Lockfile is stale")
+      echo "Lockfile is stale"
       discard unlink(lockfile)
       return -1
   else:
@@ -305,7 +305,7 @@ proc sendStopSignal(portname:string): bool =
   LPID = checkLockFile(portname)
   if (LPID>0):
     discard kill(LPID.cint,SIGSTOP)
-    stderr.writeLine "Stopping process ",LPID," that holds a LOCK on the serial port"
+    echo "Stopping process ",LPID," that holds a LOCK on the serial port"
     return true
   else:
     return false
@@ -316,7 +316,7 @@ proc sendStopSignal(portname:string): bool =
 proc sendContSignal() {.noconv.} =
   #discard execProcess( "/bin/fuser", ["-s", "-k", "-CONT", portName], options={ poStdErrToStdOut } )
   if (LPID)>0:
-    stderr.writeLine "Resuming process ", LPID
+    echo "Resuming process ", LPID
     discard kill(LPID.cint, SIGCONT)
 
 
@@ -377,8 +377,10 @@ proc keyAsArrayC(key: array[4,uint32]): string =
   return "{ " & $key[0] & "u , " & $key[1] & "u , " & $key[2] & "u , " & $key[3] & "u }"
 
 
-proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array[4,uint32], pingSignature: uint32 ] =
+proc getUploadParams() : tuple[ rfbChannel:int, rfbootSyncWord:string, key: array[4,uint32], pingSignature: uint32 ] =
   result.pingSignature = START_SIGNATURE
+  result.rfbChannel = -1
+  #result.rfbootSyncWord=
   var rfbootConf : string
   try:
      rfbootConf = readFile(RfbootSettingsFile)
@@ -388,7 +390,7 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
   for i in rfbootConf.splitLines:
     var line = i.strip()
     if (line.len > 0) and not (line[0] in "/"):
-      if line.contains("XTEA_KEY"):
+      if line.contains("XTEA_KEY") or line.contains("XTEAKEY"):
         let brstart = line.find('{')
         let brend = line.find('}')
         line = line[brstart+1..brend-1]
@@ -400,11 +402,12 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
       #    quit QuitFailure
       #  let startl = line.find('\"')
       #  let endl = line.rfind('\"')
-      #  result.rfbootAddress = line[startl+1..endl-1]
-      #  stderr.writeLine "rfboot_address=",result.rfbootAddress
+      #  result.rfbootSyncWord = line[startl+1..endl-1]
+      #  stderr.writeLine "rfboot_address=",result.rfbootSyncWord
       elif line.contains("RFBOOT_CHANNEL"):
         if line.count('=') != 1:
           stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL line is missing a \"=\""
+          quit QuitFailure
         let startl = line.find('=')
         let endl = line.find ';'
         if endl == -1:
@@ -416,17 +419,18 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
           stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL must be an integer"
           quit QuitFailure
         result.rfbChannel = line.parseInt
-      elif line.contains("RFBOOT_SYNCWORD"):
+      elif line.contains("RFBOOT_SYNCWORD") or line.contains("RFB_SYNCWORD"):
         let brstart = line.find('{')
         let brend = line.find('}')
         line = line[brstart+1..brend-1]
         var sw = "  "
         for i in 0..1:
           sw[i] = line.split(',')[i].strip.parseInt.char
-        result.rfbootAddress = sw
+        result.rfbootSyncWord = sw
       elif line.contains("PING_SIGNATURE"):
         if line.count('=') != 1:
           stderr.writeLine "In file \"", RfbootSettingsFile, "\", the PING_SIGNATURE line is missing a \"=\""
+          quit QuitFailure
         let startl = line.find('=')
         let endl = line.find ';'
         if endl == -1:
@@ -438,6 +442,17 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
           stderr.writeLine "In file \"", RfbootSettingsFile, "\", the PING_SIGNATURE must be a uint32"
           quit QuitFailure
         result.pingSignature = line.parseUint.uint32
+  if result.pingSignature == START_SIGNATURE:
+    stderr.writeLine "PING_SIGNATURE==",START_SIGNATURE, ". This is an earlier rfboot."
+  if result.rfbootSyncWord==nil:
+    stderr.writeLine "ERROR: Config file does not contain the RFBOOT_SYNCWORD variable"
+    quit QuitFailure
+  if result.rfbChannel == -1:
+    stderr.writeLine "ERROR: Config file does not contain the RFBOOT_CHANNEL variable"
+    quit QuitFailure
+  if result.key==[0u32,0,0,0]:
+    stderr.writeLine "ERROR: Config file does not contain the XTEA_KEY variable"
+    quit QuitFailure
 
 proc toArray(s:string): string =
   result = "{"
@@ -478,10 +493,11 @@ proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: stri
           stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the RESET_STRING cannot be empty"
           quit QuitFailure
         result.resetString = line[startl+1..endl-1]
-        stderr.writeLine "resetString=",result.resetString
+        echo "resetString=",result.resetString
       elif line.contains("APP_CHANNEL"):
         if line.count('=') != 1:
           stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the APP_CHANNEL line is missing a \"=\""
+          quit QuitFailure
         let startl = line.find('=')
         let endl = line.find ';'
         if endl == -1:
@@ -693,7 +709,14 @@ proc actionCreate() =
     #f.writeLine "// Note also that there is no any guarantee that the encryption offers any confidenciality"
     f.writeLine "const uint32_t XTEA_KEY[] = ", xteaKey.keyAsArrayC, ";"
     f.writeLine "// This is a 4 byte packet rfboot expects before answering"
-    f.writeLine "const uint32_t PING_SIGNATURE = ", randomUint32(), "u;"
+    block:
+      var pingSignature = randomUint32()
+      # for compatibility reasons we dont want the pingSignature to be the same as the
+      # signature earlier rfboot used
+      # Now rfboot uses a different signature for every project
+      while pingSignature == START_SIGNATURE:
+         pingSignature = randomUint32()
+      f.writeLine "const uint32_t PING_SIGNATURE = ", pingSignature, "u;"
     discard """
 // If uncommented,  does not allow code to be uploaded, unless the reset button is pressed
 // Can be useful if the project has stable firmware but there is need for some
@@ -739,7 +762,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     if modulo != 0:
       app.add '\xff'.repeat(Payload-modulo)
 
-  let (rfbChannel,rfbAddress,key,pingSignature) = getUploadParams()
+  let (rfbChannel,rfbootSyncWord,key,pingSignature) = getUploadParams()
   let (newAppChannel, newAppAddress, newResetString) = getAppParams()
   var appChannel: int
   var appAddress = "12"
@@ -779,26 +802,26 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     stderr.writeLine "Cannot contact usb2rf"
     quit QuitFailure
   else:
-    stderr.writeLine "module identified : \"", USB2RF_START_MESSAGE, "\""
+    echo "module identified : \"", USB2RF_START_MESSAGE, "\""
   if resetString==nil or resetString=="":
-    stderr.writeLine "Contacting rfboot. Reset the module ..."
-    stderr.writeLine "The process will continue to try for ", timeout , " sec"
+    echo "Contacting rfboot. Reset the module ..."
+    echo "The process will continue to try for ", timeout , " sec"
   else:
-    stderr.writeLine "App channel = ", appChannel
+    echo "App channel = ", appChannel
     port.setChannel appChannel
-    stderr.writeLine "App SyncWord = ", appAddress.toArray
+    echo "App SyncWord = ", appAddress.toArray
     port.setAddress appAddress
-    stderr.writeLine "Reset String = ", resetString
+    echo "Reset String = ", resetString
     port.write resetString
     # TODO na psaxnei mesa se ena string
     let msg = port.getPacket(100000, resetString.len)
     if msg == resetString:
-      stderr.writeLine "Ok the target reported reset"
+      echo "Ok the target reported reset"
     else:
       stderr.writeLine "Target did not answer the reset command, trying to send code anyway"
-  stderr.writeLine "rfboot SyncWord = ", rfbAddress.toArray
-  port.setAddress rfbAddress
-  stderr.writeLine "rfboot channel = ", rfbChannel
+  echo "rfboot SyncWord = ", rfbootSyncWord.toArray
+  port.setAddress rfbootSyncWord
+  echo "rfboot channel = ", rfbChannel
   port.setChannel rfbChannel
   port.drain(5000)
   var contact = false
@@ -812,7 +835,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       contact = true
       break
   if not contact:
-    stderr.writeLine("Cannot contact rfboot")
+    stderr.writeLine "Cannot contact rfboot"
     port.setChannel appChannel
     port.setAddress appAddress
     port.drain 2000
@@ -821,12 +844,12 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
     if msg.len == 8:
       iv[0]=msg[0].uint32+msg[1].uint32*256+msg[2].uint32*256*256+msg[3].uint32*256*256*256
       iv[1]=msg[4].uint32+msg[5].uint32*256+msg[6].uint32*256*256+msg[7].uint32*256*256*256
-      stderr.writeLine "IV=", iv
+      echo "IV=", iv
       var ivdec = iv
       xtea_decipher(ivdec,key)
       if ivdec[1]!=0:
-        stderr.writeLine "Upload Counter = ", ivdec[0]
-        stderr.writeLine "Bootloader compile time = ", fromSeconds(ivdec[1].int64).getLocalTime.format("yyyy-MM-dd   HH:mm")
+        echo "Upload Counter = ", ivdec[0]
+        echo "Bootloader compile time = ", fromSeconds(ivdec[1].int64).getLocalTime.format("yyyy-MM-dd   HH:mm")
       #let ivdecrypted=xtea_decipher(iv);
       #TODO
       # if msg.len==9 neos rfboot thelei CRC 32+1 byte
@@ -856,7 +879,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       contact = true
       break
   if not contact:
-    stderr.writeLine("Cannot contact rfboot")
+    stderr.writeLine "Cannot contact rfboot"
     quit QuitFailure
   if msg.len != 3:
     stderr.writeLine "Invalid message from rfboot. len=", msg.len
@@ -1027,8 +1050,8 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       stderr.writeLine "CRC check failed"
       quit QuitFailure
     elif reply == RFB_SUCCESS:
-      stderr.writeLine "CRC OK. Success !"
-      stderr.writeLine "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3)
+      echo "CRC OK. Success !"
+      echo "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3)
 
     ############# end method 1 #################
   #
@@ -1050,10 +1073,10 @@ proc actionMonitor() =
   discard resetString
   let p = commandLineParams()
   let portName = getPortName()
-  stderr.writeLine "portname=", portName
+  echo "portname=", portName
   let fd = portName.openPort()
-  stderr.writeLine "Application SyncWord = ", appAddress.toArray
-  stderr.writeLine "Channel = ", appChannel
+  echo "Application SyncWord = ", appAddress.toArray
+  echo "Channel = ", appChannel
   fd.setChannel appChannel
   sleep 20
   fd.setAddress appAddress
@@ -1072,10 +1095,10 @@ proc actionMonitor() =
       #  stderr.writeLine "Serial port ", portName, " is in use, not executing command"
       #else:
       #block:
-      stderr.write "Executing : \"" #, p[1..p.len-1]
+      echo "Executing : \"" #, p[1..p.len-1]
       for i in p:
-        stderr.write i, " "
-      stderr.writeLine("\"")
+        echo i, " "
+      echo "\""
       discard startProcess( command=p[1], args=p[2..p.len-1] & portName, options={poStdErrToStdOut,poUsePath} )
 
 
@@ -1083,7 +1106,7 @@ proc actionResetLocal() =
   let portname = getPortName()
   let fd = portname.openPort()
   # This command resets the usb2rf module
-  stderr.writeLine "reseting the usb2rf module"
+  echo "reseting the usb2rf module"
   # string=" & CommdModeStr & "R"
   fd.write CommdModeStr & "R"
   #fd.flush
@@ -1096,7 +1119,7 @@ proc actionGetPort() =
 
 proc actionAddPort() =
   discard
-  stderr.writeLine "Waiting for a new module to be inserted to a USB port"
+  echo "Waiting for a new module to be inserted to a USB port"
   #let knownPorts = getKnownPorts()
   var port:string
 
@@ -1133,15 +1156,15 @@ proc actionAddPort() =
 proc main() =
   let p = commandLineParams() # nim's standard library function
   if p.len == 0:
-    stderr.writeLine ""
-    stderr.writeLine "rftool: rfboot utility"
-    stderr.writeLine ""
-    stderr.writeLine "Usage : rftool create ProjectName # Creates a new Arduino based project"
-    stderr.writeLine "        rftool upload|send SomeFirmware.bin"
-    stderr.writeLine "        rftool monitor term_emulator_cmd arg arg -p #opens a serial terminal with the correct parameters"
-    stderr.writeLine "        rftool resetlocal"
-    stderr.writeLine "        rftool getport"
-    stderr.writeLine "        rftool addport # Adds usb2rf module to ~/.usb2rf file"
+    echo ""
+    echo "rftool: rfboot utility"
+    echo ""
+    echo "Usage : rftool create ProjectName # Creates a new Arduino based project"
+    echo "        rftool upload|send SomeFirmware.bin"
+    echo "        rftool monitor term_emulator_cmd arg arg -p #opens a serial terminal with the correct parameters"
+    echo "        rftool resetlocal"
+    echo "        rftool getport"
+    echo "        rftool addport # Adds usb2rf module to ~/.usb2rf file"
     quit QuitFailure
   let action = p[0].strip.normalize # mikra xoris _
   case action
@@ -1149,7 +1172,7 @@ proc main() =
     actionCreate()
   of "upload","send":
     if p.len == 1:
-      stderr.writeLine "No firmware file given"
+      stderr.writeLine "No file given"
       quit QuitFailure
     elif p.len>=3:
       stderr.writeLine "Too many arguments"
