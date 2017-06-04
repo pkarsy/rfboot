@@ -23,3 +23,6 @@ sendHex:
 	rftool resetLocal
 	avrdude -q -V -D -p atmega328p -c arduino -b 57600 -P $(MONITOR_PORT) -U flash:w:usb2rf.hex:i
 
+debug: portcheck
+	# WARNING ! You need to put here the correct serial port device, for debug monitoring
+	gtkterm -s 19200 -p /dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_Z2CVM7J2-if00-port0

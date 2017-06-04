@@ -332,7 +332,9 @@ proc openPort(portname: cstring): cint =
 # a random integer 0-255
 proc rand(): int =
   let randFile = open(RandomGen)
-  result = randFile.readChar.int
+  var res: byte
+  discard readBuffer(randFile,addr res,1)
+  result = res.int
   randFile.close
 
 
@@ -358,12 +360,17 @@ proc randomXteaKey(): array[4,uint32] =
     result[i]=randomUint32()
 
 
-proc randomString(n: Natural): string =
+discard """proc randomString(n: Natural): string =
+  if n>64:
+    stderr.writeLine "random string too large"
+    quit QuitFailure
   let randFile = open(RandomGen)
-  result=""
-  for i in 1..n:
-    result.add randFile.readChar()
+  result=newString(n)
+  #for i in 1..n:
+    #result.add randFile.readChar()
+  #discard readBuffer(randFile,addr result,n)
   randFile.close
+  #discard readBuffer(randFile,addr result,4)"""
 
 
 proc keyAsArrayC(key: array[4,uint32]): string =
@@ -760,7 +767,7 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
 
   var header = StartSignature.uint32.toString & app.len.uint16.toString &
     app.crc16.toString & app.crc16_rev.toString & 0.uint16.toString &
-    StartSignature.uint32.toString & randomString(16)
+    StartSignature.uint32.toString & newString(16)
 
   var smallHeader = pingSignature.toString
   port.drain(5000)

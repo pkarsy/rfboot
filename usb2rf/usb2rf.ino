@@ -343,7 +343,7 @@ int main() {
     Serial.begin(38400);
 
     debug_port.begin(19200);
-    delay(1);
+    //delay(1);
 
     rf.init();
     //rf.setCarrierFreq(CFREQ_433);
@@ -354,7 +354,9 @@ int main() {
     rf.writeReg(CC1101_MDMCFG2, 0x97);
 
     //if (debug)
-    debug_port.println(F("Usb2rf debug port at 19200 bps"));
+    //delay(8);
+    debug_port.println(F("Usb2rf debug port at 19200 bps. Assert DTR "));
+    debug_port.println(F("(F7 key with gtkterm) to enable/disable debug output"));
 
     uint8_t idx = 0;
     uint32_t timer = micros();
