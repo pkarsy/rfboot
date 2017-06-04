@@ -26,7 +26,7 @@ On the PC, prefferably in you sketchbook folder type :
 as you can see rftool generates random parameters (using /dev/urandom), and creates
 a "myProject" folder containing all information/data our project needs. As is, the project prints the uptime on screen (the serial terminal) every second.
 
-```
+```sh
 > cd myProject
 ```
 Now it is time to burn the atmega with rfboot, using the ISP programmer.
@@ -36,25 +36,32 @@ Here is a photo of the USBasp programmer together with a ZIF developer board. (s
 If you have USBtiny edit the file "rfboot/hardware_settings.mk" and uncomment
 the USBtiny line. Put the atmega328p-pu chip on the ZIF socket and :
 
-```
+```sh
 > make isp
 ```
 To write the bootloader.
-If your project uses a crystal you can edit "rfboot/hardware_settings.mk" before burn
-or simply
-```
-> make xtal
-```
-Don't do this on this first project however, to keep things simple. 
-Rfboot works perfectly with (uncalibrated up to 10% error) internal oscillator because the SPI
-interface does not need a +-2% accurate clock source as Serial Communication needs.
+If your project uses a crystal you can edit "rfboot/hardware_settings.mk" before burn.
+
+
+Don't do this on this first project however, to keep things simple.
+Rfboot works perfectly with (uncalibrated up to 10% error) internal oscillator,
+because SPI is synchronous.
+UART Serial bootloaders on the other hand need a relatively accurate +-2% clock,
+otherwise they cannot communicate at all. This is the reason all arduino boards
+come with crystal/resonator.
+
 
 Now put the atmega and the other components in the breadboard.
-Power the board and then
+Power the board and then :
+
+```sh
+# Opens gtkterm with all apropriate options
+> make terminal
+
+# Sends the firmware
+> make send
 ```
-> make terminal # Opens gtkterm with all apropriate options
-> make send # Sends the firmware
-```
+
 After the upload is finished, you will see uptime (in ms) in gtkterm.
 If you are succesful, you can start playing with the code.
 
@@ -64,7 +71,7 @@ PRINTLN("Hello world");
 ```
 All arduino code is working as expected, with the exception of Serial.print(). The
 PRINT and PRINTLN macros can be used instead which use sprintf internally.
-```
+```C++
 i=2;
 PRINT("i=%d",i);
 j=7;

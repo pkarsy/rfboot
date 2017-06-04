@@ -93,7 +93,7 @@ proc crc16_rev(buf: string): uint16 =
     crc16_update(result,buf[buf.high-i].uint8)
 
 proc parseKey(keyStr: string): array[4,uint32] =
-  const msg = "XteaKey: Expecting 4 integers (0 to 4294967295) separated by comma"
+  const msg = "XTEA_KEY: Expecting 4 integers (0 to 4294967295) separated by comma"
   let key = keyStr.toLowerAscii.replace("u","").replace(" ","").split(",")
   if key.len != 4:
     stderr.writeLine msg
@@ -388,7 +388,7 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
   for i in rfbootConf.splitLines:
     var line = i.strip()
     if (line.len > 0) and not (line[0] in "/"):
-      if line.contains("XTEAKEY"):
+      if line.contains("XTEA_KEY"):
         let brstart = line.find('{')
         let brend = line.find('}')
         line = line[brstart+1..brend-1]
@@ -416,7 +416,7 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootAddress:string, key: array
           stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL must be an integer"
           quit QuitFailure
         result.rfbChannel = line.parseInt
-      elif line.contains("RFB_SYNCWORD"):
+      elif line.contains("RFBOOT_SYNCWORD"):
         let brstart = line.find('{')
         let brend = line.find('}')
         line = line[brstart+1..brend-1]
@@ -677,20 +677,20 @@ proc actionCreate() =
     f.close
   block:
     let f = open(RfbootSettingsFile, fmWrite)
-    f.writeLine "// XTEAKEY and PING_SIGNATURE are randomly"
+    f.writeLine "// XTEA_KEY and PING_SIGNATURE are randomly"
     f.writeLine "// generated with the system randomness generator /dev/urandom"
     f.writeLine "// RFBOOT_CHANNEL is 0 but you can change it before write to the MCU"
-    f.writeLine "// TODO. At the moment and RFB_SYNCWORD are choosen at random"
+    f.writeLine "// TODO. At the moment and RFBOOT_SYNCWORD are choosen at random"
     f.writeLine "// But must be selected with good \"autocorrelation\" properties"
     f.writeLine "// After the bootloader is installed to the target module, you cannot"
     f.writeLine "// change the parameters"
     f.writeLine ""
     f.writeLine "const uint8_t RFBOOT_CHANNEL = ", rfbChannel, ";"
-    f.writeLine "const uint8_t RFB_SYNCWORD[] = {", rfbSyncWord0,",", rfbSyncWord1, "};"
+    f.writeLine "const uint8_t RFBOOT_SYNCWORD[] = {", rfbSyncWord0,",", rfbSyncWord1, "};"
     f.writeLine "// This key is only used when updating firmware. The application code does not use it"
 
     #f.writeLine "// Note also that there is no any guarantee that the encryption offers any confidenciality"
-    f.writeLine "const uint32_t XTEAKEY[] = ", xteaKey.keyAsArrayC, ";"
+    f.writeLine "const uint32_t XTEA_KEY[] = ", xteaKey.keyAsArrayC, ";"
     f.writeLine "// This is a 4 byte packet rfboot expects before answering"
     f.writeLine "const uint32_t PING_SIGNATURE = ", randomUint32(), "u;"
     discard """

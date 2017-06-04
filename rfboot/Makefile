@@ -48,12 +48,12 @@ atmega328p: $(PROGRAM)_atmega328p.elf
 atmega328p: size
 
 # Uses internal RC oscillator at 8MHz
-noxtal: atmega328p
-	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:0xE2:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
+#noxtal: atmega328p
+#	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:0xE2:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
 # Uses external crystal/resonator
-xtal: atmega328p
-	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:0xFF:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
+#xtal: atmega328p
+#	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:0xFF:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
 isp: atmega328p
 	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:$(LFUSE):m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m

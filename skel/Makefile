@@ -33,8 +33,8 @@ terminal:
 isp:
 	make -C rfboot isp
 
-xtal:
-	make -C rfboot xtal
+#xtal:
+#	make -C rfboot xtal
 
-noxtal:
-	make -C rfboot xtal
+#noxtal:
+#	make -C rfboot xtal

@@ -289,9 +289,9 @@ int main(void) {
         }
         else { // Reset cause was no HW reset, and flash seems to have application
 
-            // Althrough XTEAKEY is read only, the RAM can be written
-            // We erase XTEAKEY
-            memset((void*)XTEAKEY,0,sizeof(XTEAKEY));
+            // Althrough XTEA_KEY is read only, the RAM can be written
+            // We erase XTEA_KEY
+            memset((void*)XTEA_KEY,0,sizeof(XTEA_KEY));
 
             // Jump to the application
             asm("jmp 0");
@@ -331,9 +331,9 @@ int main(void) {
         // will see as reset cause always WDOG
         mcusr_mirror = previous_reset_cause;
 
-        // Althrough XTEAKEY is read only, the RAM can be written
-        // We erase XTEAKEY
-        memset((void*)XTEAKEY,0,sizeof(XTEAKEY));
+        // Althrough XTEA_KEY is read only, the RAM can be written
+        // We erase XTEA_KEY
+        memset((void*)XTEA_KEY,0,sizeof(XTEA_KEY));
 
 
         // finally we start the application
@@ -379,7 +379,7 @@ int main(void) {
         uint16_t round = eeprom_read_word(E2END-1)+1;
         iv[0]=round;
         iv[1]=COMPILE_TIME;
-        xtea_encipher( (byte*)iv,XTEAKEY);
+        xtea_encipher( (byte*)iv,XTEA_KEY);
     #endif
 
     // here we set RF channel, SyncWord etc
@@ -443,7 +443,7 @@ int main(void) {
     // to confuse the bootloader
 
     for (uint8_t i=0; i<=3; i++) {
-        xtea_decipher_cbc( (uint32_t*)(packet+i*XTEA_BLOCK_SIZE) , XTEAKEY,iv );
+        xtea_decipher_cbc( (uint32_t*)(packet+i*XTEA_BLOCK_SIZE) , XTEA_KEY,iv );
     }
 
     if ( (spacket->start_signature1 == START_SIGNATURE) && (spacket->start_signature2 == START_SIGNATURE) ) {
@@ -547,7 +547,7 @@ int main(void) {
 
             // We decrypt the packet. 4 XTEA blocks
             for (uint8_t i=0; i<=3; i++) {
-                xtea_decipher_cbc( (uint32_t*)(packet+i*XTEA_BLOCK_SIZE) , XTEAKEY ,iv );
+                xtea_decipher_cbc( (uint32_t*)(packet+i*XTEA_BLOCK_SIZE) , XTEA_KEY ,iv );
             }
             // at this point the packet is in cleartext
 
