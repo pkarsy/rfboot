@@ -20,7 +20,7 @@ Here is how our project looks like. It is not connected with anything, and we ar
 ![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
 
 On the PC, prefferably in you sketchbook folder type :
-```
+```sh
 > rftool create myProject
 ```
 as you can see rftool generates random parameters (using /dev/urandom), and creates
@@ -66,7 +66,7 @@ After the upload is finished, you will see uptime (in ms) in gtkterm.
 If you are succesful, you can start playing with the code.
 
 For example, add this line to setup():
-```
+```C++
 PRINTLN("Hello world");
 ```
 All arduino code is working as expected, with the exception of Serial.print(). The

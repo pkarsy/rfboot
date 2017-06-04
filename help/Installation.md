@@ -19,30 +19,35 @@ remains.
 I do all development on a Linux Mint 17.3 box. Maybe you need to adapt the procedure
 for your environment. Open a terminal:
 
-```
-> sudo apt-get update ; sudo apt-get upgrade # this is recommended before start
+```bash
+# this is recommended before start
+> sudo apt-get update ; sudo apt-get upgrade
 
-> sudo apt-get install arduino-core arduino-mk   # This also installs avr compiler and avr-libc
+# This also installs avr compiler and avr-libc
+> sudo apt-get install arduino-core arduino-mk
 
-> sudo apt-get install geany # A programmers editor. You can use another if you like.
-                             # The instructions here, use geany as text editor
+# A programmers editor. You can use another if you like.
+# The instructions here, use geany as text editor
+> sudo apt-get install geany
 
-> sudo apt-get install gtkterm # a serial terminal. I suggest to use this serial terminal
-                               # before try your luck with another one.
+# a serial terminal. I suggest to use this serial terminal
+# before try your luck with another one.
+> sudo apt-get install gtkterm
 
-> sudo apt-get install git   # To easily download rfboot.
+# To easily download rfboot.
+> sudo apt-get install git
 ```
 
 Download the rfboot repository in your PC. Place it in some relatively safe place in your
 PC like ~/programming/
 
-```
+```bash
 > mkdir ~/programming
 > cd ~/programming
 > git clone https://github.com/pkarsy/rfboot.git
 ```
 The "rftool" utility needs to be in the PATH.
-```
+```bash
 # if the ~/bin does not exist "mkdir ~/bin" and then logout and login again
 > cd ~/bin
 > chmod +x ~/programming/rfboot/rftool/rftool
@@ -50,7 +55,7 @@ The "rftool" utility needs to be in the PATH.
 > ln -s ~/programming/rfboot/rftool/rftool
 ```
 Now if you type
-```
+```bash
 > rftool
 ```
 Should give you a small usage message. This means rftool is in the PATH.
@@ -58,7 +63,7 @@ Should give you a small usage message. This means rftool is in the PATH.
 Now it is time to install mCC1101, a modified (and simplified) panStamp
 CC1101 library. Change "~/sketchbook/libraries" with your actual sketchbook folder.
 
-```
+```bash
 > cd ~/sketchbook/libraries
 > git clone https://github.com/pkarsy/mCC1101.git
 ```
@@ -67,17 +72,17 @@ Linux by default does not give permission (to regular users) to
 access the Serial ports, neither the ISP programmers. To fix it:
 
 - Serial port
-```
+```bash
 > sudo adduser myusername dialout
 ```
 You need to logout and login again for the changes to take effect.
 - ISP programmer
 
-```
+```bash
 > sudo nano /etc/udev/rules.d/52-my.rules
 ```
 Add the lines
-```
+```sh
 # USBasp
 ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"
 
@@ -86,7 +91,7 @@ ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="666"
 ```
 
 In the command line
-```
+```bash
 > sudo service udev restart
 ```
 
@@ -162,7 +167,7 @@ And here is the final module
 ![usb2rf2](files/usb2rf3.jpg)
 
 ### Configure rftool to use the usb2rf module
-```
+```bash
 > rftool addport
 ```
 and insert the usb2rf module. rftool detects it and saves the Serial port device
@@ -171,7 +176,7 @@ to ~/.usb2rf file. You can have more than one usb2rf devices.
 ### Burn the apropriate firmware to usb2rf
 You can build the sketch by yourself. (see readme in the usb2rf folder)
 or upload the precompiled .hex
-```
+```bash
 > cd usb2rf
 > make sendHex
 ```
