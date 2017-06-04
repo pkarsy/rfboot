@@ -21,13 +21,11 @@
  * In the following note "brick" the device we mean that we cannot upload firmware
  * REMOTELY. We can always upload code with physical access to the reset pin or by power cycle the atmega chip.
  *
+ * if the mcu resets/powers up with rfboot will wait for code upload for about 0.25 sec.
  *
- * if the mcu reset with the reset pin rfboot wait for code upload for 0.25 sec.
+ * rfboot cannot initialize a reset by itself. The duty for this is in the application.
  *
- * rfboot cannot initialize a reset by itself. The duty for this is in the application. I consider this not a problem  because of the intended use of this bootloader.  if you are developing a non "hello world" program the hassle to add some code for this function is not an issue. Also -generally speaking- a real life program probably wont like unconditional resets with the hardware reset pin because maybe some variables need to be saved in EEPROM. So a polite "reset" request to the application has better results for a useful in real life,  but still possible to update application.
- *
- *
- * WARNING  if you burn this bootoader to a ProMini 3.3V for example, you will not be able to program it over serial any more. Only via cc1101 module.
+ * WARNING  if you burn this bootloader to a ProMini 3.3V for example, you will not be able to program it over serial any more. Only via cc1101 module.
  *
  * rfboot is designed to be used on bare atmega328p chips. Of course you can still -as I do- develop Arduino applications, a bootloader is code agnostic.
  *
@@ -36,11 +34,8 @@
  * The hardware for rfboot is typically an atmega328p 8Mhz@3.3V
  * because CC1101 chip does not tolerate 5V on any pin and atmega328
  * DOES NOT RUN at 16Mh @ 3.3V
- * FUSES = E2 DA 05 without crystal
- * FUSES = E2 DA 05 with crystal
- * TODO
  *
- * not compatible unfortunately with avrdude. rfboot uses a companion program rftool instead of avrdude.
+ * not compatible unfortunately with avrdude. rfboot uses "rftool" instead of avrdude.
  * Encrypts the packets on the air see
  * https://github.com/pkarsy/rfboot/blob/master/help/Encryption.md
  *
@@ -192,7 +187,7 @@ ISR (INT0_vect)
 void radio_init(void) {
     cc1101_init();
     cc1101_setChannel(RFBOOT_CHANNEL);
-    cc1101_setSyncWord(RFB_SYNCWORD[0],RFB_SYNCWORD[1]);
+    cc1101_setSyncWord(RFBOOT_SYNCWORD[0],RFBOOT_SYNCWORD[1]);
     disableAddressCheck();
     get_data();
 

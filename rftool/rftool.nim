@@ -591,7 +591,7 @@ proc actionCreate() =
     quit QuitFailure
   # TODO
   # Channel random ?
-  var appChannel = 1
+  var appChannel = (rand() mod 4)+1
   var xteaKey = randomXteaKey()
   var appSyncWord0 = rand()
   var appSyncWord1 = rand()
@@ -668,8 +668,9 @@ proc actionCreate() =
     f.writeLine "// These parameters are generated with"
     f.writeLine "// \"rftool create ", projectName, "\""
     f.writeLine "// The values of APP_SYNCWORD and APP_CHANNEL"
-    f.writeLine "// are randomly generated with the system randomness generator"
-    f.writeLine "// \"/dev/urandom\""
+    f.writeLine "// are randomly choosen."
+    f.writeLine "// APP_CHANNEL is 1..4 to keep the frequemsy inside the"
+    f.writeLine "// 433Mhz ISM band. Channel 0 is used by the bootloader."
     f.writeLine ""
     f.writeLine "const uint8_t APP_CHANNEL = ", appChannel, ";"
     f.writeLine "const uint8_t APP_SYNCWORD[] = {", appSyncWord0, ",", appSyncWord1, "};"

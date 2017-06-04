@@ -11,7 +11,7 @@ EXTRA_FLAGS += -fshort-enums
 # This is the arduino-makefile engine
 include /usr/share/arduino/Arduino.mk
 
-send:
+send: all
 	@# With this command the elf file is converted to binary format as rfboot
 	@# doesnt understand other format
 
@@ -26,9 +26,13 @@ send:
 
 	rftool upload $(OBJDIR)/$(TARGET).bin
 
+forcesend:
+	rm -f ".lastbinary"
+	$(MAKE) send
+
 terminal:
 	@# rftool will append the actual serial port after "-p"
-	rftool monitor gtkterm -s 57600 -p
+	rftool monitor gtkterm -s 38400 -p
 
 isp:
 	make -C rfboot isp
