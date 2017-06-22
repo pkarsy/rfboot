@@ -445,8 +445,6 @@ int main() {
 
                     succ = rf.sendPacket(packet,idx);
 
-                    //while (! interrupt);
-                    //nterrupt = false;
                     if ( debug ) {
                         if (succ)  debug_port.write("\r\n");
                         else debug_port.write(" F\r\n");

@@ -33,7 +33,7 @@ proc xtea_decipher(v: var array[2,uint32], key : array[4,uint32] ) {.importc.}
 
 const RFB_NO_SIGNATURE = 1
 const RFB_INVALID_CODE_SIZE = 2
-# const RFB_ROUND_IS = 3 Not used anymore in the code
+const RFB_IDENTICAL_CODE = 3
 const RFB_SEND_PKT = 4
 const RFB_WRONG_CRC=5
 const RFB_SUCCESS=6
@@ -51,7 +51,8 @@ const serialPortDir = "/dev/serial/by-id"
 
 # This holds the PID of Serial Terminal software, if one has opened the serial port
 # of the usb2rf module
-var LPID: int
+var LPID: int = -1
+var LPROCNAME: string
 
 # packs a uint16 in 2 bytes, little endian
 proc toString(u: uint16): string =
@@ -279,33 +280,36 @@ proc getPortName() : string =
   return portName
 
 
-proc checkLockFile(portName:string): int =
+proc checkLockFile(portName:string) =
+  LPID = -1
+  LPROCNAME = nil
   let port = splitPath(portName)[1]
   let lockfile = "/var/lock/LCK.." & port
   if existsFile(lockfile):
-    echo "lockfile found : \"",lockfile,"\""
+    echo "Lockfile found : \"",lockfile,"\""
     let info = lockfile.readFile.strip.split
     let pid = info[0].parseInt
     #echo "pid=",pid
     #echo "/proc/xxx=", "/proc/" & info[0]
     if existsDir( "/proc/" & info[0]):
-      return pid
+      LPID = pid
+      LPROCNAME = info[1].strip
     else:
       echo "Lockfile is stale"
       discard unlink(lockfile)
-      return -1
-  else:
-    return -1
+      #return -1
+  #else:
+  #  return -1
 
 
-# Stops other processess accessing the serial port
-# is used for code upload even with an open terminal (usually gtkterm)
+# Stops other processess accessing the serial port.
+# It is used for code upload even when a Serial Terminal (usually gtkterm)
+# is using the port
 proc sendStopSignal(portname:string): bool =
-  #discard execProcess( "/bin/fuser", ["-s", "-k", "-STOP", portName] , options={ poStdErrToStdOut })
-  LPID = checkLockFile(portname)
+  checkLockFile(portname)
   if (LPID>0):
     discard kill(LPID.cint,SIGSTOP)
-    echo "Stopping process ",LPID," that holds a LOCK on the serial port"
+    echo "Stopping process ",LPID,"(",LPROCNAME,") that holds a LOCK on the serial port"
     return true
   else:
     return false
@@ -314,9 +318,8 @@ proc sendStopSignal(portname:string): bool =
 # resumes the processes being stopped
 # see the previous function
 proc sendContSignal() {.noconv.} =
-  #discard execProcess( "/bin/fuser", ["-s", "-k", "-CONT", portName], options={ poStdErrToStdOut } )
   if (LPID)>0:
-    echo "Resuming process ", LPID
+    echo "Resuming process ", LPID,"(", LPROCNAME,")"
     discard kill(LPID.cint, SIGCONT)
 
 
@@ -463,7 +466,9 @@ proc toArray(s:string): string =
   result &= "}"
 
 
-proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: string] =
+proc getAppParams() : tuple[appChannel:int, appSyncWord:string, resetString: string] =
+  result.resetString = ""
+  result.appChannel = -1
   var conf: string
   try:
     conf = readFile ApplicationSettingsFile
@@ -480,8 +485,8 @@ proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: stri
       #    quit QuitFailure
       #  let startl = line.find('\"')
       #  let endl = line.rfind('\"')
-      #  result.appAddress = line[startl+1..endl-1]
-      #  stderr.writeLine "appAddress=", result.appAddress.toArray
+      #  result.appSyncWord = line[startl+1..endl-1]
+      #  stderr.writeLine "appSyncWord=", result.appSyncWord.toArray
       if line.contains("RESET_STRING"):
         let qnumber = line.count('\"')
         if qnumber != 2:
@@ -490,8 +495,8 @@ proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: stri
         let startl = line.find('\"')
         let endl = line.rfind('\"')
         if endl-startl==1:
-          stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the RESET_STRING cannot be empty"
-          quit QuitFailure
+          stderr.writeLine "In file \"", ApplicationSettingsFile, "\", found  empty RESET_STRING. Autoreset disabled"
+          #quit QuitFailure
         result.resetString = line[startl+1..endl-1]
         echo "resetString=",result.resetString
       elif line.contains("APP_CHANNEL"):
@@ -516,7 +521,14 @@ proc getAppParams() : tuple[appChannel:int, appAddress:string, resetString: stri
         var sw = "  "
         for i in 0..1:
           sw[i] = line.split(',')[i].strip.parseInt.char
-        result.appAddress = sw
+        result.appSyncWord = sw
+  if result.appSyncWord==nil:
+    stderr.writeLine "ERROR: Config file does not contain the APP_SYNCWORD variable"
+    quit QuitFailure
+  if result.appChannel == -1:
+    stderr.writeLine "ERROR: Config file does not contain the APP_CHANNEL variable"
+    quit QuitFailure
+
 
 
 proc getApp(fn : string): string =
@@ -697,7 +709,7 @@ proc actionCreate() =
     f.writeLine "// XTEA_KEY and PING_SIGNATURE are randomly"
     f.writeLine "// generated with the system randomness generator /dev/urandom"
     f.writeLine "// RFBOOT_CHANNEL is 0 but you can change it before write to the MCU"
-    f.writeLine "// TODO. At the moment and RFBOOT_SYNCWORD are choosen at random"
+    f.writeLine "// TODO. At the moment and RFBOOT_SYNCWORD is choosen at random"
     f.writeLine "// But must be selected with good \"autocorrelation\" properties"
     f.writeLine "// After the bootloader is installed to the target module, you cannot"
     f.writeLine "// change the parameters"
@@ -741,20 +753,19 @@ proc actionCreate() =
 
 
 proc actionUpload(binaryFileName: string, timeout=10.0) =
-  var lastbinarysize:Off
-  block:
-    var s:Stat
-    var statres = stat(".lastbinary", s)
-    if statres==0:
-      lastbinarysize = s.st_size
-      #echo "lastbinary size = ", s.st_size
+  #var lastbinarysize:Off
+  #block:
+  #  var s:Stat
+  #  var statres = stat(".lastbinary", s)
+  #  if statres==0:
+  #    lastbinarysize = s.st_size
+
   var app = getApp(binaryFileName)
-  if app.len == lastbinarysize:
-    let lastapp = open(".lastbinary").readAll
-    #echo lastapp.len
-    if app == lastapp:
-      echo "The new firmware is identical to the last one. No need for upload"
-      quit QuitSuccess
+  #if app.len == lastbinarysize:
+  #  let lastapp = open(".lastbinary").readAll
+  #  if app == lastapp:
+  #    echo "The new firmware is identical to the last one. No need for upload"
+  #    quit QuitSuccess
 
   # Pad the app with 0xFF to multiple of Payload
   block:
@@ -804,13 +815,15 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   else:
     echo "module identified : \"", USB2RF_START_MESSAGE, "\""
   if resetString==nil or resetString=="":
-    echo "Contacting rfboot. Reset the module ..."
+    echo "Contacting rfboot. Reset the module manually"
     echo "The process will continue to try for ", timeout , " sec"
   else:
     echo "App channel = ", appChannel
     port.setChannel appChannel
     echo "App SyncWord = ", appAddress.toArray
     port.setAddress appAddress
+    #if resetString==nil or resetString=="":
+    #else:
     echo "Reset String = ", resetString
     port.write resetString
     # TODO na psaxnei mesa se ena string
@@ -845,15 +858,16 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       iv[0]=msg[0].uint32+msg[1].uint32*256+msg[2].uint32*256*256+msg[3].uint32*256*256*256
       iv[1]=msg[4].uint32+msg[5].uint32*256+msg[6].uint32*256*256+msg[7].uint32*256*256*256
       echo "IV=", iv
-      var ivdec = iv
-      xtea_decipher(ivdec,key)
-      if ivdec[1]!=0:
+      if iv[1] == 0:
+        stderr.writeLine "iv[1]==0 . Seems to be an earlier bootloader"
+        echo "Upload counter = ", iv[0]
+      else:
+        var ivdec = iv
+        xtea_decipher(ivdec,key)
         echo "Upload Counter = ", ivdec[0]
-        echo "Bootloader compile time = ", fromSeconds(ivdec[1].int64).getLocalTime.format("yyyy-MM-dd   HH:mm")
-      #let ivdecrypted=xtea_decipher(iv);
-      #TODO
-      # if msg.len==9 neos rfboot thelei CRC 32+1 byte
-      #TODO
+        echo "Bootloader compile time = ", fromSeconds(ivdec[1].int64).getLocalTime.format("yyyy-MM-dd HH:mm")
+
+
     else:
       stderr.writeLine "Wrong IV length from rfboot", msg.len
       quit QuitFailure
@@ -1065,27 +1079,28 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   f.close()
   port.setChannel newAppChannel
   port.setAddress newAppAddress
-  copyFile(binaryFileName, ".lastbinary")
+  #copyFile(binaryFileName, ".lastbinary")
 
 
 proc actionMonitor() =
-  let (appChannel, appAddress, resetString) = getAppParams()
+  let (appChannel, appSyncWord, resetString) = getAppParams()
   discard resetString
   let p = commandLineParams()
   let portName = getPortName()
   echo "portname=", portName
   let fd = portName.openPort()
-  echo "Application SyncWord = ", appAddress.toArray
+  echo "Application SyncWord = ", appSyncWord.toArray
   echo "Channel = ", appChannel
   fd.setChannel appChannel
   sleep 20
-  fd.setAddress appAddress
+  fd.setAddress appSyncWord
   sleep 20
   discard fd.close()
   if p.len >= 2:
-    let pid = checkLockFile(portName)
-    if (pid>0):
-      stderr.writeLine "Serial port \"", portName, "\" is in use, not executing command"
+    # No need for checkLockFile. openPort does it.
+    #checkLockFile(portName)
+    if (LPID>0):
+      stderr.writeLine "Serial port \"", portName, "\" is in use by ", LPID,"(",LPROCNAME, "), not executing command"
     else:
       #echo "TODO"
       #stderr.writeLine "/bin/fuser -s ", portName
@@ -1095,11 +1110,12 @@ proc actionMonitor() =
       #  stderr.writeLine "Serial port ", portName, " is in use, not executing command"
       #else:
       #block:
-      echo "Executing : \"" #, p[1..p.len-1]
-      for i in p:
-        echo i, " "
+      stdout.write "Executing : \""
+      for i in p[1..^1]:
+        stdout.write i, " "
+      stdout.write portName
       echo "\""
-      discard startProcess( command=p[1], args=p[2..p.len-1] & portName, options={poStdErrToStdOut,poUsePath} )
+      discard startProcess( command=p[1], args=p[2..^1] & portName, options={poStdErrToStdOut,poUsePath} )
 
 
 proc actionResetLocal() =

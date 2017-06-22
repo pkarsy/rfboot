@@ -1,6 +1,4 @@
 /*
- * TODO cc1101 reset before application starts
- * TODO if cc1101 is not detected proceed immediatelly to application code
  *
  * 2015 (C) Panagiotis Karagiannis
  * This software is distributed with the GPLv3+ Licence
@@ -12,14 +10,9 @@
  *
  * It is not based on optiboot or other bootloasers but is
  * written from scrach.
- * Uses the last 2 bytes of EEPROM as seed for the generation of the Initialization Vector.
  * Configurable settings can only be changed at compile time.
  * Cannot be used to send code with serial port. In fact does not even touch the Rx Tx pins wich can be used
  * for other purposes (as GPIO pins) or to connect to another serial device (GPS for example)
- * RELIABILITY. This is where rfboot really shines.
- *
- * In the following note "brick" the device we mean that we cannot upload firmware
- * REMOTELY. We can always upload code with physical access to the reset pin or by power cycle the atmega chip.
  *
  * if the mcu resets/powers up with rfboot will wait for code upload for about 0.25 sec.
  *
@@ -27,10 +20,7 @@
  *
  * WARNING  if you burn this bootloader to a ProMini 3.3V for example, you will not be able to program it over serial any more. Only via cc1101 module.
  *
- * rfboot is designed to be used on bare atmega328p chips. Of course you can still -as I do- develop Arduino applications, a bootloader is code agnostic.
- *
- * WARNING ! rfboot cannot protect you from buggy code. You can upload anything to the MCU, a prog that freezes or fails to communicate with you or just ignores a reboot command from your side. Or a code written for another station/project. Then you need physical access to the mcu to be able to reset it. test your code first.
-
+ * rfboot is designed to be used on bare atmega328p chips. Of course you can still develop Arduino applications, a bootloader is code agnostic.
  * The hardware for rfboot is typically an atmega328p 8Mhz@3.3V
  * because CC1101 chip does not tolerate 5V on any pin and atmega328
  * DOES NOT RUN at 16Mh @ 3.3V
@@ -40,6 +30,7 @@
  * https://github.com/pkarsy/rfboot/blob/master/help/Encryption.md
  *
  * TODO cc1101 reset before app start
+ * TODO if cc1101 is not detected proceed immediatelly to application code
  * */
 
 #include <avr/io.h>
@@ -55,6 +46,7 @@
 #include <util/crc16.h>
 
 #include "xtea.h"
+
 
 #define byte uint8_t
 
@@ -91,6 +83,14 @@ struct start_packet {
     uint32_t start_signature2;
 };
 
+struct flash_info_struct {
+    uint16_t signature;
+    uint16_t app_size;
+    uint16_t app_crc;
+    uint16_t app_crc2;
+    uint16_t round;
+} flash_info;
+
 // The XTEA cipher uses blocks of 8 bytes
 #define XTEA_BLOCK_SIZE 8
 
@@ -101,12 +101,9 @@ struct start_packet {
 // This is the status codes rfboot is sending back to the programmer
 const uint8_t RFB_NO_SIGNATURE = 1;
 const uint8_t RFB_INVALID_CODE_SIZE = 2;
-
-// As development of rfboot evolved, this variable is not used anymore
-// const uint8_t RFB_ROUND_IS = 3;
-
+//
+const uint8_t RFB_IDENTICAL_CODE = 3;
 const uint8_t RFB_SEND_PKT = 4;
-
 const uint8_t RFB_WRONG_CRC=5;
 const uint8_t RFB_SUCCESS=6;
 
@@ -140,7 +137,7 @@ volatile uint32_t reset_origin __attribute__ ((section (".noinit")));
 // application code.
 volatile uint8_t previous_reset_cause __attribute__ ((section (".noinit")));
 
-// if we don't want to be a register then we MUST put a line
+// if we don't want "mcusr_mirror" to be a register then we MUST put a line
 //  __asm__ __volatile__ ("mov r2, %0\n" :: "r" (mcusr_mirror));
 // inside function reset_mcu();
 // right before jmp
@@ -152,13 +149,6 @@ void get_mcusr(void) __attribute__((naked)) __attribute__((section(".init3")));
 void get_mcusr(void) {
     mcusr_mirror = MCUSR;
     MCUSR = 0;
-    // rfboot does always enables a 2 sec Watchdog timer. So even if we manage to
-    // send buggy code to the target, watchdog timer will finally reset the
-    // device allowing, to upload new code, WITHOUT the need of physically contact
-    // The application at normal operation will
-    // have the duty to reset the WDOG timer periodically, witch is a good
-    // practice anyway.
-    //wdt_enable(WDTO_2S);
 }
 
 #ifdef USE_ENTROPY
@@ -264,8 +254,23 @@ void flash_read_enable() {
 }
 
 int main(void) {
-
+    // rfboot does always enables a 2 sec Watchdog timer.
+    // The application at normal operation will
+    // have the duty to reset the WDOG timer periodically, witch is a good
+    // practice anyway.
     wdt_enable(WDTO_2S);
+
+    // Set the freequency close to 8Mhz using the OsccalCalibrator
+    // You need the OsccalCalibrator and to enable the setting from
+    // hardware_settings.mk
+    #ifdef CALIBRATED_OSCCAL_VALUE
+    #warning "####################################################"
+    //#error "Hard coding OSCCAL=" CALIBRATED_OSCCAL_VALUE
+    #pragma message "NOTICE: rfboot will set OSCCAL value"
+    OSCCAL = CALIBRATED_OSCCAL_VALUE;
+    #warning "####################################################"
+    #endif
+
     // Disable interrupts.
     cli();
 
@@ -282,7 +287,7 @@ int main(void) {
             // We can't do anything. We just hang
             while(1) ;
         }
-        else { // Reset cause was no HW reset, and flash seems to have application
+        else { // Reset cause was no HW reset, and flash seems to have application written
 
             // Althrough XTEA_KEY is read only, the RAM can be written
             // We erase XTEA_KEY
@@ -330,7 +335,6 @@ int main(void) {
         // We erase XTEA_KEY
         memset((void*)XTEA_KEY,0,sizeof(XTEA_KEY));
 
-
         // finally we start the application
         // note that we come from a WDOG reset
         // so the MCU registers I/O etc are in pristine state
@@ -341,61 +345,51 @@ int main(void) {
     }
     #endif
 
+    // TODO comment
+    reset_origin = RESET_BY_RFBOOT;
 
-    // The bootloader uses interrupts for 2 reasons:
-    // to use CC1101 (GDO0 is interrupt)
-    // to gather entropy (with WDIE). Not implemented. We use EEPROM at the moment
-
+    ////////////////////////////////////////////////
+    // rfboot bootloader needs interrupts for
+    // use with CC1101 (GDO0 is interrupt)
+    //
     // Enable change of interrupt vectors
-    // I guess without this, next command will have no effect
+    // Without this "unlock next command" instruction, next command will have no effect
     MCUCR = (1<<IVCE);
     // Move interrupts to boot flash section
-    // without this interrupts will go to the application code. BAD
+    // without this, interrupts will go to the application code.
     MCUCR = (1<<IVSEL);
+    ////////////////////////////////////////////////
 
-    //
-    // here we gather entropy to be ready when the radio is on
-    //
-    // TODO
+    // We construct a differnet IV on every upload
     uint32_t iv[2];
-    #ifdef USE_ENTROPY
-        TCCR1B |= (1 << CS10) ; // Set up timer1 with prescaler 1
-        wdtSetup();
-        byte* p=iv;
-
-        for (byte i=0;i<8;i++) {
-            while (! gatherEntropy() ) ;
-            p[i]=result;
-        }
-    #else
-
-
-        // Here the IV is created using the last 2 bytes of EEPROM
-        uint16_t round = eeprom_read_word(E2END-1)+1;
-        iv[0]=round;
-        iv[1]=COMPILE_TIME;
-        xtea_encipher( (byte*)iv,XTEA_KEY);
-    #endif
+    // Here the IV is created using the last 2 bytes of EEPROM
+    // which is upload counter
+    uint16_t round = eeprom_read_word(E2END-1)+1;
+    // round is increased by 1 on every upload, making IV unique
+    iv[0]=round;
+    iv[1]=COMPILE_TIME;
+    // We encrypt it
+    xtea_encipher( (byte*)iv,XTEA_KEY);
 
     // here we set RF channel, SyncWord etc
     radio_init();
     // no need for sei() : radio_init() does it
     {
         // 250 iterations before give up
+        // about 250ms wait time
         uint8_t i=250;
         while(1) {
             if (data_ready) {
                 data_ready = false;
                 if ( get_data() == 4 && ccpacket.crc_ok) {
-                    break;
+                    uint32_t* p = packet;
+                    if (*p == PING_SIGNATURE) break;
                 }
             }
             i--;
             if (!i) reset_mcu();
             _delay_us(1000);
         }
-        uint32_t* p = packet;
-        if (*p != PING_SIGNATURE) reset_mcu();
     }
 
     send_iv(iv);
@@ -405,19 +399,14 @@ int main(void) {
 
     {
         uint8_t i=250;
-
+        // TODO send_iv(iv) every 20ms
         while (true) {
             if (data_ready) {
                 data_ready = false;
                 if ( get_data() == PAYLOAD && ccpacket.crc_ok) {
                     break;
                 }
-                //else {
-                //    i=250;
-                //    wdt_reset();
-                //}
             }
-
             i--;
             if (!i) reset_mcu();
             _delay_us(1000);
@@ -498,7 +487,7 @@ int main(void) {
     // see the start of main() how this is implemented
     page_erase(0);
 
-    // one loop per SPM page (in reverse order)
+    // one loop per SPM page (in reverse order). rftool sends the last bytes of code first
     do
     {
         wdt_reset();
@@ -510,7 +499,7 @@ int main(void) {
             uint16_t spm_page=(app_idx-1)/SPM_PAGESIZE*SPM_PAGESIZE;
             page_erase(spm_page);
         }
-        // one loop per network packet 32 bytes == 4 xtea blocks == 2 AES blocks
+        // one loop per network packet 32 bytes == 4 xtea blocks
         do
         {
             { // we send a request and expect a data packet
@@ -548,7 +537,7 @@ int main(void) {
 
             // next thing is to wtite it in flash
             // the following code is basically what avr-gcc documentation
-            // suggests
+            // suggests, it just doing it from high addresses to low.
             ATOMIC_BLOCK(ATOMIC_FORCEON) {
                 boot_spm_busy_wait();
                 uint8_t j=PAYLOAD;
@@ -576,9 +565,8 @@ int main(void) {
     // We got all RF packets
     // the upload process is finished
 
-    // Now we are going to check if the CRC of the written code are the same with
-    // the CRC sent from the remote programmer. So we need to enable
-    // flash read
+    // Now we are going to check if the CRC's of the written code are the same as
+    // the CRC's sent from rftool. So we need to enable flash read
     flash_read_enable();
 
     // the crc's are initialized with zero (from avr-libc documentation)
@@ -620,7 +608,7 @@ int main(void) {
         send_pkt(RFB_SUCCESS,0);
     }
 
-    // Reset MCU. If flash is correctly wtitten the application can start, not
+    // Reset MCU. If flash is correctly written the application can start, not
     // directly but using a Watchdog reset. This ensures
     // that the loaded app will see I/O pins etc are in their default state
     //

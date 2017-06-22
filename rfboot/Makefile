@@ -22,6 +22,8 @@ ifeq ($(PROGRAMMER),)
 PROGRAMMER := usbasp
 endif
 
+
+
 # Default is no crystal
 ifeq ($(CRYSTAL),1)
 LFUSE := 0xFF
@@ -29,8 +31,10 @@ else
 LFUSE := 0xE2
 endif
 
+COMPILE_TIME := $(shell date '+%s')
+
 # Override is only needed by avr-lib build system.
-override CFLAGS        = -g -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) -DF_CPU=$(F_CPU) $(DEFS)
+override CFLAGS        = -Wall $(OPTIMIZE) -mmcu=$(MCU_TARGET) -DF_CPU=$(F_CPU) $(DEFS)
 override LDFLAGS       = -Wl,$(LDSECTION)
 
 OBJCOPY        = avr-objcopy
@@ -41,7 +45,9 @@ all: atmega328p
 atmega328p: check
 atmega328p: clean
 atmega328p: MCU_TARGET = atmega328p
-atmega328p: CFLAGS += -std=gnu99 -Wall -ffunction-sections -fdata-sections -fshort-enums -g -Os -w -fno-exceptions -Wl,--gc-sections -Ixtea -Icc1101 -DCOMPILE_TIME=`date '+%s'`
+atmega328p: CFLAGS += -std=gnu99 -Wall -ffunction-sections -fdata-sections -fshort-enums -g -Os -w -fno-exceptions -Wl,--gc-sections -Ixtea -Icc1101
+atmega328p: CFLAGS += $(OSCCAL_FLAG)
+atmega328p: CFLAGS += -DCOMPILE_TIME=$(COMPILE_TIME)
 #atmega328p: F_CPU = 8000000L
 atmega328p: LDSECTION  = --section-start=.text=0x7000
 atmega328p: $(PROGRAM)_atmega328p.elf
@@ -55,8 +61,8 @@ atmega328p: size
 #xtal: atmega328p
 #	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:0xFF:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
-isp: atmega328p
-	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:$(LFUSE):m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
+isp: getosccal atmega328p
+	avrdude -qq -p atmega328p -c $(PROGRAMMER) -e -U lfuse:w:$(LFUSE):m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
 %.elf:
 	$(CC) $(CFLAGS) $(LDFLAGS) -c -o xtea.o xtea/xtea.c
@@ -79,3 +85,12 @@ clean:
 
 size:
 	avr-size --mcu=$(MCU_TARGET) -C $(PROGRAM)_$(MCU_TARGET).elf
+
+ifdef OSCCAL_CALIBRATOR
+getosccal:
+	$(eval CALIBRATED_OSCCAL_VALUE := $(shell $(OSCCAL_CALIBRATOR) ) )
+	$(eval OSCCAL_FLAG := -DCALIBRATED_OSCCAL_VALUE=$(CALIBRATED_OSCCAL_VALUE) )
+else
+getosccal:
+
+endif
