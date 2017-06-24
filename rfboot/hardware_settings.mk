@@ -11,16 +11,17 @@
 #CRYSTAL = 1
 
 # Uncomment to set usbtiny as ISP programmer
-# default is usbasp
+# default is USBasp
 # At the moment usbasp and usbtiny are supported
+# "usbtiny" is in lower case
 #PROGRAMMER = usbtiny
 
 # only if CRYSTAL above is not set
 # Uncomment to enable automatic calibration of the
 # internal RC oscillator (only 8Mhz without clock divider)
-# See github .... rcCalibrator TODO
+# https://github.com/pkarsy/rcCalibrator
 # You have to give the correct path of the calibrator executable
 # If this is enabled, rfboot will set the OSCCAL register so application
 # will have CPU clock close to 8Mhz. The OSCCAL value will be
 # compiled in the rfboot code, so no worries about reserved EEPROM locations
-RC_CALIBRATOR = $(HOME)/Projects/rcCalibrator/osccal
+#RC_CALIBRATOR = $(HOME)/Projects/rcCalibrator/osccal
