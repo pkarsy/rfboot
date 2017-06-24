@@ -10,17 +10,16 @@
 # only 1 is accepted as true
 #CRYSTAL = 1
 
-# Uncomment to enable automatic calibration of the
-# internal RC oscillator (only 8Mhz without clock divider)
-# https://github.com/pkarsy/OsccalCalibrator
-# You have to give the correct path of the calibrator executable
-# If this is enabled, rfboot will fix OSCCAL so application
-# will have CPU clock close to 8Mhz. The OSCCAL value will be
-# compiled in the rfboot code, so no worries about reserved eeprom locations
-#OSCCAL_CALIBRATOR = $(HOME)/Projects/OsccalCalibrator/osccal
-
 # Uncomment to set usbtiny as ISP programmer
 # default is usbasp
 # At the moment usbasp and usbtiny are supported
 #PROGRAMMER = usbtiny
 
+# Uncomment to enable automatic calibration of the
+# internal RC oscillator (only 8Mhz without clock divider)
+# See github .... OsccalCalibrator TODO
+# You have to give the correct path of the calibrator executable
+# If this is enabled, rfboot will fix OSCCAL so application
+# will have CPU clock close to 8Mhz. The OSCCAL value will be
+# compiled in the rfboot code, so no worries about reserved eeprom locations
+RC_CALIBRATOR = $(HOME)/Projects/rcCalibrator/osccal

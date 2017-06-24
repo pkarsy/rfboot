@@ -86,10 +86,10 @@ clean:
 size:
 	avr-size --mcu=$(MCU_TARGET) -C $(PROGRAM)_$(MCU_TARGET).elf
 
-ifdef OSCCAL_CALIBRATOR
+ifdef RC_CALIBRATOR
 getosccal:
-	$(eval CALIBRATED_OSCCAL_VALUE := $(shell $(OSCCAL_CALIBRATOR) ) )
-	$(eval OSCCAL_FLAG := -DCALIBRATED_OSCCAL_VALUE=$(CALIBRATED_OSCCAL_VALUE) )
+	$(eval OPTIMAL_OSCCAL_VALUE := $(shell $(RC_CALIBRATOR) ) )
+	$(eval OSCCAL_FLAG := -DOPTIMAL_OSCCAL_VALUE=$(OPTIMAL_OSCCAL_VALUE) )
 else
 getosccal:
 

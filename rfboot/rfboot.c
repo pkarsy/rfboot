@@ -263,12 +263,12 @@ int main(void) {
     // Set the freequency close to 8Mhz using the OsccalCalibrator
     // You need the OsccalCalibrator and to enable the setting from
     // hardware_settings.mk
-    #ifdef CALIBRATED_OSCCAL_VALUE
-    #warning "####################################################"
+    #ifdef OPTIMAL_OSCCAL_VALUE
+    //#warning "####################################################"
     //#error "Hard coding OSCCAL=" CALIBRATED_OSCCAL_VALUE
     #pragma message "NOTICE: rfboot will set OSCCAL value"
-    OSCCAL = CALIBRATED_OSCCAL_VALUE;
-    #warning "####################################################"
+    OSCCAL = OPTIMAL_OSCCAL_VALUE;
+    //#warning "####################################################"
     #endif
 
     // Disable interrupts.

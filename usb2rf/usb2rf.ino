@@ -8,11 +8,12 @@
 // have a unique serial ID. If we only have one such module then is OK
 // but if we have more than one connected to the PC at the same time
 // it will be hard to choose the correct one.
-// FTDI chips have unique serial IDs but at least the red modules (probably fake chips)
+// FTDI chips have unique serial IDs but at least the red 1-2$ modules (almost certainly fake chips)
 // have some reliability problems.
-// I prefet to use CP2102 which does not ship with unique ID but you can program
-// one very easily
+// I prefet to use CP2102 which does not ship with unique ID, but you can program
+// one easily
 // http://cp210x-program.sourceforge.net/
+// I have a CP2104 module and seems to have a unique ID preinstalled
 
 
 #define PAYLOAD 32
