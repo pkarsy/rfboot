@@ -85,6 +85,10 @@ Press '0' to '9' to see the response.
 Now uncomment the lines related to the LED, inside setup()
 and loop(). Please read the notes.
 
+A very importand feature of rfboot is that it does NOT use any EEPROM location to store RF
+channel etc. All parameters are stored in the compiled bootloader, and the application can
+use the whole EEPROM.
+
 ***The first rfboot based project is finished !***
 
 Spend 2 minitues to configure geany (or your editor) to execute
