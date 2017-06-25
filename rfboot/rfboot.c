@@ -70,6 +70,12 @@
 // It is crucial that rfboot and rftool (the flasher) agree
 #define START_SIGNATURE 0xd20f6cdf
 
+// The XTEA cipher uses blocks of 8 bytes
+#define XTEA_BLOCK_SIZE 8
+
+// rfboot is designed to be a little smaller than this size
+// AVR FUSES for this bootloader size are set from Makefile
+#define BOOTLOADER_SECTION_SIZE 4096
 
 // this is the structure of the first packet and contains the header.
 // Total is 11 bytes. the other 21 bytes are unused.
@@ -79,24 +85,28 @@ struct start_packet {
     uint16_t app_size;
     uint16_t app_crc;
     uint16_t app_crc2;
-    uint16_t round;
+    uint16_t counter;
     uint32_t start_signature2;
 };
 
 struct flash_info_struct {
-    uint16_t signature;
+    //uint16_t signature;
     uint16_t app_size;
     uint16_t app_crc;
     uint16_t app_crc2;
-    uint16_t round;
-} flash_info;
+    uint16_t counter;
+} data;
 
-// The XTEA cipher uses blocks of 8 bytes
-#define XTEA_BLOCK_SIZE 8
+byte last_page_buf[SPM_PAGESIZE];
+//memcpy_P( last_page_buf, FLASHEND+1-sizeof(last_page_buf), SPM_PAGESIZE );
+const uint16_t BOOTLOADER_ADDR = FLASHEND-BOOTLOADER_SECTION_SIZE+1;
 
-// rfboot is designed to be a little smaller than this size
-// AVR FUSES for this bootloader size are set from Makefile
-#define BOOTLOADER_SECTION_SIZE 4096
+const uint16_t DATA_PAGE = FLASHEND - BOOTLOADER_SECTION_SIZE +1 - SPM_PAGESIZE;
+
+//const last_page_addr = FLASHEND-BOOTLOADER_SECTION_SIZE+1-SPM_PAGESIZE;
+//struct flash_info_struct *flash_info=FLASHEND+1-sizeof(struct flash_info_struct);
+
+
 
 // This is the status codes rfboot is sending back to the programmer
 const uint8_t RFB_NO_SIGNATURE = 1;
@@ -151,9 +161,9 @@ void get_mcusr(void) {
     MCUSR = 0;
 }
 
-#ifdef USE_ENTROPY
-    #include "entropy.h"
-#endif
+//#ifdef USE_ENTROPY
+//    #include "entropy.h"
+//#endif
 
 #include "cc1101.h"
 
@@ -274,6 +284,9 @@ int main(void) {
     // Disable interrupts.
     cli();
 
+    memcpy_P( &data, DATA_PAGE, sizeof(data) );
+
+    /*
     // Only HW reset allowed (from settings)
     // This means in effect, that programming needs physical contact.
     // unless you wired RST to some GPIO pin.
@@ -299,6 +312,7 @@ int main(void) {
     }
 
     #else // Default mode, watchdog reset (and any other) loads rfboot
+    */
 
     // if the first 2 bytes of flash are 0xff, rfboot consider the flash
     // empty and stays waiting for code indefinitely
@@ -343,7 +357,7 @@ int main(void) {
         // or to change watchdog settings
         asm("jmp 0");
     }
-    #endif
+    //#endif
 
     // TODO comment
     reset_origin = RESET_BY_RFBOOT;
@@ -364,9 +378,10 @@ int main(void) {
     uint32_t iv[2];
     // Here the IV is created using the last 2 bytes of EEPROM
     // which is upload counter
-    uint16_t round = eeprom_read_word(E2END-1)+1;
-    // round is increased by 1 on every upload, making IV unique
-    iv[0]=round;
+    //uint16_t counter = eeprom_read_word(E2END-1)+1;
+    // counter is increased by 1 on every upload, making IV unique
+    data.counter++;
+    iv[0]=data.counter;
     iv[1]=COMPILE_TIME;
     // We encrypt it
     xtea_encipher( (byte*)iv,XTEA_KEY);
@@ -449,7 +464,7 @@ int main(void) {
     // app_size is always a multiple
     // of PAYLOAD. Trailing bytes are padded with 0xff
     // This is ensured by the programmer (rftool+usb2rf)
-    if ( (app_size > (FLASHEND-BOOTLOADER_SECTION_SIZE+1) ) ||
+    if ( (app_size > DATA_PAGE ) ||
     (app_size%PAYLOAD!=0) || (app_size==0) )
     {
         send_pkt(RFB_INVALID_CODE_SIZE,0xffff);
@@ -471,15 +486,36 @@ int main(void) {
     // This variable will point to the flash location to be written
     uint16_t app_idx=app_size;
 
+
+    data.app_crc = spacket->app_crc;
+    data.app_crc2 = spacket->app_crc2;
+    data.app_size = spacket->app_size;
+    //data.counter++;
+
     // Here we send the request for the first packet
     // the packets are transmitted and received in reverse order
     // from the last 32 byte packet to the first
     send_pkt(RFB_SEND_PKT, app_idx);
 
-    #ifndef USE_ENTROPY
-        eeprom_update_word(E2END-1, round);
-        eeprom_busy_wait();
-    #endif
+    //#ifndef USE_ENTROPY
+    //    eeprom_update_word(E2END-1, counter);
+    //    eeprom_busy_wait();
+    //#endif
+
+    // Time to write the info
+    page_erase(DATA_PAGE);
+    ATOMIC_BLOCK(ATOMIC_FORCEON) {
+        boot_spm_busy_wait();
+        uint16_t *j=&data;
+        uint16_t flash_idx = DATA_PAGE;
+        do {
+            boot_page_fill(flash_idx, *j);
+            flash_idx+=2;
+            j++;
+        } while( flash_idx< DATA_PAGE+sizeof(data) );
+        boot_spm_busy_wait();
+        boot_page_write(DATA_PAGE);
+    }
 
     // Before any write, we erase the first SPM page. If for some reason
     // the upload process fails, the first page will contain
@@ -609,7 +645,7 @@ int main(void) {
     }
 
     // Reset MCU. If flash is correctly written the application can start, not
-    // directly but using a Watchdog reset. This ensures
+    // directly but by using a Watchdog reset. This ensures
     // that the loaded app will see I/O pins etc are in their default state
     //
     // Of course , if the process fails, which at
