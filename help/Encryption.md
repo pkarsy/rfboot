@@ -33,19 +33,14 @@ The firmware is uploaded to the atmega328 encrypted with XTEA algorithm in CBC m
 As rfboot selects a different IV at every session, even if we upload the same file several times,
 the data on the air will be different every time. An "attacker" cannot use an old recorded
 session, and cannot send random data either, because rfboot checks if the first
-packet is encrypted with the correct XTEA key and the chosen IV. At the moment the IV is stored
-in the last 2 bytes of EEPROM. Only the first 65536 uploads will have unique IV's. As there
-is no possibility that a project needs so many firmware updates, I think the security
-is OK with this approach.
-Maybe later I will use a method to collect entropy at boot, so rfboot can choose a unique IV
-without the need to store the previous value in the EEPROM.
-The most promising method seems to be:
-
-https://gist.github.com/endolith/2568571
+packet is encrypted with the correct XTEA key and the chosen IV. The IV is stored
+in the flash (Not the EEPROM) and uses 2 bytes. Only the first 65536 uploads will have unique IV's. This is OK
+as the FLASH can be written reliably only 10000 times.
 
 The firmware is not encrypted in the atmega flash. When the bootloader is first installed with
 "make xtal" or "make noxtal" the fuses are set so an ISP programmer cannot read the FLASH
-but I have no solid information if atmega328 can withstand FLASH read attacks.
+neither the EEPROM,
+but I have no solid information if atmega328 can withstand FLASH/EEPROM read attacks.
 
 There is also the possibility that rfboot has some bug, and an exploit can trick it to
 reveal the code somehow. Or that the data are badly encrypted and can easily decrypted, and so on.
