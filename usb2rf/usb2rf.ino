@@ -13,7 +13,7 @@
 // I prefet to use CP2102 which does not ship with unique ID, but you can program
 // one easily
 // http://cp210x-program.sourceforge.net/
-// I have a CP2104 module and seems to have a unique ID preinstalled
+// I have a CP2104 module and seems to have a unique ID from the factory.
 
 
 #define PAYLOAD 32
@@ -26,7 +26,6 @@ mCC1101 rf;
 void cc1101signalsInterrupt(void) {
     rf.interrupt = true;
 }
-
 
 // Seems the AltSoftSerial does better than SoftSerial @ 8MHz
 // Anything more than 19200 baud @ 8MHz seems unreliable
