@@ -5,8 +5,8 @@ The usb2rf module is a bridge allowing data from the PC to be transmitted as RF 
 direction, allows rf packets to be received from the PC
 
 ### Upload the precompiled usb2rf.hex file
-Normally you dont need/want to do that as this is part of the [Installation](../help/Installation.md).
-It rftool knows the module, it is just a
+Normally you dont need/want to do that independently, as this is part of the [Installation](../help/Installation.md).
+OK, If rftool knows the module, it is just a
 ```sh
 > make sendHex
 ```
@@ -14,7 +14,14 @@ It rftool knows the module, it is just a
 ### build instructions
 You need to install the Arduino libraries<br/>
 [AltSoftSerial](https://github.com/PaulStoffregen/AltSoftSerial)<br/>
-[digitalWriteFast](https://github.com/NicksonYap/digitalWriteFast)
+[digitalWriteFast](https://github.com/NicksonYap/digitalWriteFast)<br/>
+and then compile as usual.
+```sh
+# To build the firmware
+> make
+# to upload the firmware
+> make send
+```
 
 ### Assemble the module
 See [Installation](../help/Installation.md) for instructions to build it.
