@@ -1,4 +1,5 @@
 ### usb2rf module
+Generally you need the following info only if you modify the usb2rf source code.
 
 This folder contains firmware (and a  PCB file if you want to buid a more robust module) for the usb2rf module
 The usb2rf module is a bridge allowing data from the PC to be transmitted as RF packets and in reverse
@@ -28,7 +29,16 @@ and then compile as usual.
 ### Debug port (only if you modify the usb2rf code)
 By using another USB to UART module you can have debug messages, useful only if modifying the
 usb2rf.ino file, as obviously the main port cannot be used for debug messages.
-See the comments of usb2rf.ino
+You need 3 jumper cables
+ProMini D9 <---> SerialModule2 RX
+D4 <---> DTR
+GND <----> GND
+and then:
+```sh
+> make debug
+```
+Now press "F7" (with gtkterm) to toggle DTR and enable/disable debug output
+See the comments of usb2rf.ino for more info.
 
 ### Assemble the module
 See [Installation](../help/Installation.md) for instructions to build it.
