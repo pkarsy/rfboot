@@ -168,7 +168,7 @@ and insert the usb2rf module. rftool detects it and saves the Serial port device
 to ~/.usb2rf file. You can have more than one usb2rf devices.
 
 ### Burn the apropriate firmware to usb2rf
-You can build the sketch by yourself. (See [usb2rf/README.md](..usb2rf/README.md) )
+You can build the sketch by yourself. (See [usb2rf/README.md](../usb2rf/README.md) )
 or upload the precompiled .hex
 ```bash
 > cd usb2rf
