@@ -45,4 +45,4 @@ Now press "**F7**" (with gtkterm) to toggle DTR and enable/disable debug output.
 See the comments of usb2rf.ino for more info.
 
 ### Assemble the module
-See [Installation](../help/Installation.md) for instructions to build it.
+See [Installation](../help/Installation.md) for instructions.
