@@ -30,9 +30,13 @@ and then compile as usual.
 By using another USB to UART module you can have debug messages, useful only if modifying the
 usb2rf.ino file, as obviously the main port cannot be used for debug messages.
 You need 3 jumper cables
-ProMini D9 <---> SerialModule2 RX
-D4 <---> DTR
-GND <----> GND
+
+ProMini | Debug SerialModule
+------ | -----
+ProMini D9 | SerialModule2 RX
+D4 | DTR
+GND | GND
+
 and then:
 ```sh
 > make debug
