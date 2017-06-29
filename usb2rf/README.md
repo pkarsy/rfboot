@@ -41,7 +41,7 @@ and then:
 ```sh
 > make debug
 ```
-Now press "F7" (with gtkterm) to toggle DTR and enable/disable debug output
+Now press "**F7**" (with gtkterm) to toggle DTR and enable/disable debug output.<br/>
 See the comments of usb2rf.ino for more info.
 
 ### Assemble the module
