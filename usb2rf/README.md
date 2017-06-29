@@ -33,7 +33,7 @@ You need 3 jumper cables
 
 ProMini | Debug SerialModule
 ------ | -----
-ProMini D9 | SerialModule2 RX
+D9 | RX
 D4 | DTR
 GND | GND
 
