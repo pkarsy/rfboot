@@ -24,7 +24,7 @@ They don't need encryption, because code is transfered by wire, and
 physical access to the module is required.
 
 I found that encryption is not slowing down the uploading process.
-Due to the way the rfboot works, it is not any more complicated either.
+It is also transparent to the user, so it does not complicate the upload process.
 
 For these reasons encryption is permanently enabled in rfboot. If for some reason you need
 to disable encryption you have to edit the source code.
