@@ -21,6 +21,8 @@ and then compile as usual.
 > make
 # to upload the firmware
 > make send
+# to replace the precompiled usb2rf.hex
+> make hex
 ```
 
 ### Assemble the module
