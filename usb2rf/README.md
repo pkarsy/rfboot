@@ -25,5 +25,10 @@ and then compile as usual.
 > make hex
 ```
 
+### Debug port (only if you modify the usb2rf code)
+By using another USB to UART module you can have debug messages, useful only if modifying the
+usb2rf.ino file, as obviously the main port cannot be used for debug messages.
+See the comments of usb2rf.ino
+
 ### Assemble the module
 See [Installation](../help/Installation.md) for instructions to build it.
