@@ -10,8 +10,11 @@ Before you proceed, it is required that you have completed the
 - A cc1101 RF module with 2.54 pin spacing. The photos show a D-SUN module
 - A LED with a suitable resistor.
 - Male to female 2.54 jumper wires, and some simple striped wires
-- A 3.3V stabilized power source. For example A lithium-ion cell with a 3.3V regulator and
-2 additional 1uF caps. LP2950-3.3 and especially HT7333 are very good for this purpose. See picture.
+- A 3.3V stabilized power source.<br/>
+For example A lithium-ion cell with a 3.3V regulator and
+2 additional 1uF caps. LP2950-3.3 and especially HT7333 are very good for this purpose. See picture.<br/>
+Do not use LM7833 or L78L33 or other non LDO regulators unless your power source voltage is at least 5V. On the other hand some
+3.3V regulators can handle voltages up to 6V only, so be careful.
 - ISP programmer with a 28pin ZIF socket. The isp programmer is used only once
 for each project, to write rfboot to the target MCU.
 - A breadboard. Note that a bad breadboard is the basic source of failures when prototyping.
