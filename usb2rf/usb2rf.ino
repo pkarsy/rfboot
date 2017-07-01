@@ -39,6 +39,7 @@ void cc1101signalsInterrupt(void) {
 // GND <----> GND no need if both usb2serial are connected to the same PC. All USB ports share
 // the same ground
 // https://www.pjrc.com/teensy/td_libs_AltSoftSerial.html
+// https://github.com/PaulStoffregen/AltSoftSerial
 #include <AltSoftSerial.h>
 AltSoftSerial debug_port;
 
