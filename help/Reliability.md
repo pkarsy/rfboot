@@ -20,13 +20,14 @@ includes this mechanism in the .ino file.
 
 As long as this mechanism works, we can upload code to the device literally thousands of
 times, without any need to even touch the device. if however the device for some reason
+(usually software bug)
 stops responding to the reset request, then it is impossible to reprogram it remotely.
 We need to access the reset button (we need to go to the roof for example).
 
-rfboot avoids this type of failure with the following precautions :
+rfboot avoids (not always as we will see, but close) this type of failure with the following precautions :
 
 - If the upload process is interrupted, rfboot detects it and waits for new firmware. Even
-after a power cycle, rfboot refuses to start the application, and waits indefinitelly for
+after a power cycle, rfboot refuses to start the application, and waits indefinitely for
 new upload.
 
 - At the event of a power loss or MCU reset while programming, when the power comes back rfboot
@@ -40,8 +41,10 @@ It is waiting for new firmware.
 - rfboot enables the watchdog timer before the application starts. If for some reason the
 application is malfunctioning, watchdog timer will eventually reset the device allowing to reprogram it.
 **Note: If the malfunctioning code happens to reset the watchdog periodically, then you are locked out.**.<br/>
-You need access to reset or power button..<br/>
+You need access to reset or power button...<br/>
 **Always test the firmware before uploading in the field.**
+
+As you can see the only way to "brick" our project is by sending buggy code.
 Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.
 
 - Every time rftool creates a new empty project, gives unique channel, syncword, and XTEA
