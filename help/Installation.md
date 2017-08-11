@@ -38,6 +38,9 @@ for your environment. Open a terminal:
 > sudo apt-get install git
 ```
 
+The ubuntu/debian/mint packages are old (1.0.6) but work perfectly for rfboot purposes. I
+didn't test the newer arduino packages.
+
 Download the rfboot repository in your PC. Place it in some relatively safe place in your
 PC like ~/programming/
 
@@ -58,10 +61,15 @@ Now if you type
 ```bash
 > rftool
 ```
-Should give you a small usage message. This means rftool is in the PATH.
+Should give you a small usage message. This means rftool is in the PATH. As you can see the
+rftool is precompiled. It is a i386 statically linked executable, and it can run on any i386 or x86_64
+linux system (you can recompile it of course if you want).
 
 Now it is time to install mCC1101, a modified (and simplified) panStamp
-CC1101 library. Change "~/sketchbook/libraries" with your actual sketchbook folder.
+CC1101 library. The skeleton projects created with "rftool create ProjName"
+use this library. (You can modify the code to use another CC1101 library of course)
+
+Change "~/sketchbook/libraries" with your actual sketchbook folder.
 
 ```bash
 > cd ~/sketchbook/libraries
@@ -165,16 +173,20 @@ And here is the final module
 > rftool addport
 ```
 and insert the usb2rf module. rftool detects it and saves the Serial port device
-to ~/.usb2rf file. You can have more than one usb2rf devices.
+to ~/.usb2rf file.
 
-### Burn the apropriate firmware to usb2rf
+Note: Sometimes the module is detected as "/dev/ttUSB0". Another time as "/dev/ttUSB1", and so
+on. rftool however searches the "/dev/serial/by-id" directory and finds the correct usb2rf module.
+You can have more than one usb2rf devices and rftool will use the first one witch is connected.
+
+### Burn the appropriate firmware to usb2rf
 You can build the sketch by yourself. (See [usb2rf/README.md](../usb2rf/README.md) )
 or upload the precompiled .hex
 ```bash
 > cd usb2rf
 > make sendHex
 ```
-You may need to press proMini reset button as autoreset does not work.
+You may need to press proMini reset button as auto-reset does not work.
 
 ***Hardware and software setup is done !***
 
