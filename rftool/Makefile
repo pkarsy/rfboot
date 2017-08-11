@@ -20,3 +20,5 @@ musl:
 	strip rftool
 	ls -l rftool
 
+clean:
+	rm -rf nimcache rftool

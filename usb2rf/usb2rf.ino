@@ -295,11 +295,11 @@ void execCmd(uint8_t* cmd , uint8_t cmd_len ) {
 
         case 'W':
             // send wake up 1 sec pulse
-            if (cmd_len==1) {
+            if (cmd_len==2) {
                 if (debug) {
                     debug_port.println(F("Sending WakeUp burst 1050ms"));
                 }
-                const byte w='*';
+                const byte w=cmd[1];
                 rf.sendBurstPacket(&w,1,1050);
                 if (debug) {
                     debug_port.println(F("Done"));

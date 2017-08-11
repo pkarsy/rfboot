@@ -17,6 +17,8 @@
 # will have CPU clock close to 8Mhz. The OSCCAL value will be
 # compiled in the rfboot code, so no worries about reserved EEPROM locations.
 # If the executable is in the PATH, "osccal" is enough.
+# To be extra sure, check if the compilation emits the message :
+# #pragma message "NOTICE: rfboot will set OSCCAL value"
 #RC_CALIBRATOR = osccal
 
 # Uncomment to set usbtiny as ISP programmer

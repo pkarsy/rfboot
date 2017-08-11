@@ -477,6 +477,7 @@ proc getAppParams() : tuple[appChannel:int, appSyncWord:string, resetString: str
     quit QuitFailure
   for i in conf.splitLines:
     var line = i.strip()
+    # TODO check comments
     if (line.len > 0) and not (line[0] in "/"):
       #if line.contains("APP_ADDRESS"):
       #  let qnumber = line.count('\"')
@@ -689,9 +690,9 @@ proc actionCreate() =
   block:
     let f = open(ApplicationSettingsFile, fmWrite)
     f.writeLine "// This file :"
-    f.writeLine "// - Is used by the Arduino .ino file to get RF settings"
-    f.writeLine "// - Is parsed at runtime by rftool to get app parameters (channel etc)"
-    #f.writeLine "// to send the application the reset word"
+    f.writeLine "// - It is used by the Arduino .ino file to get RF settings"
+    f.writeLine "// - It is parsed at runtime by rftool to get application parameters"
+    f.writeLine "// rftool parser is naive, be careful when modifying this file"
     f.writeLine ""
     f.writeLine "// These parameters are generated with"
     f.writeLine "// \"rftool create ", projectName, "\""
