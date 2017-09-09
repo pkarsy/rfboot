@@ -475,7 +475,7 @@ proc setChannel(port: cint, channel: 0..127) =
   port.drain 10000
 
 
-proc setAddress(port: cint, address: string) =
+proc setSyncWord(port: cint, address: string) =
   port.write CommdModeStr & "A" & address
   port.drain 10000
 
@@ -590,27 +590,27 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     if modulo != 0:
       app.add '\xff'.repeat(Payload-modulo)
   let (rfbChannel,rfbootSyncWord,key,pingSignature) = getUploadParams()
-  let (newAppChannel, newAppAddress, newResetString) = getAppParams()
+  let (newAppChannel, newAppSyncWord, newResetString) = getAppParams()
   var appChannel: int
-  var appAddress = "12"
+  var appSyncWord = "12"
   var resetString: string
   #var round: int
   try:
     let lastupload = open(".lastupload", fmRead)
     appChannel= lastupload.readline.strip.parseInt
-    appAddress[0] = lastupload.readline.strip.parseInt.char
-    appAddress[1] = lastupload.readline.strip.parseInt.char
+    appSyncWord[0] = lastupload.readline.strip.parseInt.char
+    appSyncWord[1] = lastupload.readline.strip.parseInt.char
     resetString = lastupload.readline.strip
     lastupload.close
   except IOError:
     appChannel = newAppChannel
-    appAddress = newAppAddress
+    appSyncWord = newAppSyncWord
     resetString = newResetString
   if resetString!=nil or resetString!="":
     if newAppChannel!=appChannel:
       stderr.writeLine "WARNING : appChannel changed to ", newAppChannel, ". Using the old ", appChannel, " to send the reset signal"
-    if newAppAddress != appAddress:
-      stderr.writeLine "WARNING : appAddress changed to ", newAppAddress.toArray, ". Using the old ", appAddress.toArray, " to send the reset signal"
+    if newAppSyncWord != appSyncWord:
+      stderr.writeLine "WARNING : appSyncWord changed to ", newAppSyncWord.toArray, ". Using the old ", appSyncWord.toArray, " to send the reset signal"
     if newResetString != resetString:
       stderr.writeLine "WARNING : resetString changed to ", newResetString, ". Using the old ", resetString, " to send the reset signal"
   let portname = getPortName()
@@ -636,8 +636,8 @@ proc actionUpload(appFileName: string, timeout=10.0) =
   else:
     echo "App channel = ", appChannel
     port.setChannel appChannel
-    echo "App SyncWord = ", appAddress.toArray
-    port.setAddress appAddress
+    echo "App SyncWord = ", appSyncWord.toArray
+    port.setSyncWord appSyncWord
     echo "Reset String = ", resetString
     port.write resetString
     let msg = port.getPacket(100000, resetString.len)
@@ -646,7 +646,7 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     else:
       stderr.writeLine "Application did not respond to the reset command, trying to send code anyway"
   echo "rfboot SyncWord = ", rfbootSyncWord.toArray
-  port.setAddress rfbootSyncWord
+  port.setSyncWord rfbootSyncWord
   echo "rfboot channel = ", rfbChannel
   port.setChannel rfbChannel
   port.drain(5000)
@@ -663,7 +663,7 @@ proc actionUpload(appFileName: string, timeout=10.0) =
   if not contact:
     stderr.writeLine "Cannot contact rfboot"
     port.setChannel appChannel
-    port.setAddress appAddress
+    port.setSyncWord appSyncWord
     port.drain 2000
     quit QuitFailure
   else:
@@ -770,12 +770,12 @@ proc actionUpload(appFileName: string, timeout=10.0) =
   #
   let f = open(".lastupload", fmWrite)
   f.writeLine newAppChannel
-  f.writeLine newAppAddress[0].int
-  f.writeLine newAppAddress[1].int
+  f.writeLine newAppSyncWord[0].int
+  f.writeLine newAppSyncWord[1].int
   f.writeLine newResetString
   f.close()
   port.setChannel newAppChannel
-  port.setAddress newAppAddress
+  port.setSyncWord newAppSyncWord
 
 
 proc actionMonitor() =
@@ -784,14 +784,14 @@ proc actionMonitor() =
   let p = commandLineParams()
   let portName = getPortName()
   echo "portname=", portName
-  let fd = portName.openPort()
+  let usb2rf = portName.openPort()
   echo "Application SyncWord = ", appSyncWord.toArray
   echo "Channel = ", appChannel
-  fd.setChannel appChannel
+  usb2rf.setChannel appChannel
   sleep 20
-  fd.setAddress appSyncWord
+  usb2rf.setSyncWord appSyncWord
   sleep 20
-  discard fd.close()
+  discard usb2rf.close()
   if p.len >= 2:
     # No need for checkLockFile. openPort does it.
     #checkLockFile(portName)
