@@ -861,7 +861,7 @@ proc main() =
     echo "        rftool getport"
     echo "        rftool addport # Adds usb2rf module to ~/.usb2rf file"
     quit QuitFailure
-  let action = p[0].strip.normalize # mikra xoris _
+  let action = p[0].strip.normalize # lower without _
   case action
   of "create":
     actionCreate()
