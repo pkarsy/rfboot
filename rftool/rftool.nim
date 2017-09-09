@@ -33,7 +33,7 @@ proc xtea_decipher(v: var array[2,uint32], key : array[4,uint32] ) {.importc.}
 
 const RFB_NO_SIGNATURE = 1
 const RFB_INVALID_CODE_SIZE = 2
-const RFB_IDENTICAL_CODE = 3
+#const RFB_IDENTICAL_CODE = 3
 const RFB_SEND_PKT = 4
 const RFB_WRONG_CRC=5
 const RFB_SUCCESS=6
@@ -102,6 +102,7 @@ proc parseKey(keyStr: string): array[4,uint32] =
   try:
     for i,k in key:
       # parseBiggestInt is needed for 32bit systems
+      # maybe is better to use 32bit unsigned function
       let intval = k.replace('u',' ').replace('U',' ').strip().parseBiggestInt
       if intval>=0 and intval<=4294967295:
         result[i]=intval.uint32
@@ -112,73 +113,10 @@ proc parseKey(keyStr: string): array[4,uint32] =
     stderr.writeLine "Value or overflow error while parsing KEY: ", keyStr
     quit QuitFailure
 
-# TODO allagi
-# This proc comes form the wikipedia article about xtea. again converted with
-# c2nim amd modified by hand
-# Note that this one, instead of modifying the input, returns the encrypted result.
-# xtea works with 8 byte  blocks, and treats them as 2 uint32 numbers
-discard """proc xteaEncipher(v: array[2, uint32]; key: array[4, uint32]) : array[2, uint32] =
-  const delta: uint32 = 0x9E3779B9'u32
-  const num_rounds = 32
-  var
-    v0 = v[0]
-    v1 = v[1]
-    sum: uint32 = 0
-  for round in countup(1, num_rounds):
-    v0 += (((v1 shl 4) xor (v1 shr 5)) + v1) xor (sum + key[sum.int and 3])
-    sum += delta
-    v1 += (((v0 shl 4) xor (v0 shr 5)) + v0) xor (sum + key[(sum shr 11).int and 3])
-  return [v0,v1]"""
-#proc xteaEncipher(v: array[2, uint32]; key: array[4, uint32]) : array[2, uint32] =
-#  result = v
-#  xtea_encipher( result, key )
 
 # for use with "echo"
 proc `$`(a:array[2, uint32]): string =
   return "{" & $a[0] & "," & $a[1] & "}"
-
-# TODO I tested with some python XTEA-implementations and it is OK
-#proc xteaEncipherCbc(v: array[2, uint32]; key: array[4, uint32], iv: var array[2,uint32]) : array[2, uint32] =
-#  result = xteaEncipher([v[0] xor iv[0],v[1] xor iv[1]] ,key)
-#  iv = result
-
-#proc xteaEncipherCbc(v: array[2, uint32]; key: array[4, uint32], iv: var array[2,uint32]) : array[2, uint32] =
-#  result = v
-#  xtea_encipher_cbc( result, key, iv )
-
-
-# xtea encpher a string. The string is treated as a series of little endian
-# uint32 numbers. The string must have a size multiple of 8
-# [ BYTE0(LSB) BYTE1 BYTE2 BYTE3(MSB) ] -> uint32
-# ie "1000" -> 1'u32
-discard """proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
-  assert(st.len mod 8 == 0,"String to be encrypted must have size multiple of 8 bytes")
-  result = ""
-  for i in countup(0 , st.len - 1, step=8):
-    var x0,x1:uint32
-    let s = st[i .. i+7]
-    for i in countdown(3,1):
-      x0+=s[i].uint32
-      x0 = x0 shl 8
-    x0 += s[0].uint32
-    for i in countdown(7,5):
-      x1+=s[i].uint32
-      x1 = x1 shl 8
-    x1 += s[4].uint32
-    block:
-      let x = xteaEncipherCbc([x0,x1],key,iv)
-      x0=x[0]
-      x1=x[1]
-    var pkt = "00000000"
-    for i in 0..2:
-      pkt[i]=char(x0 and 0xff)
-      x0 = x0 shr 8
-    pkt[3]=char(x0)
-    for i in 4..6:
-      pkt[i]=char(x1 and 0xff)
-      x1 = x1 shr 8
-    pkt[7]=char(x1)
-    result.add pkt"""
 
 proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
   assert(st.len mod 8 == 0,"String to be encrypted must have size multiple of 8 bytes")
@@ -245,7 +183,6 @@ proc getConnectedPorts() : seq[string] =
 proc getPortName() : string =
   var hwID: string
   var f: File
-
   try:
     f = homeconfig.expandTilde.open
   except IOError:
@@ -256,16 +193,13 @@ proc getPortName() : string =
     var s: string
     try:
       s = f.readLine.strip
-      #echo "line=",s
     except IOError:
       break
     if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!"):
       discard
     elif not s.startsWith("/dev/"):
-      #stderr.writeLine(""
       discard
     elif not ( fileExists(s) or symlinkExists(s) ):
-      #stderr.writeLine "Device ",s," is not connected"
       discard
     else:
       hwID = s
@@ -274,9 +208,6 @@ proc getPortName() : string =
     stderr.writeLine "Config file does not point to any connected device"
     quit QuitFailure
   var portName = $realpath(hwID,nil)
-  #stderr.writeLine "port = ",portName
-  # This is used by the sendStopSignal() sendContSignal()
-  #portName = hwID
   return portName
 
 
@@ -289,21 +220,19 @@ proc checkLockFile(portName:string) =
     echo "Lockfile found : \"",lockfile,"\""
     let info = lockfile.readFile.strip.split
     let pid = info[0].parseInt
-    #echo "pid=",pid
-    #echo "/proc/xxx=", "/proc/" & info[0]
     if existsDir( "/proc/" & info[0]):
       LPID = pid
-      LPROCNAME = info[1].strip
+      if info.len>1:
+        LPROCNAME = info[1].strip
+      else:
+        LPROCNAME = ""
     else:
       echo "Lockfile is stale"
       discard unlink(lockfile)
-      #return -1
-  #else:
-  #  return -1
 
 
 # Stops other processess accessing the serial port.
-# It is used for code upload even when a Serial Terminal (usually gtkterm)
+# It is used for code upload even when a Serial Terminal (ie gtkterm)
 # is using the port
 proc sendStopSignal(portname:string): bool =
   checkLockFile(portname)
@@ -341,16 +270,6 @@ proc rand(): int =
   randFile.close
 
 
-discard """proc randomChannel(): int =
-  const channels = 79 # random 0..78 we add 1 -> 1..79
-  const maxRan = (256 div channels)*channels
-  while true:
-      let r=rand()
-      if r<maxRan:
-        #echo "good r = ",r
-        return (r mod channels)+1"""
-
-
 proc randomUint32(): uint32 =
   # we fill the uint32 bytes with random data
   let randFile = open(RandomGen)
@@ -361,19 +280,6 @@ proc randomUint32(): uint32 =
 proc randomXteaKey(): array[4,uint32] =
   for i in 0..3:
     result[i]=randomUint32()
-
-
-discard """proc randomString(n: Natural): string =
-  if n>64:
-    stderr.writeLine "random string too large"
-    quit QuitFailure
-  let randFile = open(RandomGen)
-  result=newString(n)
-  #for i in 1..n:
-    #result.add randFile.readChar()
-  #discard readBuffer(randFile,addr result,n)
-  randFile.close
-  #discard readBuffer(randFile,addr result,4)"""
 
 
 proc keyAsArrayC(key: array[4,uint32]): string =
@@ -398,15 +304,6 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootSyncWord:string, key: arra
         let brend = line.find('}')
         line = line[brstart+1..brend-1]
         result.key = parseKey(line)
-      #elif line.contains("RFBOOT_ADDRESS"):
-      #  let qnumber = line.count('\"')
-      #  if qnumber != 2:
-      #    stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RFBOOT_ADDRESS line has ", qnumber, " \". Expected 2, enclosing the RF address"
-      #    quit QuitFailure
-      #  let startl = line.find('\"')
-      #  let endl = line.rfind('\"')
-      #  result.rfbootSyncWord = line[startl+1..endl-1]
-      #  stderr.writeLine "rfboot_address=",result.rfbootSyncWord
       elif line.contains("RFBOOT_CHANNEL"):
         if line.count('=') != 1:
           stderr.writeLine "In file \"", RfbootSettingsFile, "\", the RF_CHANNEL line is missing a \"=\""
@@ -457,6 +354,7 @@ proc getUploadParams() : tuple[ rfbChannel:int, rfbootSyncWord:string, key: arra
     stderr.writeLine "ERROR: Config file does not contain the XTEA_KEY variable"
     quit QuitFailure
 
+
 proc toArray(s:string): string =
   result = "{"
   for i,c in s:
@@ -477,17 +375,7 @@ proc getAppParams() : tuple[appChannel:int, appSyncWord:string, resetString: str
     quit QuitFailure
   for i in conf.splitLines:
     var line = i.strip()
-    # TODO check comments
     if (line.len > 0) and not (line[0] in "/"):
-      #if line.contains("APP_ADDRESS"):
-      #  let qnumber = line.count('\"')
-      #  if qnumber != 2:
-      #    stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the APP_ADDRESS line has ", qnumber, " \". Expected 2, enclosing the RF address"
-      #    quit QuitFailure
-      #  let startl = line.find('\"')
-      #  let endl = line.rfind('\"')
-      #  result.appSyncWord = line[startl+1..endl-1]
-      #  stderr.writeLine "appSyncWord=", result.appSyncWord.toArray
       if line.contains("RESET_STRING"):
         let qnumber = line.count('\"')
         if qnumber != 2:
@@ -497,7 +385,6 @@ proc getAppParams() : tuple[appChannel:int, appSyncWord:string, resetString: str
         let endl = line.rfind('\"')
         if endl-startl==1:
           stderr.writeLine "In file \"", ApplicationSettingsFile, "\", found  empty RESET_STRING. Autoreset disabled"
-          #quit QuitFailure
         result.resetString = line[startl+1..endl-1]
         echo "resetString=",result.resetString
       elif line.contains("APP_CHANNEL"):
@@ -529,7 +416,6 @@ proc getAppParams() : tuple[appChannel:int, appSyncWord:string, resetString: str
   if result.appChannel == -1:
     stderr.writeLine "ERROR: Config file does not contain the APP_CHANNEL variable"
     quit QuitFailure
-
 
 
 proc getApp(fn : string): string =
@@ -572,7 +458,7 @@ proc drain(port: cint, timeout: cint=100000) {.noconv.} =
     discard
 
 
-proc getPacket(port: cint, timeout: cint = 100000, size:int = 1000000): string = #tuple[ sender: MessageOrigin, text: string] =
+proc getPacket(port: cint, timeout: cint = 100000, size:int = 1000000): string =
   var sz = size;
   while (sz>0):
     let res = port.getChar(timeout)
@@ -618,8 +504,6 @@ proc actionCreate() =
   elif not projectName.isAlphaNumeric:
     stderr.writeLine "Only alphanumeric characters should be used in project name"
     quit QuitFailure
-  # TODO
-  # Channel random ?
   var appChannel = (rand() mod 4)+1
   var xteaKey = randomXteaKey()
   var appSyncWord0 = rand()
@@ -627,60 +511,6 @@ proc actionCreate() =
   var rfbSyncWord0 = rand()
   var rfbSyncWord1 = rand()
   var rfbChannel = 0
-  discard """
-  var options_table = initTable[string,string]()
-  for i in countup(2,p.len-1,step=2):
-    var key = p[i]
-    if key[0] != '-':
-      stderr.writeLine "Οptions must start with '-'"
-      quit QuitFailure
-    var val: string
-    if i+1<p.len:
-      val = p[i+1]
-    if val==nil or val=="" :
-      stderr.writeLine "Option \"", key, "\" without a value"
-      quit QuitFailure
-    else:
-      key = key.strip(leading=true,trailing=false,chars = {'-'}).normalize
-      options_table[key]=val
-  for key,val in options_table:
-      case key:
-      #of "n","name", "projectname":
-      #  if val.len == 0:
-      #    quit "The name of the project cannot be empty"
-      #  elif not val.isAlphaNumeric:
-      #    quit "Only alphanumeric characters should be used in project name"
-      #  else:
-      #    p.projectName = val
-
-
-      of "c", "channel":
-        #TODO alla channel gia to cc1101
-        const msg="Channel option needs an integer 0-127"
-        if val=="":
-          stderr.writeLine msg
-          quit QuitFailure
-        else:
-          try:
-            channel = parseInt(val)
-          except ValueError:
-            stderr.writeLine msg
-            quit QuitFailure
-          if 0<= channel and channel <= 127:
-            discard
-          else:
-            stderr.writeLine msg
-            quit QuitFailure
-      of "key":
-        xteaKey = val.parseKey
-
-      else:
-        stderr.write "Unknown option/argument : ", key, "\n"
-        quit QuitFailure
-
-      #    elif not val.isAlphaNumeric:
-      #quit "Only alphanumeric characters should be used in project name"
-      """
   copyDir(fileSource & SkelDir, projectName)
   setCurrentDir(projectName)
   moveFile("skel.ino",projectName & ".ino")
@@ -724,56 +554,41 @@ proc actionCreate() =
     f.writeLine "// This is a 4 byte packet rfboot expects before answering"
     block:
       var pingSignature = randomUint32()
-      # for compatibility reasons we dont want the pingSignature to be the same as the
+      # we dont want the pingSignature to be the same as the
       # signature earlier rfboot used
       # Now rfboot uses a different signature for every project
       while pingSignature == START_SIGNATURE:
          pingSignature = randomUint32()
       f.writeLine "const uint32_t PING_SIGNATURE = ", pingSignature, "u;"
-    discard """
-// If uncommented,  does not allow code to be uploaded, unless the reset button is pressed
-// Can be useful if the project has stable firmware but there is need for some
-// rare updates. Also if we do not want updates without physical contact
-//#define UPLOAD_AT_HW_RESET_ONLY
-
-// There may be cases we want the bootloader disabled unless a jumper is connected.
-// Rfboot sets the pin as INPUT with PULLUP enabled. At boot rfboot checks
-// the state of the PIN, and if it is LOW then rfboot enables the RF and waits for code
-// Not implemented yet
-// only 1 is accepted as true
-//#define ENABLE_AT_LOW_PIN_ONLY
-//#define ENABLE_PIN B,0
-"""
     f.close
   block:
-    #echo "Project Name = ", projectName
     echo "Application SyncWord = ", appSyncWord0, ",", appSyncWord1
     echo "rfboot SyncWord = ", rfbSyncWord0, ",", rfbSyncWord1
     echo "rfboot channel = ", rfbChannel
     echo "Application channel = ", appChannel
 
 
-proc actionUpload(binaryFileName: string, timeout=10.0) =
-  #var lastbinarysize:Off
-  #block:
-  #  var s:Stat
-  #  var statres = stat(".lastbinary", s)
-  #  if statres==0:
-  #    lastbinarysize = s.st_size
+proc actionUpload(appFileName: string, timeout=10.0) =
+  # The firmware can be
+  # .elf .hex .bin
+  var binaryFileName: string
+  if appFileName.toLowerAscii.endswith(".elf") or appFileName.toLowerAscii.endswith(".hex"):
+    #echo "Converting to BINARY format"
+    binaryFileName = appFileName[0..appFileName.len-5] & ".bin"
+    echo "avr-objcopy -j .text -j .data -O binary ", appFileName, " ", binaryFileName
+    discard startProcess( command="avr-objcopy", args=[ "-j", ".text", "-j", ".data", "-O", "binary", appFileName, binaryFileName ], options={poStdErrToStdOut, poUsePath} )
+  elif appFileName.toLowerAscii.endswith(".bin"):
+    binaryFileName = appFileName
+  else:
+    stderr.writeLine "Unknown type : ", appFileName
+    quit QuitFailure
 
   var app = getApp(binaryFileName)
-  #if app.len == lastbinarysize:
-  #  let lastapp = open(".lastbinary").readAll
-  #  if app == lastapp:
-  #    echo "The new firmware is identical to the last one. No need for upload"
-  #    quit QuitSuccess
-
   # Pad the app with 0xFF to multiple of Payload
   block:
     let modulo = app.len mod Payload
     if modulo != 0:
       app.add '\xff'.repeat(Payload-modulo)
-
   let (rfbChannel,rfbootSyncWord,key,pingSignature) = getUploadParams()
   let (newAppChannel, newAppAddress, newResetString) = getAppParams()
   var appChannel: int
@@ -813,26 +628,23 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   if p!=USB2RF_START_MESSAGE:
     stderr.writeLine "Cannot contact usb2rf"
     quit QuitFailure
-  else:
-    echo "module identified : \"", USB2RF_START_MESSAGE, "\""
+  #else:
+  #  echo "module identified : \"", USB2RF_START_MESSAGE, "\""
   if resetString==nil or resetString=="":
     echo "Contacting rfboot. Reset the module manually"
-    echo "The process will continue to try for ", timeout , " sec"
+    echo "The process will continue to try for ", timeout.int , " sec"
   else:
     echo "App channel = ", appChannel
     port.setChannel appChannel
     echo "App SyncWord = ", appAddress.toArray
     port.setAddress appAddress
-    #if resetString==nil or resetString=="":
-    #else:
     echo "Reset String = ", resetString
     port.write resetString
-    # TODO na psaxnei mesa se ena string
     let msg = port.getPacket(100000, resetString.len)
     if msg == resetString:
       echo "Ok the target reported reset"
     else:
-      stderr.writeLine "Target did not answer the reset command, trying to send code anyway"
+      stderr.writeLine "Application did not respond to the reset command, trying to send code anyway"
   echo "rfboot SyncWord = ", rfbootSyncWord.toArray
   port.setAddress rfbootSyncWord
   echo "rfboot channel = ", rfbChannel
@@ -867,8 +679,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
         xtea_decipher(ivdec,key)
         echo "Upload Counter = ", ivdec[0]
         echo "Bootloader compile time = ", fromSeconds(ivdec[1].int64).getLocalTime.format("yyyy-MM-dd HH:mm")
-
-
     else:
       stderr.writeLine "Wrong IV length from rfboot", msg.len
       quit QuitFailure
@@ -876,7 +686,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   block:
     var app1=""
     var i = app.len
-    # TODO den xreiazetai na to kanei prokatavolika
     while i>0:
       app1 = xteaEncipherCbc(app[i-32..i-1], key, iv) & app1
       i-=32
@@ -885,7 +694,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   if header.len != Payload:
     stderr.writeLine "Internal error, packet is not ", Payload, " bytes long"
     quit QuitFailure
-
   startPingTime = epochTime()
   while epochTime() - startPingTime < timeout:
     port.write header
@@ -915,107 +723,16 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   else:
     stderr.writeLine "Unknown response ", reply, " data=", data
     quit QuitFailure
-
-  discard """var pkt_idx = data
-  var pkt_idx_prev=pkt_idx
-  const upload_method = 1
-  ################################## METHOD 0 (The old) ##############################
-  if upload_method==0:
-    while pkt_idx >= PAYLOAD:
-      port.write app[pkt_idx-32..pkt_idx-1]
-      var res: string
-      if (pkt_idx==PAYLOAD):
-        #perimenoume parapano giati mporei na argisei na apantisei logo tou CRC check
-        res = port.getPacket(1200000,3)
-        if res == nil:
-          stderr.writeLine "After sending the last packet got no reply"
-          quit QuitFailure
-        elif res.len != 3:
-          stderr.writeLine "Reply has wrong size : ", res.len
-          quit QuitFailure
-        let reply = res[0].int
-        pkt_idx = res[1].int + res[2].int*256
-        if reply == RFB_SEND_PKT:
-          stderr.writeLine "We resend the last packet"
-        elif reply == RFB_WRONG_CRC:
-          stderr.writeLine "CRC check failed"
-          quit QuitFailure
-        elif reply == RFB_SUCCESS:
-          stderr.writeLine "Success !"
-          stderr.writeLine "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3)
-          break;
-        else:
-          stderr.writeLine "Unexpected reply code at the end of the upload process :", pkt_idx
-          quit QuitFailure
-        #
-      #
-      else:
-        res = port.getPacket(200000,3)
-        if res == nil:
-          stderr.writeLine "Got no reply at pkt_idx : ", pkt_idx
-          quit QuitFailure
-        if res.len != 3:
-          stderr.writeLine "Wrong message length at pkt_idx : ", pkt_idx, "msglen = ", res.len, " ", res
-          quit QuitFailure
-        if res[0].int != RFB_SEND_PKT:
-          stderr.writeLine "Expected RFB_SEND_PKT command : pkt_idx=", pkt_idx , " reply=", res[0].int , " ", res[1].int, " ", res[2].int ##NEW EDIT
-          quit QuitFailure
-        # auto parakamptei to 5088 bug
-        #if res[2].int>=128:
-        #  pkt_idx = res[1].int + (res[2].int-128)*256
-        #else:
-        pkt_idx = res[1].int + res[2].int*256
-        #stderr.writeLine pkt_idx
-      if pkt_idx == pkt_idx_prev:
-        stderr.writeLine "Resend"
-      #elif pkt_idx == 30688:
-      #  stderr.writeLine "Fix the 119 to 19"
-      #  pkt_idx = 5088
-      elif pkt_idx  !=  (pkt_idx_prev - 32) :
-        stderr.writeLine "Protocol error: expected pkt_idx==", pkt_idx_prev - 32, ". Got ", pkt_idx
-        # To fovero 5088 bug !
-        # Protocol error: expected pkt_idx==5088. Got 1248
-        # pairnoume "4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224 4 224"
-        # pou vasika einai 10 fores to "4 224"
-        # enw tha prepe na einai "4 224 19"  opou 4 == RFB_SEND_PKT kai "224 19" == 5088
-        # O usb2rf to pairnei !!!
-        # O usb2rf  den to stelnei i to ftdi den to stelnei i to serial sto PC !!
-        # molis emfanistei to bug prepei na exw debug to usb2rf
-        # isws na exei sxesi me ta timings giati meta apo kapoio diastima douleuei xwris kapoia allagi
-        # alla kai pali giati emfanizetai sto idx = 5088 ?
-        #if pkt_idx_prev - 32 == 5088 and pkt_idx == 1248 :
-        #  stderr.writeLine "This is the fovero 5088 bug"
-          #pkt_idx = 5088
-        #else:
-        res = res & port.getPacket(1000000,100)
-        stderr.writeLine res.len
-        for c in res:
-          stderr.write c.int," "
-        quit QuitFailure
-      pkt_idx_prev=pkt_idx
-      ################################# END upload method 0 ##################################
-  elif upload_method == 1:"""
   block:
-    # The method:1 offloads the job to usb2rf module
-    ###### The new method offload the send/receive functions to usb2rf module
-
     const USB_SEND_PACKET = 20
     const USB_INFO_RESEND = 21
     const USB_INFO_END = 22
 
-    #stderr.writeLine "Using the new method 1"
     var pkt_idx = app.len
     let applen = app.len.uint16.toString
 
     port.write CommdModeStr & "U" & applen
-    #port.drain(5000) # TODO .. better just a delay
-    #port.write header # We send the header
-    #port.write app[pkt_idx-PAYLOAD..pkt_idx-1] # and 1 more packet in advance
-    #pkt_idx-=PAYLOAD
-    #port.write app[pkt_idx-PAYLOAD..pkt_idx-1] # and 1 more packet in advance
-    #pkt_idx-=PAYLOAD
 
-    #while pkt_idx>0:
     while true:
       let resp=port.getChar()
       if resp == -1:
@@ -1026,16 +743,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
           stderr.writeLine "pkt_len", app[pkt_idx-PAYLOAD..pkt_idx-1].len
         port.write app[pkt_idx-PAYLOAD..pkt_idx-1]
         pkt_idx -= PAYLOAD
-        #stderr.writeLine "pkat_idx=", pkt_idx
-      #elif resp==RFB_NO_SIGNATURE:
-      #  stderr.writeLine "rfboot reports the signature is wrong" # TODO
-      #  quit QuitFailure
-      #elif resp==RFB_INVALID_CODE_SIZE:
-      #  stderr.writeLine "rfboot reports the code size is invalid" # TODO
-      #  quit QuitFailure
-      #elif resp=='A'.int:
-      #  discard
-      #  # TODO
       elif resp==USB_INFO_RESEND:
         stderr.writeLine "Resend"
       elif resp==USB_INFO_END:
@@ -1047,28 +754,17 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
       else:
         stderr.writeLine "Got unknown response", resp
         quit QuitFailure
-    #port.drain(3000)
-    # TODO timeout
-    #if pkt_idx>0:
-
-    #var resp:int
-    #while (resp!=USB_INFO_END):
-    #  resp=port.getChar(250000)
     let resp = port.getPacket(1200000,3)
     if resp.len<3:
       stderr.writeLine "No response from usb2rf module"
       quit QuitFailure
-
     let reply = resp[0].int
-
     if reply == RFB_WRONG_CRC:
       stderr.writeLine "CRC check failed"
       quit QuitFailure
     elif reply == RFB_SUCCESS:
       echo "CRC OK. Success !"
       echo "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3)
-
-    ############# end method 1 #################
   #
   # We got success reply
   #
@@ -1080,7 +776,6 @@ proc actionUpload(binaryFileName: string, timeout=10.0) =
   f.close()
   port.setChannel newAppChannel
   port.setAddress newAppAddress
-  #copyFile(binaryFileName, ".lastbinary")
 
 
 proc actionMonitor() =
@@ -1103,14 +798,6 @@ proc actionMonitor() =
     if (LPID>0):
       stderr.writeLine "Serial port \"", portName, "\" is in use by ", LPID,"(",LPROCNAME, "), not executing command"
     else:
-      #echo "TODO"
-      #stderr.writeLine "/bin/fuser -s ", portName
-      #let pr = startProcess( command="/bin/fuser", args=["-s", portName], options={poStdErrToStdOut} )
-      #let e = waitForExit(pr)
-      #if e == 0:
-      #  stderr.writeLine "Serial port ", portName, " is in use, not executing command"
-      #else:
-      #block:
       stdout.write "Executing : \""
       for i in p[1..^1]:
         stdout.write i, " "
@@ -1122,24 +809,20 @@ proc actionMonitor() =
 proc actionResetLocal() =
   let portname = getPortName()
   let fd = portname.openPort()
-  # This command resets the usb2rf module
   echo "reseting the usb2rf module"
-  # string=" & CommdModeStr & "R"
   fd.write CommdModeStr & "R"
-  #fd.flush
-  #fd.flushFile
   sleep 10
   discard fd.close
+
 
 proc actionGetPort() =
   echo getPortName()
 
+
 proc actionAddPort() =
   discard
   echo "Waiting for a new module to be inserted to a USB port"
-  #let knownPorts = getKnownPorts()
   var port:string
-
   block GetNewPort:
     var connectedPorts = getConnectedPorts()
     for t in 1..60: # 60 sec
@@ -1148,13 +831,11 @@ proc actionAddPort() =
       if connectedPorts.len>oldConnectedPorts.len:
         for p in connectedPorts:
           if not (port in oldConnectedPorts):
-
             port = p
             break GetNewPort
       sleep(1000)
     stderr.writeLine "Timeout"
     quit QuitFailure
-
   if port in getKnownPorts():
     stderr.writeLine "The port is already in ", homeconfig
   else:
@@ -1166,9 +847,6 @@ proc actionAddPort() =
     f.close
 
 
-
-
-
 # implements command line parsing and returns all the parameters in a tuple
 proc main() =
   let p = commandLineParams() # nim's standard library function
@@ -1177,7 +855,7 @@ proc main() =
     echo "rftool: rfboot utility"
     echo ""
     echo "Usage : rftool create ProjectName # Creates a new Arduino based project"
-    echo "        rftool upload|send SomeFirmware.bin"
+    echo "        rftool upload|send SomeFirmware # Accepted filetypes are .bin .hex .elf"
     echo "        rftool monitor term_emulator_cmd arg arg -p #opens a serial terminal with the correct parameters"
     echo "        rftool resetlocal"
     echo "        rftool getport"
