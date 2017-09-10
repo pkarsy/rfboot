@@ -9,4 +9,4 @@ This in practice means that there is no need to convert the ELF file
 in binary format in the Makefile.
 
 2017-09-09 CHANGELOG file created. Maybe too late, as almost all functionality is
-there, but again
+there.
