@@ -436,7 +436,7 @@ proc getApp(fn : string): string =
     f.close
   if app[0..1]=="\xff\xff":
     stderr.writeLine "The binary of the application cannot start with 0xffff"
-    stderr.writeLine "This file cannot be an AVR binary(opcodes) file"
+    stderr.writeLine "This file cannot be an AVR binary file"
     quit QuitFailure
   return app
 
@@ -569,6 +569,9 @@ proc actionCreate() =
 
 
 proc actionUpload(appFileName: string, timeout=10.0) =
+  if appFileName==nil or appFileName.len<5:
+    stderr.writeLine "Unknown file type : ", appFileName
+    quit QuitFailure
   # The firmware can be
   # .elf .hex .bin
   var binaryFileName: string
@@ -576,11 +579,12 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     #echo "Converting to BINARY format"
     binaryFileName = appFileName[0..appFileName.len-5] & ".bin"
     echo "avr-objcopy -j .text -j .data -O binary ", appFileName, " ", binaryFileName
-    discard startProcess( command="avr-objcopy", args=[ "-j", ".text", "-j", ".data", "-O", "binary", appFileName, binaryFileName ], options={poStdErrToStdOut, poUsePath} )
+    let p = startProcess( command="avr-objcopy", args=[ "-j", ".text", "-j", ".data", "-O", "binary", appFileName, binaryFileName ], options={poStdErrToStdOut, poUsePath, poParentStreams} )
+    discard waitForExit(p)
   elif appFileName.toLowerAscii.endswith(".bin"):
     binaryFileName = appFileName
   else:
-    stderr.writeLine "Unknown type : ", appFileName
+    stderr.writeLine "Unknown file type : ", appFileName
     quit QuitFailure
 
   var app = getApp(binaryFileName)

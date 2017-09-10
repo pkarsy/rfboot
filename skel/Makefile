@@ -15,12 +15,13 @@ send: all
 	@# With this command the elf file is converted to binary format as rftool
 	@# doesnt understand hex or elf files
 
-	$(OBJCOPY) -j .text -j .data -O binary $(TARGET_ELF) $(OBJDIR)/$(TARGET).bin
+#$(OBJCOPY) -j .text -j .data -O binary $(TARGET_ELF) $(OBJDIR)/$(TARGET).bin
 
 	@# "rftool upload" tries to reset the remote module by sending a reset string
 	@# Obviously the application code must support this, otherwise you have to
 	@# manually reset the module
-	rftool upload $(OBJDIR)/$(TARGET).bin
+#rftool upload $(OBJDIR)/$(TARGET).bin
+	rftool upload $(TARGET_ELF)
 
 terminal:
 	@# rftool will append the actual serial port after "-p"
