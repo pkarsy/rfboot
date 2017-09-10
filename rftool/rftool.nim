@@ -386,7 +386,7 @@ proc getAppParams() : tuple[appChannel:int, appSyncWord:string, resetString: str
         if endl-startl==1:
           stderr.writeLine "In file \"", ApplicationSettingsFile, "\", found  empty RESET_STRING. Autoreset disabled"
         result.resetString = line[startl+1..endl-1]
-        echo "resetString=",result.resetString
+        #echo "resetString=",result.resetString
       elif line.contains("APP_CHANNEL"):
         if line.count('=') != 1:
           stderr.writeLine "In file \"", ApplicationSettingsFile, "\", the APP_CHANNEL line is missing a \"=\""
@@ -606,7 +606,7 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     appChannel = newAppChannel
     appSyncWord = newAppSyncWord
     resetString = newResetString
-  if resetString!=nil or resetString!="":
+  if resetString!=nil or resetString!="" or resetString!="MANUAL":
     if newAppChannel!=appChannel:
       stderr.writeLine "WARNING : appChannel changed to ", newAppChannel, ". Using the old ", appChannel, " to send the reset signal"
     if newAppSyncWord != appSyncWord:
@@ -631,8 +631,11 @@ proc actionUpload(appFileName: string, timeout=10.0) =
   #else:
   #  echo "module identified : \"", USB2RF_START_MESSAGE, "\""
   if resetString==nil or resetString=="":
-    echo "Contacting rfboot. Reset the module manually"
+    echo "Contacting rfboot. Reset word is not defined. You need to reset the module manually"
     echo "The process will continue to try for ", timeout.int , " sec"
+  elif resetString=="MANUAL":
+    # The same as above, but without the messages
+    discard
   else:
     echo "App channel = ", appChannel
     port.setChannel appChannel
@@ -795,7 +798,7 @@ proc actionMonitor() =
   if p.len >= 2:
     # No need for checkLockFile. openPort does it.
     #checkLockFile(portName)
-    if (LPID>0):
+    if LPID > 0:
       stderr.writeLine "Serial port \"", portName, "\" is in use by ", LPID,"(",LPROCNAME, "), not executing command"
     else:
       stdout.write "Executing : \""
