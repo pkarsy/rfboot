@@ -863,7 +863,7 @@ proc main() =
     echo ""
     echo "Usage : rftool create ProjectName # Creates a new Arduino based project"
     echo "        rftool upload|send SomeFirmware # Accepted filetypes are .bin .hex .elf"
-    echo "        rftool monitor term_emulator_cmd arg arg -p #opens a serial terminal with the correct parameters"
+    echo "        rftool monitor|terminal term_emulator_cmd arg arg -p #opens a serial terminal with the correct parameters"
     echo "        rftool resetlocal"
     echo "        rftool getport"
     echo "        rftool addport # Adds usb2rf module to ~/.usb2rf file"
@@ -881,7 +881,7 @@ proc main() =
       quit QuitFailure
     let binary = p[1].strip
     actionUpload(binary)
-  of "monitor":
+  of "monitor","terminal":
     actionMonitor()
   of "resetlocal":
     actionResetLocal()
