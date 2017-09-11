@@ -1,3 +1,5 @@
+2017-09-10 rftool: Now rftool accept "terminal" as synonymous to "monitor"
+
 2017-09-10 rftool: The special reset string "MANUAL" can be used inside app_settings.h
 to instruct rftool to not warn us about missing reset string. Useful if we use
 an external tool to reset the remote target.
