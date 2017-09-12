@@ -112,7 +112,7 @@ I dont't have a genuine FTDI module to test it. Maybe the problem is power relat
 I didn't investigate further, as CP2102 is working perfectly.***
 
 To build the usb2rf module you need :
-- A CP2102 module ( A PL2303 is also OK)
+- A CP2102 module ( A CP2104 or a PL2303 is also OK)
 - ProMini 3.3V. Do not use a 5V ProMini. CC1101 cannot tolerate 5V.
 - CC1101 module (I use D-SUN modules)
 - some female-female jumper wires (2.54mm spacing).
