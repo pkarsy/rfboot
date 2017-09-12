@@ -178,12 +178,14 @@ And here is the final module
 and insert the usb2rf module. rftool detects it and saves the Serial port device
 to ~/.usb2rf file.
 
-Note: Sometimes the module is detected as "/dev/ttUSB0". Another time as "/dev/ttUSB1", and so
-on. rftool however searches the "/dev/serial/by-id" directory and finds the correct usb2rf module.
-You can have more than one usb2rf devices and rftool will use the first one witch is connected.
+Note: Sometimes the module is detected as "/dev/ttyUSB0". Another time as "/dev/ttyUSB1", and so
+on. rftool instead searches the "/dev/serial/by-id" directory and always finds the correct usb2rf module.
+You can have more than one usb2rf devices and rftool will use the first one connected.
 
 ### Burn the appropriate firmware to usb2rf
 
+This step will work only if you already done the "rftool addport" step above.
+Also ensure the module is the only one connected (if you happen to have more than one)
 To upload the precompiled .hex
 ```bash
 > cd usb2rf
