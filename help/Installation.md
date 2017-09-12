@@ -180,7 +180,7 @@ http://cp210x-program.sourceforge.net/<br/>
 Download the latest tarball and then
 sudo ./cp210x-program -w --set-serial-number="random_serial"<br/>
 "random_serial" should be unique for every module ie 12F34 25317 etc.<br/>
-The CP2104 chip seems to have already unique ID so this step is not needed.<br/>
+The CP2104 chip seems to have already unique ID, so this step is not needed.<br/>
 The Pl2303 chip cannot programmed, so if you are going to use this chip, you
 have to use only one, and use other brands, if you need to connect other
 USB-to-Serial modules.<br/>
