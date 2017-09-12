@@ -174,11 +174,15 @@ And here is the final module
 
 ### Assign the CP2102 a unique serial ID
 This is mandatory if you are going to have more than one CP2102
-modules connected to your PC at the same time.
-Be sure there is only one CP2102 module connected to the PC.<br/>
+modules connected to your PC at the same time.<br/>
 http://cp210x-program.sourceforge.net/<br/>
 Download the latest tarball and then
-sudo ./cp210x-program -w --set-serial-number="random_serial"<br/>
+
+```sh
+# Be sure there is only one CP2102 module connected to the PC
+> sudo ./cp210x-program -w --set-serial-number="random_serial"<br/>
+```
+
 "random_serial" should be unique for every module ie 12F34 25317 etc.<br/>
 The CP2104 chip seems to have already unique ID, so this step is not needed.<br/>
 The Pl2303 chip cannot programmed, so if you are going to use this chip, you
