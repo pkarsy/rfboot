@@ -107,7 +107,8 @@ In the command line
 
 ### usb2rf module
 
-***WARNING: The red FTDI modules in the picture (it seams they have a fake FTDI chip) are very unreliable. A lot of failed uploads, and mysterious CRC errors, dissapeared by using a CP2102 or Pl2303 USB-to-Serial module. I dont't have a genuine FTDI module to test it. In the next few days I will update this tutorial with the new instructions***
+***WARNING: The red FTDI modules in the picture (it seams they have a fake FTDI chip) are very unreliable. A lot of failed uploads, and mysterious CRC errors, dissapeared by using a CP2102 or Pl2303 USB-to-Serial module. I dont't have a genuine FTDI module to test it. Maybe the problem is power related as the FTDI regulator powers the ProMini and the CC1101 module
+I didn't investigate further, as CP2102 is working perfectly***
 
 To build the usb2rf module you need :
 - A CP2102 module ( A PL2303 is also OK)
@@ -125,7 +126,7 @@ To build the usb2rf module you need :
                      +-------------------------------------------------+
 ```
 
-Here is a photo of the materials we need (It will change with CP2102)
+Here is a photo of the materials we need
 ![usb2rf](files/usb2rf1.jpg)
 
 ***Serial connection (CP2102<-->ProMini)***
