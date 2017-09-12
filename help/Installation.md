@@ -1,7 +1,5 @@
 ## Installation
 
-In order to use rfboot succesfully there are quite a few steps initially but after that
-the process is simple.
 You need to:
 - Install the needed software in the PC
 - Assemble and configure the usb2rf module (Connects to a USB port of the PC)
