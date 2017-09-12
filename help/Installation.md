@@ -9,7 +9,7 @@ You need to:
 - Upload the apropriate firmware to usb2rf (An Arduino sketch)
 
 ### Install the apropriate software
-First of all a linux PC is needed, for the development. I don't use Windows neither MAC
+First of all, a linux PC is needed for the development. I don't use Windows neither MAC
 and is very difficult for me to support another platform. You can use VirtualBox if
 you really need to use rfboot from Windows or Mac.
 I tried with Virtualbox (a Linux Mint 17.3 image) and it is working perfectly.
@@ -39,7 +39,7 @@ for your environment. Open a terminal:
 ```
 
 The ubuntu/debian/mint packages are old (1.0.6) but work perfectly for rfboot purposes. I
-didn't test the newer arduino packages.
+didn't test the newer (post 1.0.6) arduino environments.
 
 Download the rfboot repository in your PC. Place it in some relatively safe place in your
 PC like ~/programming/
