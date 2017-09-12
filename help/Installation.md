@@ -162,7 +162,7 @@ GDO2 |  | Not Connected
 
 CC1101 is working fine with 3.3V, so again no level conversion is needed.
 
-***Optional: connect with a Female-Female cable the proMini pins D3 and RST.***
+Now connect the proMini pins D3 and RST (Orange cable).
 See [Explanation](usb2rf-reset.md)
 
 ![usb2rf2](files/usb2rf2.jpg)
