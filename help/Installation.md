@@ -128,7 +128,7 @@ To build the usb2rf module you need :
 Here is a photo of the materials we need (It will change with CP2102)
 ![usb2rf](files/usb2rf1.jpg)
 
-***Serial connection.***
+***Serial connection (CP2102<-->ProMini)***
 
 4 cables are required :
 
@@ -140,9 +140,11 @@ TX   | Yellow | RX
 RX   | Green |TX
 
 ProMini regulates the 5V from RAW pin to 3.3V. CP2101 has also an internal 3.3 regulator and the 2 modules
-can communicate without the need for logic level conversion.
+can communicate without the need for logic level conversion.<br/>
+Notice: CC1101 also has a 3.3V output but I am not sure
+that the current is enough to power ProMini+CC1101 so don't use it. 5V is working perfectly anyway.
 
-***The SPI intreface***
+***SPI connection (ProMini<-->CC1101)***
 
 7 cables are required :
 
@@ -188,7 +190,7 @@ To upload the precompiled .hex
 ```
 You may need to press proMini reset button as auto-reset does not work.
 
-As always, you can build the sketch by yourself. (See [usb2rf/README.md](../usb2rf/README.md) )
+As always, you can build the sketch yourself. (See [usb2rf/README.md](../usb2rf/README.md) )
 
 ***Hardware and software setup is done !***
 
