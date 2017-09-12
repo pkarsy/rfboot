@@ -180,13 +180,15 @@ on. rftool however searches the "/dev/serial/by-id" directory and finds the corr
 You can have more than one usb2rf devices and rftool will use the first one witch is connected.
 
 ### Burn the appropriate firmware to usb2rf
-You can build the sketch by yourself. (See [usb2rf/README.md](../usb2rf/README.md) )
-or upload the precompiled .hex
+
+To upload the precompiled .hex
 ```bash
 > cd usb2rf
 > make sendHex
 ```
 You may need to press proMini reset button as auto-reset does not work.
+
+As always, you can build the sketch by yourself. (See [usb2rf/README.md](../usb2rf/README.md) )
 
 ***Hardware and software setup is done !***
 

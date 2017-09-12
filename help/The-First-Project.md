@@ -12,12 +12,12 @@ Before you proceed, it is required that you have completed the
 - Male to female 2.54 jumper wires, and some simple striped wires
 - A 3.3V stabilized power source.<br/>
 For example A lithium-ion cell with a 3.3V regulator and
-2 additional 1uF caps. LP2950-3.3 and especially HT7333 are very good for this purpose. See picture.<br/>
+2 additional 1uF caps. LP2950-3.3 and HT7333 are very good for this purpose. See picture.<br/>
 Do not use LM7833 or L78L33 or other non LDO regulators unless your power source voltage is at least 5V. On the other hand some
 3.3V regulators can handle voltages up to 6V only, so be careful.
-- ISP programmer with a 28pin ZIF socket. The isp programmer is used only once
+- ISP programmer with a 28pin ZIF socket. The ISP programmer is used only once
 for each project, to write rfboot to the target MCU.
-- A breadboard. Note that a bad breadboard is the basic source of failures when prototyping.
+- A breadboard. Note that a breadboard with loose connections is a basic source of failures when prototyping.
 
 Here is how our project looks like. It is not connected with anything, and we are going to program it wirelessly.
 ![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
@@ -36,17 +36,17 @@ Now it is time to burn the atmega with rfboot, using the ISP programmer.
 
 Here is a photo of the USBasp programmer together with a ZIF developer board. (search ebay)
 ![USBasp](https://github.com/pkarsy/rfboot/blob/master/help/files/usbasp.jpg)
-If you have USBtiny edit the file "rfboot/hardware_settings.mk" and uncomment
+If you have a USBtiny ISP programmer, edit the file "rfboot/hardware_settings.mk" and uncomment
 the USBtiny line. Put the atmega328p-pu chip on the ZIF socket and :
 
 ```sh
 > make isp
 ```
 To write the bootloader.
-If your project uses a crystal you can edit "rfboot/hardware_settings.mk" before burn.
+If a project uses a crystal you can edit "rfboot/hardware_settings.mk" before burn.
 
 
-Don't do this on this first project however, to keep things simple.
+Do not do this (use a crystal) on this first project however, to keep things simple.
 Rfboot works perfectly with (uncalibrated up to 10% error) internal oscillator,
 because SPI is synchronous.
 UART Serial bootloaders on the other hand need a relatively accurate +-2% clock,
