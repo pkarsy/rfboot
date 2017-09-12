@@ -151,7 +151,7 @@ that the current is enough to power ProMini+CC1101 so don't use it. 5V is workin
 CC1101 PIN | Cable COLOR | ProMini pin
 ------------- | ----------- | -----------
 GND | Black | GND
-VCC | Red | 3.3V
+VCC | Red | VCC(3.3V)
 CSN | Yellow | 10
 SCK | Green | 13
 MOSI | Blue | 11
