@@ -180,7 +180,7 @@ Download the latest tarball and then
 
 ```sh
 # Be sure there is only one CP2102 module connected to the PC
-> sudo ./cp210x-program -w --set-serial-number="random_serial"<br/>
+> sudo ./cp210x-program -w --set-serial-number="random_serial"
 ```
 
 "random_serial" should be unique for every module ie 12F34 25317 etc.<br/>
