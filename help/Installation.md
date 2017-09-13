@@ -171,7 +171,7 @@ And here is the final module
 ![usb2rf2](files/usb2rf3.jpg)
 
 ### Assign the CP2102 a unique serial ID
-***Notice: I am not the author of these utilities, all credid goes to them.***
+***Notice: I am not the author of these utilities, all credid goes to them.***<br/>
 This is mandatory if you are going to have more than one CP2102
 modules connected to your PC at the same time.<br/>
 https://github.com/DiUS/cp210x-cfg.git<br/>
