@@ -141,7 +141,7 @@ RX   | Green |TX
 
 ProMini regulates the 5V from RAW pin to 3.3V. CP2101 has also an internal 3.3 regulator and the 2 modules
 can communicate without the need for logic level conversion.<br/>
-Notice: CC1101 also has a 3.3V output but I am not sure
+Notice: CP2102 has also a 3.3V output but I am not sure
 that the current is enough to power ProMini+CC1101 so don't use it. 5V is working perfectly anyway.
 
 ***SPI connection (ProMini<-->CC1101)***
