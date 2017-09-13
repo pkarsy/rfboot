@@ -190,7 +190,7 @@ USB-to-Serial modules.
 with them(non genuine chips).
 - There is another linux utility doing the same job<br/>
 http://cp210x-program.sourceforge.net/<br/>
-but on some distros might have difficulties to install the dependencies.
+but some distros might have difficulties to install the dependencies.
 
 
 
