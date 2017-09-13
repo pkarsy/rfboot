@@ -182,12 +182,12 @@ compile the source (istall libusb-1.0-0-dev first)
 ```
 
 - "random_serial" should be unique for every module ie 12F34, 25317, 1awd34fg etc.
-- The CP2104 chip seems to have already unique ID, so this step is not needed.
+- The CP2104 chip seems to have already unique ID, so this pocedure is not needed.
 - The Pl2303 chip cannot programmed, so if you are going to use this chip, you
 have to use only one, and use other brands, if you need to connect other
 USB-to-Serial modules.
 - The FTDI modules also have unique serial IDs but as I said I have reliablility problems
-with them(non genuine chips).
+with them (non genuine chips).
 - There is another linux utility doing the same job<br/>
 http://cp210x-program.sourceforge.net/<br/>
 but some distros might have difficulties to install the dependencies.
