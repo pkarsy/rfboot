@@ -853,6 +853,20 @@ proc actionAddPort() =
     f.writeLine port
     f.close
 
+proc actionPingUsb(): bool =
+  let portname = getPortName()
+  let port = portname.openPort()
+  port.drain(5000)
+  port.write(CommdModeStr & "Z")  # fast reset
+  const USB2RF_START_MESSAGE = "USB2RF"
+  let p = port.getPacket(200000, len(USB2RF_START_MESSAGE) )
+  if p!=USB2RF_START_MESSAGE:
+    stderr.writeLine "Cannot contact usb2rf"
+    return false
+  else:
+    echo "module identified : \"", USB2RF_START_MESSAGE, "\""
+    return true
+
 
 # implements command line parsing and returns all the parameters in a tuple
 proc main() =

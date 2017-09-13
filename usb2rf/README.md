@@ -1,5 +1,5 @@
 ### usb2rf module
-Generally you need the following info only if you modify the usb2rf source code.
+Generally you need the following info only if you read/modify the usb2rf source code.
 
 This folder contains firmware for the usb2rf module
 The usb2rf module is a bridge allowing data from the PC to be transmitted as RF packets and in reverse
