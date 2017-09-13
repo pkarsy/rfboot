@@ -174,7 +174,7 @@ And here is the final module
 ***Notice: I am not the author of these utilities, all credid goes to them.***
 <br/>
 This is mandatory if you are going to have more than one CP2102
-modules connected to your PC at the same time.<br/>
+modules connected to your PC at the same time, even for completely different purposes.<br/>
 https://github.com/DiUS/cp210x-cfg.git<br/>
 compile the source (istall libusb-1.0-0-dev first)
 
