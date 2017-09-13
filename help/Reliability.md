@@ -44,9 +44,10 @@ application is malfunctioning, watchdog timer will eventually reset the device a
 You need access to reset or power button...<br/>
 **Always test the firmware before uploading in the field.**
 
-As you can see the only way to "brick" our project is by sending buggy code.
-Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.
-
 - Every time rftool creates a new empty project, gives unique channel, syncword, and XTEA
 key to the project. This is in turn makes it impossible to send the code to the wrong device.
 Even if we work in parallel with multiple modules, the code always goes to the correct MCU.
+
+As you can see the only way to "brick" our project is by sending buggy code.
+Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.
+
