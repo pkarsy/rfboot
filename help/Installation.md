@@ -173,12 +173,12 @@ And here is the final module
 ### Assign the CP2102 a unique serial ID
 This is mandatory if you are going to have more than one CP2102
 modules connected to your PC at the same time.<br/>
-http://cp210x-program.sourceforge.net/<br/>
-Download the latest tarball and then
+https://github.com/DiUS/cp210x-cfg.git<br/>
+compile the source (istall libusb-1.0-0-dev first)
 
 ```sh
 # Be sure there is only one CP2102 module connected to the PC
-> sudo ./cp210x-program -w --set-serial-number="random_serial"
+> sudo ./cp210x-cfg -S "random_serial"
 ```
 
 "random_serial" should be unique for every module ie 12F34 25317 etc.<br/>
@@ -188,6 +188,10 @@ have to use only one, and use other brands, if you need to connect other
 USB-to-Serial modules.<br/>
 The FTDI modules also have unique serial IDs but as I said I have reliablility problems
 with them(non genuine chips).
+There is another linux utility doing the same job<br/>
+http://cp210x-program.sourceforge.net/<br/>
+but on some distros might have difficulties to install the dependencies.
+
 
 
 ### Configure rftool to use the usb2rf module
