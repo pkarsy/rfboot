@@ -60,12 +60,12 @@ Now if you type
 > rftool
 ```
 Should give you a small usage message. This means rftool is in the PATH. As you can see the
-rftool is precompiled. It is a i386 statically linked executable, and it can run on any i386 or x86_64
+rftool is precompiled. It is a statically linked executable, and it can run on any i386 or x86_64
 linux system (you can recompile it of course if you want).
 
 Now it is time to install mCC1101, a modified (and simplified) panStamp
 CC1101 library. The skeleton projects created with "rftool create ProjName"
-use this library. (You can modify the code to use another CC1101 library of course)
+use this library. (You can modify the code to use another CC1101 library)
 
 Change "~/sketchbook/libraries" with your actual sketchbook folder.
 
@@ -185,15 +185,15 @@ compile the source (istall libusb-1.0-0-dev first)
 
 - "random_serial" should be unique for every module ie 12F34, 25317, 1awd34fg etc.
 - The CP2104 chip seems to have already unique ID, so this procedure is not needed and maybe in
-fact do harm, as this chip is not tested by the athor.
+fact do harm, as this chip is not tested by the author.
 - The Pl2303 chip cannot programmed, so if you are going to use this chip, you
 have to use only one, and use other brands, if you need to connect other
 USB-to-Serial modules.
 - The FTDI modules also have unique serial IDs but as I said I have reliablility problems
 with them (non genuine chips).
-- There is another linux utility doing the same job<br/>
+- There is another linux utility doing the same job, and seems to have more options<br/>
 http://cp210x-program.sourceforge.net/<br/>
-but some distros might have difficulties to install the dependencies.
+but some distros might have difficulties to install the dependencies (python-usb).
 
 
 
