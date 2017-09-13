@@ -147,7 +147,7 @@ proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] )
 proc getKnownPorts() : seq[string] =
   result = @[]
   if not homeconfig.expandTilde.existsFile:
-    stderr.writeLine "failed to open file \"", homeconfig, "\", creating an empty one."
+    stderr.writeLine "Cannot open file \"", homeconfig, "\". Creating empty file."
     var f = homeconfig.expandTilde.open(mode=fmWrite)
     f.writeLine "# serial ports known to be usb2rf modules"
     f.close
@@ -863,7 +863,7 @@ proc main() =
     echo ""
     echo "Usage : rftool create ProjectName # Creates a new Arduino based project"
     echo "        rftool upload|send SomeFirmware # Accepted filetypes are .bin .hex .elf"
-    echo "        rftool monitor|terminal term_emulator_cmd arg arg -p #opens a serial terminal with the correct parameters"
+    echo "        rftool monitor|terminal term_emulator_cmd arg arg -p #opens a serial terminal with appropriate parameters"
     echo "        rftool resetlocal"
     echo "        rftool getport"
     echo "        rftool addport # Adds usb2rf module to ~/.usb2rf file"
