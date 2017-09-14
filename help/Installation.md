@@ -102,7 +102,7 @@ In the command line
 ```
 
 ***Software installation is done !***
-The steps above should be repeated on every linux PC you are going to use for development.
+<br/>The steps above should be repeated on every linux PC you are going to use for development.
 
 ### usb2rf module
 
