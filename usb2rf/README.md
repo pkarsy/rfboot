@@ -1,9 +1,9 @@
 ### usb2rf module
 Generally you need the following info only if you read/modify the usb2rf source code.
 
-This folder contains firmware for the usb2rf module
-The usb2rf module is a bridge allowing data from the PC to be transmitted as RF packets and in reverse
-direction, allows rf packets to be received from the PC
+This folder contains firmware for the usb2rf module.<br/>
+The usb2rf module is a bridge allowing data from the PC to be transmitted as RF packets, and in reverse
+direction, allows rf packets to be received from the PC.
 
 ### Upload the precompiled usb2rf.hex file
 Normally you dont need/want to do that independently, as this is part of the [Installation](../help/Installation.md).
@@ -26,10 +26,10 @@ and then compile as usual.
 > make hex
 ```
 
-### Debug port (only if you modify the usb2rf code)
-By using another USB to UART module you can have debug messages, useful only if modifying the
-usb2rf.ino file, as obviously the main port cannot be used for debug messages.
-You need 3 jumper cables
+### Debug port (useful if you are modifying/debugging the usb2rf code)
+By using another USB to UART module you can have debug messages, as obviously the main
+port cannot be used for debug messages.<br/>
+You need 3 jumper cables:
 
 ProMini | Debug SerialModule
 ------ | -----
@@ -37,12 +37,14 @@ D9 | RX
 D4 | DTR
 GND | GND
 
-and then:
+Edit the Makefile and replace the debug serial port (Not the same with the main serial port!)
+with the correct one and then:
 ```sh
 > make debug
 ```
+This command opens a gtkterm with the appropriate parameters
 Now press "**F7**" (with gtkterm) to toggle DTR and enable/disable debug output.<br/>
-See the comments of usb2rf.ino for more info.
+You can also read the comments inside usb2rf.ino for more info.
 
 ### Assemble the module
 See [Installation](../help/Installation.md) for instructions.
