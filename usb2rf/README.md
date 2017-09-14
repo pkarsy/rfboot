@@ -37,6 +37,9 @@ D9 | RX
 D4 | DTR
 GND | GND
 
+If the "data serial module" and the "debug serial module" are powered from the same
+computer (most likely) then the GND cable can be omitted.
+
 Edit the Makefile and replace the debug serial port (Not the same with the main serial port!)
 with the correct one and then:
 ```sh
