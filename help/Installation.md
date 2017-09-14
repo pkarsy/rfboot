@@ -171,8 +171,8 @@ And here is the final module
 
 ![usb2rf2](files/usb2rf3.jpg)
 
-### Assign the CP2102 a unique serial ID
-***Notice: I am not the author of these utilities, all credid goes to them.***
+### Assign the USB-to-Serial module, a unique serial ID
+***Notice: I am not the developer of these utilities, all credid goes to them.***
 <br/>
 This is mandatory if you are going to have more than one CP2102
 modules connected to your PC at the same time, even for completely different purposes.<br/>
@@ -182,11 +182,12 @@ compile the source (istall libusb-1.0-0-dev first)
 ```sh
 # Be sure there is only one CP2102 module connected to the PC
 > sudo ./cp210x-cfg -S "random_serial"
+# disconnect the module from USB port and connect again after a few seconds
 ```
 
 - "random_serial" should be unique for every module ie 12F34, 25317, 1awd34fg etc.
 - The CP2104 chip seems to have already unique ID, so this procedure is not needed and maybe in
-fact do harm, as this chip is not tested by the author.
+fact do harm, as this chip is not tested by the developer.
 - The Pl2303 chip cannot programmed, so if you are going to use this chip, you
 have to use only one, and use other brands, if you need to connect other
 USB-to-Serial modules.
