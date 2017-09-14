@@ -7,7 +7,7 @@ direction, allows rf packets to be received from the PC.
 
 ### Upload the precompiled usb2rf.hex file
 Normally you dont need/want to do that independently, as this is part of the [Installation](../help/Installation.md).
-OK, If rftool knows the module, it is just a
+OK, If rftool knows the module (rftool addport), it is just a
 ```sh
 > make sendHex
 ```
@@ -42,7 +42,7 @@ with the correct one and then:
 ```sh
 > make debug
 ```
-This command opens a gtkterm with the appropriate parameters
+This command opens a gtkterm with the appropriate parameters.<br/>
 Now press "**F7**" (with gtkterm) to toggle DTR and enable/disable debug output.<br/>
 You can also read the comments inside usb2rf.ino for more info.
 
