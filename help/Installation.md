@@ -172,7 +172,7 @@ And here is the final module
 ![usb2rf2](files/usb2rf3.jpg)
 
 ### Assign the USB-to-Serial module, a unique serial ID
-***Notice: I am not the developer of these utilities, all credid goes to them.***
+***Notice: I am not the developer of these utilities, all credit goes to them.***
 <br/>
 This is mandatory if you are going to have more than one CP2102
 modules connected to your PC at the same time, even for completely different purposes.<br/>
