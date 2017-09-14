@@ -42,7 +42,8 @@ with the correct one and then:
 ```sh
 > make debug
 ```
-This command opens a gtkterm with the appropriate parameters.<br/>
+This command opens a gtkterm with the appropriate parameters.
+You can use your favorite serial terminal as usual.<br/>
 Now press "**F7**" (with gtkterm) to toggle DTR and enable/disable debug output.<br/>
 You can also read the comments inside usb2rf.ino for more info.
 
