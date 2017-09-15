@@ -12,6 +12,8 @@ import times
 import posix
 
 # This is the size of rfboot in atmega FLASH
+# In fact the size is about 3600 bytes, but the fuses
+# are set for 4096 bytes anyway.
 const BOOTLOADER_SIZE = 4096
 
 # A few serial handling functions (public domain), grabbbed from various
