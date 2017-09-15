@@ -8,13 +8,8 @@ You need to:
 
 ### Install the apropriate software
 First of all, a linux PC is needed for the development. I don't use Windows neither MAC
-and is very difficult for me to support another platform. You can use VirtualBox if
-you really need to use rfboot from Windows or Mac.
-I tried with Virtualbox (a Linux Mint 17.3 image) and it is working perfectly.
-Of course if you are unfamiliar with linux and especially the command line, the problem
-remains.
-
-I do all development on a Linux Mint 17.3 box. Maybe you need to adapt the procedure
+and is very difficult for me to support another platform. I did most development on a
+Linux Mint 17.3 machine. Maybe you need to adapt the procedure
 for your environment. Open a terminal:
 
 ```bash
@@ -85,21 +80,22 @@ You need to logout and login again for the changes to take effect.
 - ISP programmer
 
 ```bash
-> sudo nano /etc/udev/rules.d/52-my.rules
+> sudo nano /etc/udev/rules.d/99-isp.rules
 ```
 Add the lines
 ```sh
 # USBasp
-ATTR{idVendor}=="16c0", ATTR{idProduct}=="05dc", MODE="666"
+SUBSYSTEM=="usb", ATTR{product}=="USBasp", ATTR{idProduct}=="05dc", ATTRS{idVendor}=="16c0", MODE="0666"
 
 # USBtiny
-ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="0666"
 ```
 
 In the command line
 ```bash
 > sudo service udev restart
 ```
+You have to diconnect the module from the USB port (if connected), and reconnect for the changes to take effect.
 
 ***Software installation is done !***
 <br/>The steps above should be repeated on every linux PC you are going to use for development.
