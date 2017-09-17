@@ -69,9 +69,9 @@ void loop() {
             // rf.print(F("formatString"), arg1, arg2, ..)
             PRINTLN("uptime = %lu sec", current_uptime_ms/DELAY);
             // we could just write
-            // old_uptime_ms = current_uptime_ms
+            // old_uptime_ms = current_uptime_ms;
             // but we want it to be multiple of 1000
-            old_uptime_ms = current_uptime_ms / DELAY*DELAY;
+            old_uptime_ms = current_uptime_ms / DELAY * DELAY;
         }
     }
 
