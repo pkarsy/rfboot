@@ -46,8 +46,8 @@ You need access to reset or power button...<br/>
 
 - Every time rftool creates a new empty project, gives unique channel, syncword, and XTEA
 key to the project. This is in turn makes it impossible to send the code to the wrong device.
-Even if we work in parallel with multiple modules, the code always goes to the correct MCU.
+Even if we work in parallel with multiple modules, the code always go to the correct MCU.
 
-As you can see the only way to "brick" our project is by sending buggy code.
+As you can see the only way to "brick" the remote target is by sending buggy code.
 Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.
 

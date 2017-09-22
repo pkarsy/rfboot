@@ -186,6 +186,7 @@ ISR (INT0_vect)
 
 void radio_init(void) {
     cc1101_init();
+    // default is 433Mhz
     cc1101_setChannel(RFBOOT_CHANNEL);
     cc1101_setSyncWord(RFBOOT_SYNCWORD[0],RFBOOT_SYNCWORD[1]);
     disableAddressCheck();
@@ -346,6 +347,8 @@ int main(void) {
         mcusr_mirror = previous_reset_cause;
 
         // Althrough XTEA_KEY is read only, the RAM can be written
+        // As atmega does not enforce any RAM protection. Maybe on other
+        // cpu/mcu this command fails.
         // We erase XTEA_KEY
         memset((void*)XTEA_KEY,0,sizeof(XTEA_KEY));
 
