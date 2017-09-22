@@ -8,9 +8,11 @@ You need to:
 
 ### Install the apropriate software
 First of all, a linux PC is needed for the development. I don't use Windows neither MAC
-and is very difficult for me to support another platform. I did most development on a
-Linux Mint 17.3 machine. Maybe you need to adapt the procedure
-for your environment. Open a terminal:
+and is very difficult for me to support another platform. The instructions below are valid
+for Ubuntu 14.04 LTS (and Mint 17.X) 16.04 LTS (and Mint 18.X) and probbably for the base
+debian releases. Maybe you need to adapt the procedure
+if your environment is different.<br/>
+Open a terminal:
 
 ```bash
 # this is recommended before start
