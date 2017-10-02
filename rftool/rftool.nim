@@ -42,14 +42,19 @@ const RFB_SUCCESS=6
 
 const ApplicationSettingsFile = "app_settings.h"
 const RfbootSettingsFile = "rfboot/rfboot_settings.h"
-const MaxAppSize = 32*1024 - BOOTLOADER_SIZE
-const StartSignature = 0xd20f6cdf.uint32 # This is expected from rfboot
-const Payload = 32 # The same as rfboot
+
+# rfboot is ~3.5Kbytes and fuses set to 4K
+# Also rfboot uses the last application page for its own use
+# so maximum application size = 32K-4K-128
+const SPM_PAGE_SIZE = 128
+const MaxAppSize = 32*1024 - BOOTLOADER_SIZE - SPM_PAGE_SIZE
+
+const StartSignature = 0xd20f6cdf.uint32 # This is expected from rfboot. Do not change
+const Payload = 32 # The same as rfboot. This is the RF packet size
 const CommdModeStr = "COMMD" # This word, switches the usb2rf module to command mode
 const RandomGen = "/dev/urandom"
 const homeconfig = "~/.usb2rf"
 const serialPortDir = "/dev/serial/by-id"
-#var PingSignature = StartSignature
 
 # This holds the PID of Serial Terminal software, if one has opened the serial port
 # of the usb2rf module
@@ -877,7 +882,7 @@ proc main() =
     echo ""
     echo "rftool: rfboot utility"
     echo ""
-    echo "Usage : rftool create ProjectName # Creates a new Arduino based project"
+    echo "Usage : rftool create|new ProjectName # Creates a new Arduino based project"
     echo "        rftool upload|send SomeFirmware # Accepted filetypes are .bin .hex .elf"
     echo "        rftool monitor|terminal term_emulator_cmd arg arg -p #opens a serial terminal with appropriate parameters"
     echo "        rftool resetlocal"
@@ -886,7 +891,7 @@ proc main() =
     quit QuitFailure
   let action = p[0].strip.normalize # lower without _
   case action
-  of "create":
+  of "create","new":
     actionCreate()
   of "upload","send":
     if p.len == 1:

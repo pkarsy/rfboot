@@ -57,7 +57,7 @@ Now if you type
 > rftool
 ```
 Should give you a small usage message. This means rftool is in the PATH. As you can see the
-rftool is precompiled. It is a statically linked executable, and it can run on any i386 or x86_64
+rftool is precompiled. It is a statically linked executable, and it can run on any x86_64(AMD64)
 linux system (you can recompile it of course if you want).
 
 Now it is time to install mCC1101, a modified (and simplified) panStamp
