@@ -4,3 +4,4 @@ build-*
 nimcache
 /test
 old
+.vagga
