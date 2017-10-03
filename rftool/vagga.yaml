@@ -1,0 +1,37 @@
+containers:
+  c:
+    setup:
+    - !UbuntuRelease { codename: xenial, arch: i386 }
+    - !UbuntuUniverse
+    - !Install [build-essential,musl,musl-dev,musl-tools]
+  nim:
+    setup:
+    - !Container c
+    - !BuildDeps [git, ca-certificates]
+    - !Env NIM: /opt/nim
+    - !Sh |
+        git clone https://github.com/nim-lang/Nim.git $NIM
+        cd $NIM
+        git checkout v0.17.2
+        git clone --depth 1 https://github.com/nim-lang/csources
+        cd csources
+        sh build.sh --cpu i386
+        cd ..
+        bin/nim c koch
+        ./koch boot -d:release -d:useGnuReadline
+        ./koch tools
+    environ:
+      PATH: "/opt/nim/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+commands:
+  nim: !Command
+    container: nim
+    run: [nim]
+    description: Runs Nim compiler
+  nimble: !Command
+    container: nim
+    run: [nimble]
+    description: Runs Nimble package manager
+  sh: !Command
+    container: nim
+    run: sh
+    description: Enter a shell with Nim and Nimble available
