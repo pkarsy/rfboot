@@ -1,10 +1,19 @@
-NIM := $(shell which nim)
+#NIM := $(shell which nim)
 
-ifeq ($(NIM),)
-@$(error No "nim" compiler found. Install it from https://nim-lang.org )
-endif
+#ifeq ($(NIM),)
+#@$(error No "nim" compiler found. Install it from https://nim-lang.org )
+#endif
 
-all:
+help:
+	@echo "Targets are:"
+	@echo
+	@echo "make bin # Creates a rftool binary of the current architecture. requires nim-lang"
+	@echo
+	@echo "make musl # Creates a statically linked binary, requires nim-lang and musl-dev"
+	@echo
+	@echo "make vagga # Creates a i386 container with all dependencies and generates a i386 static rftool binary. Requires only vagga. The advandage of this binary is that is running on EVERY i386 or amd64 linux box"
+
+bin:
 	rm -f rftool
 	nim c -d:release --opt:size -x:on rftool.nim
 	strip rftool
