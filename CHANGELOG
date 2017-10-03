@@ -1,5 +1,7 @@
-2017-10-03 rftool: Fixed minor bug in rftool about the maximum firmawre size. Improved rftool
-Makefile. Use of vagga for compilation.
+2017-10-03 rftool: Fixed minor bug in rftool about the maximum firmware size.
+Improved rftool Makefile.
+Optional use of "vagga" container for compilation.
+Now rftool accepts "new" as synonymous to "create"
 
 2017-09-13 Installation.md: a lot of improvements in the documentation, new photos uploaded.
 
