@@ -58,7 +58,7 @@ Now if you type
 ```
 Should give you a small usage message. This means rftool is in the PATH. As you can see the
 rftool is precompiled. It is a statically linked executable, and it can run on any x86_64(AMD64)
-linux system (you can recompile it of course if you want).
+and i386 linux system (you can recompile it of course if you want, see the README.md).
 
 Now it is time to install mCC1101, a modified (and simplified) panStamp
 CC1101 library. The skeleton projects created with "rftool create ProjName"

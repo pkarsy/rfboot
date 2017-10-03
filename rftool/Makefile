@@ -10,13 +10,13 @@ all:
 	strip rftool
 	ls -l rftool
 
-# nim -d:release --opt:size --passL:-static --gcc.exe:diet --gcc.linkerexe:diet c rftool
-# strip -s rftool
-# nim -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
-# strip -s rftool
-
 musl:
 	nim -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
+	strip rftool
+	ls -l rftool
+
+vagga:
+	vagga nim -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
 	strip rftool
 	ls -l rftool
 

@@ -26,7 +26,7 @@ proc c_getchar(fd: cint, timeout: cint): cint {.importc.}
 
 # We use the same .c file as rfboot for xtea functions
 
-{.compile: "../rfboot/xtea/xtea.c".}
+{.compile: "xtea.c".}
 #proc xtea_encipher(v: var array[2,uint32], key : array[4,uint32] ) {.importc.}
 proc xtea_encipher_cbc( v: var array[2,uint32], key : array[4,uint32], iv: var array[2,uint32] ) {.importc.}
 proc xtea_decipher(v: var array[2,uint32], key : array[4,uint32] ) {.importc.}
@@ -878,17 +878,25 @@ proc actionPingUsb(): bool =
 # implements command line parsing and returns all the parameters in a tuple
 proc main() =
   let p = commandLineParams() # nim's standard library function
-  if p.len == 0:
-    echo ""
-    echo "rftool: rfboot utility"
-    echo ""
-    echo "Usage : rftool create|new ProjectName # Creates a new Arduino based project"
-    echo "        rftool upload|send SomeFirmware # Accepted filetypes are .bin .hex .elf"
-    echo "        rftool monitor|terminal term_emulator_cmd arg arg -p #opens a serial terminal with appropriate parameters"
-    echo "        rftool resetlocal"
-    echo "        rftool getport"
-    echo "        rftool addport # Adds usb2rf module to ~/.usb2rf file"
-    quit QuitFailure
+  if p.len == 0 or ( p.len==1 and (p[1]=="-h" or p[1]=="--help") ):
+    echo """
+
+rftool: rfboot multi-purpose utility
+- Creates the directory structure of new rfboot based projects
+- Uploads code wirelessly via the RF link
+- Sets RF parameters and open a serial terminal in order to communicate with the remote module
+
+For full documentation go to the Project page:
+https://github.com/pkarsy/rfboot
+
+Usage : rftool create|new ProjectName # Creates a new Arduino based project
+        rftool upload|send SomeFirmware # Accepted filetypes are .bin .hex .elf
+        rftool monitor|terminal term_emulator_cmd arg arg -p #opens a serial terminal with appropriate parameters
+        rftool resetlocal # Reset the usb2rf module. It is used by the usb2rf Makefile
+        rftool getport # Prints in wich port the usb2rf module is connected
+        rftool addport # Adds usb2rf module to ~/.usb2rf file
+"""
+    quit QuitSuccess
   let action = p[0].strip.normalize # lower without _
   case action
   of "create","new":
