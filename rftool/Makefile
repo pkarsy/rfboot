@@ -7,11 +7,11 @@
 help:
 	@echo "Targets are:"
 	@echo
-	@echo "make bin # Creates a rftool binary of the current architecture. requires nim-lang"
+	@echo "make bin # Creates a rftool binary of the current architecture. requires nim-lang: https://nim-lang.org"
 	@echo
 	@echo "make musl # Creates a statically linked binary, requires nim-lang and musl-dev"
 	@echo
-	@echo "make vagga # Creates a i386 container with all dependencies and generates a i386 static rftool binary. Requires only vagga. The advandage of this binary is that is running on EVERY i386 or amd64 linux box"
+	@echo "make vagga # Creates a i386 container with all dependencies and generates a i386 static rftool binary. Requires vagga and some disk space, but the process is fully automatic. The advandage of this binary is that it is running on EVERY i386 or amd64 linux box"
 
 bin:
 	rm -f rftool
