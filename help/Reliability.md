@@ -48,7 +48,7 @@ application is malfunctioning, watchdog timer will eventually reset the device a
 You need access to reset or power button...<br/>
 
 - Every time rftool creates a new empty project, gives unique channel, syncword, and XTEA
-key to the project. This is in turn makes it impossible to send the code to the wrong device (essentially bricking it).
+key to the project. This is in turn makes it impossible to send the code to the wrong device (essentially "bricking" it).
 Even if we work in parallel with multiple modules, the code always go to the correct MCU.
 
 **As we see, it is unfortunatelly possible to "brick" the remote target, by sending buggy code.**<br/>
