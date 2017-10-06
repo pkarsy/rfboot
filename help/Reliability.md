@@ -26,7 +26,11 @@ We need to access the reset button (we need to go to the roof for example).
 
 rfboot avoids (not always as we will see, but close) this type of failure with the following precautions :
 
-- If the upload process is interrupted, rfboot detects it and waits for new firmware. Even
+- If rfboot does not receive a packet for 20ms, then requests a retransmission, and of  course
+rftool on PC side, resends the packet. This is the simplest defence but it is very
+effective. Almost all uploads complete, even if some (or even a lot) retransmissions occur.
+
+- If the upload process is interrupted (completly), rfboot detects it and waits for new firmware. Even
 after a power cycle, rfboot refuses to start the application, and waits indefinitely for
 new upload.
 
@@ -34,7 +38,7 @@ new upload.
 will detect the corrupted code and stays waiting for new firmware. When -eventually- the upload
 process finishes correctly, only then rfboot gives control to the application.
 
-- If the upload process is finished correctly but some packet arrived with some wrong bytes, rfboot
+- If the upload process is finished (seemingly) correctly but some packet arrived with some wrong bytes, rfboot
 will detect that the flashed firmware does not have the correct CRC, and of course it does not start the application.
 It is waiting for new firmware.
 
@@ -42,12 +46,13 @@ It is waiting for new firmware.
 application is malfunctioning, watchdog timer will eventually reset the device allowing to reprogram it.
 **Note: If the malfunctioning code happens to reset the watchdog periodically, then you are locked out.**.<br/>
 You need access to reset or power button...<br/>
-**Always test the firmware before uploading in the field.**
+
 
 - Every time rftool creates a new empty project, gives unique channel, syncword, and XTEA
-key to the project. This is in turn makes it impossible to send the code to the wrong device.
+key to the project. This is in turn makes it impossible to send the code to the wrong device (essentially bricking it).
 Even if we work in parallel with multiple modules, the code always go to the correct MCU.
 
-As you can see the only way to "brick" the remote target is by sending buggy code.
-Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.
+**As we saw it is unfortunatelly possinble to "brick" the remote target is by sending buggy code.<br/>
+Always test the firmware before uploading in the field.<br/>
+Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.**
 
