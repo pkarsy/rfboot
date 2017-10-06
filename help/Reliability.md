@@ -47,12 +47,12 @@ application is malfunctioning, watchdog timer will eventually reset the device a
 **Note: If the malfunctioning code happens to reset the watchdog periodically, then you are locked out.**.<br/>
 You need access to reset or power button...<br/>
 
-
 - Every time rftool creates a new empty project, gives unique channel, syncword, and XTEA
 key to the project. This is in turn makes it impossible to send the code to the wrong device (essentially bricking it).
 Even if we work in parallel with multiple modules, the code always go to the correct MCU.
 
-**As we saw it is unfortunatelly possinble to "brick" the remote target is by sending buggy code.<br/>
-Always test the firmware before uploading in the field.<br/>
+**As we see, it is unfortunatelly possible to "brick" the remote target, by sending buggy code.**<br/>
+Buggy code in this case means code who does not respond to a reset request (from the PC).
+**Always test the firmware before uploading in the field.<br/>
 Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.**
 
