@@ -53,6 +53,6 @@ Even if we work in parallel with multiple modules, the code always go to the cor
 
 **As we see, it is unfortunatelly possible to "brick" the remote target, by sending buggy code.**<br/>
 Buggy code in this case means code who does not respond to a reset request (from the PC).
-**Always test the firmware before uploading in the field.<br/>
-Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.**
+**Always test the firmware at the lab before uploading at the field.** <br/>
+Generally it is a good idea to have the reset (or power) button somewhat accessible, for occasional use.
 
