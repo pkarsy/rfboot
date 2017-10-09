@@ -1,10 +1,7 @@
-Rfboot is Licensed under GPLv3.
+Rfboot is Licensed under **GPLv3**.
 
-This is a topic I don't feel confident with. And the following
-notes are not modifications to the rfboot license, but a summary of what I understand,
-with the hope that someone with more knowledge will help me correct any misunderstandings
-
-If I understand correctly :
+The following notes are not modifications to the rfboot license, but a summary of what I understand,
+with the hope that someone with more knowledge will help me correct any misunderstandings.
 
 - If you do any modifications to the code and you want to distribute them, you have
 to use the same license.
@@ -13,7 +10,7 @@ to use the same license.
 the opportunity to upload code wirelesly, it is perfectly OK, but if you modified
 the bootloader, you need to give back under GPLv3 the modifications / improvements.
 This is the Right thing to do anyway.
-Probably this is a duplicate of the above
+Probably this is a duplicate of the above.
 
 - If you want to use rfboot to upload a proprietary/closed source application,
 it should be OK, and i fact I will be happy if rfboot helps you in your job.
