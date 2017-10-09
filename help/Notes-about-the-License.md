@@ -17,7 +17,7 @@ it should be OK, and i fact I will be happy if rfboot helps you in your job.
 This is because the application (no matter if it is AVR assembler or Arduino sketch) and the bootloader
 use different source code trees.
 
-- It should be obvious but to be really sure: channel, syncword, XTEA key are just numbers.
+- It should be obvious, but to be really sure: Channel, syncword, XTEA key are just numbers.
 They are not modifications to the code, and you don't publish them.
 
 Generally, I will be glad if you want to offer corrections or improvements to the code/documentation.
