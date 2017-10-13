@@ -38,7 +38,7 @@ in the flash (Not the EEPROM) and uses 2 bytes. Only the first 65536 uploads wil
 as the FLASH can be written reliably only 10000 times.
 
 The firmware is not encrypted in the atmega flash. When the bootloader is first installed with
-"make xtal" or "make noxtal" the fuses are set so an ISP programmer cannot read the FLASH
+"make isp", the fuses are set so an ISP programmer cannot read the FLASH
 neither the EEPROM,
 but I have no solid information if atmega328 can withstand FLASH/EEPROM read attacks.
 
