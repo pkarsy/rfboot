@@ -54,8 +54,9 @@ otherwise they cannot communicate at all. This is the reason all arduino boards
 come with crystal/resonator.
 
 
-Now put the atmega and the other components in the breadboard.
-Power the board and then :
+Now put the atmega and the other components in the breadboard,
+and power the board.</br>
+From now on you need the usb2rf module (See [Installation](Installation.md)) connected.
 
 ```sh
 # Opens gtkterm with all apropriate options
