@@ -48,18 +48,9 @@ atmega328p: MCU_TARGET = atmega328p
 atmega328p: CFLAGS += -std=gnu99 -Wall -ffunction-sections -fdata-sections -fshort-enums -g -Os -w -fno-exceptions -Wl,--gc-sections -Ixtea -Icc1101
 atmega328p: CFLAGS += $(OSCCAL_FLAG)
 atmega328p: CFLAGS += -DCOMPILE_TIME=$(COMPILE_TIME)
-#atmega328p: F_CPU = 8000000L
 atmega328p: LDSECTION  = --section-start=.text=0x7000
 atmega328p: $(PROGRAM)_atmega328p.elf
 atmega328p: size
-
-# Uses internal RC oscillator at 8MHz
-#noxtal: atmega328p
-#	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:0xE2:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
-
-# Uses external crystal/resonator
-#xtal: atmega328p
-#	avrdude -q -p atmega328p -c $(PROGRAMMER) -v -e  -U lfuse:w:0xFF:m -U hfuse:w:0xD8:m -U efuse:w:0x05:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m
 
 isp: getosccal atmega328p
 	avrdude -qq -p atmega328p -c $(PROGRAMMER) -e -U lfuse:w:$(LFUSE):m -U hfuse:w:0xD8:m -U efuse:w:0xFD:m -U flash:w:rfboot_atmega328p.elf -U lock:w:0x0C:m

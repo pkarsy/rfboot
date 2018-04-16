@@ -9,9 +9,7 @@ You need to:
 ### Install the apropriate software
 First of all, a linux PC is needed for the development. I don't use Windows neither MAC
 and is very difficult for me to support another platform. The instructions below are valid
-for Ubuntu 14.04 LTS (and Mint 17.X) 16.04 LTS (and Mint 18.X) and probbably for the base
-debian releases. Maybe you need to adapt the procedure
-if your environment is different.<br/>
+for Ubuntu 16.04 LTS (and Mint 18.X) and probbably for the base debian release. Older releases (Ubuntu 14.04 LTS and Mint 17.X) may have a problem with avrdude. For other distributions you need to adapt the procedure for your environment.<br/>
 Open a terminal:
 
 ```bash
@@ -33,11 +31,13 @@ Open a terminal:
 > sudo apt-get install git
 ```
 
-The ubuntu/debian/mint packages are old (1.0.6) but work perfectly for rfboot purposes. I
-didn't test the newer (post 1.0.6) arduino environments.
+The ubuntu/debian/mint packages are old (1.0.6) but work perfectly for rfboot purposes. You
+can edit the Makefile of the project and point to locally installed, newer arduino releases.
+You can do the same for newer Arduino-Makefile releases.
+The Makefile has already commented some possible options.
 
-Download the rfboot repository in your PC. Place it in some relatively safe place in your
-PC like ~/programming/
+To the point now, download the rfboot repository on your PC. Place it in some relatively safe place in your
+home like ~/programming/
 
 ```bash
 > mkdir ~/programming
@@ -141,7 +141,7 @@ RX   | Green |TX
 ProMini regulates the 5V from RAW pin to 3.3V. CP2102 has also an internal 3.3 regulator and the 2 modules
 can communicate without the need for logic level conversion.<br/>
 Notice: CP2102 has also a 3.3V output but I am not sure
-that the current is enough to power ProMini+CC1101 so don't use it. 5V is working perfectly anyway.
+that the current is enough to power ProMini+CC1101 so we don't use it. Instead we feed the far more capable ProMini's regulator (The RAW pin is the regulator input) with 5V as you can see in the connections table
 
 ***SPI connection (ProMini<-->CC1101)***
 
