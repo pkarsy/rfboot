@@ -22,7 +22,7 @@ The daily use of rfboot is surprisingly simple. Edit the code then "make send" a
 MCU even if you happen to have 10 open projects in the editor.
 The first installation can be a problem however. Certainly a user should be familiar with basic concepts of MCU (and bootloaders) before try to use a different bootloader than the stock one witch is coming with the Arduinos for example.
 
-### Arduino and rfboot
+### Arduino code and rfboot
 Generally speaking a bootloader is code agnostic. You can upload any firmware written in C or assembler or Arduino (Which uses the c++ compiler). Arduino is a first class citizen in this case. The arduino IDE is not
 used however. Instead the excelllent arduino-makefile is used, witch gives us the power to use any editor. The examples in this site use the **geany** editor, but obvioulsy you can use another.
 
