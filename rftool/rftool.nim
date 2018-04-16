@@ -535,7 +535,7 @@ proc actionCreate() =
     f.writeLine "// \"rftool create ", projectName, "\""
     f.writeLine "// The values of APP_SYNCWORD and APP_CHANNEL"
     f.writeLine "// are randomly choosen."
-    f.writeLine "// APP_CHANNEL is 1..4 to keep the frequemsy inside the"
+    f.writeLine "// APP_CHANNEL is 1..4 to keep the frequency inside the"
     f.writeLine "// 433Mhz ISM band. Channel 0 is used by the bootloader."
     f.writeLine ""
     f.writeLine "const uint8_t APP_CHANNEL = ", appChannel, ";"
@@ -686,7 +686,7 @@ proc actionUpload(appFileName: string, timeout=10.0) =
       iv[1]=msg[4].uint32+msg[5].uint32*256+msg[6].uint32*256*256+msg[7].uint32*256*256*256
       echo "IV=", iv
       if iv[1] == 0:
-        stderr.writeLine "iv[1]==0 . Seems to be an earlier bootloader"
+        stderr.writeLine "iv[1]==0 . Seems to be an earlier rfboot"
         echo "Upload counter = ", iv[0]
       else:
         var ivdec = iv
