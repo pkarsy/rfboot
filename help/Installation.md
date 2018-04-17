@@ -9,9 +9,9 @@ You need to:
 ### Install the apropriate software
 First of all, a linux PC is needed for the development. I don't use Windows neither MAC
 and is very difficult for me to support another platform. The instructions below are valid
-for Ubuntu 16.04 LTS (and Mint 18.X) and probbably for the base debian release. Older releases (Ubuntu 14.04 LTS and Mint 17.X) may have a problem with avrdude. For other distributions you need to adapt the procedure for your environment.<br/>
-For Ubuntu 14.x Mint 17.x you have to install a newer avrdude for example the
-[Ubuntu 16.04 avrdude](https://launchpad.net/ubuntu/+source/avrdude/6.2-5/+build/8794450/+files/avrdude_6.2-5_i386.deb)
+for Ubuntu 16.04 LTS (and Mint 18.X) and probbably for the base debian release. Older releases (Ubuntu 14.04 LTS and Mint 17.X) may have a problem with avrdude but you can fix it by installing the [Ubuntu 16.04 avrdude](https://launchpad.net/ubuntu/+source/avrdude/6.2-5/+build/8794450/+files/avrdude_6.2-5_i386.deb). For other distributions you need to adapt the procedure for your environment.<br/>
+
+
 Open a terminal:
 
 ```bash
