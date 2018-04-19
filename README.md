@@ -1,14 +1,19 @@
 # rfboot
 
-Atmega328 Bootloader for wireless (OTA) code uploads, using the CC1101 RF chip.
+Atmega328p Bootloader for wireless (OTA) code uploads, using the CC1101 RF chip.</br>
+rfboot is already extremely reliable. I use it for all my
+projects, even those without any need for RF connectivity, because I can work with dosens of
+projects in parallel without any need to swap serial cables.</br>
+It is also stable, in the sense than all older rfboot installations are compatible with
+the newest uploading tool.
 
 Included :
 
-- The actual bootloader, intended to be installed to the project's MCU (atmega328), via an
+- The actual bootloader, intended to be installed to the project's MCU (atmega328p), via an
 ISP programmer.
-- A powerful utility (rftool) to easily create new projects (the directory structure) using rfboot as bootloader.
-The same utility used for code upload. Every project is created with unique RF settings and a
-preconfigured Makefile. A "make send" does all the job  needed.
+- A suitable utility (rftool) to easily create new projects (the directory structure) using rfboot as bootloader.
+The same tool is used for code upload. Every project is created with unique RF settings and a
+preconfigured Makefile. While developing, a "make send" uploads the code wirelessly.
 - Instructions to assemble a **usb2rf module**, witch allows us to upload code to the target and,
 **equally important**, to use a Serial Terminal (like gtkterm) to send and receive text,
 analogous to Serial.print()  and Serial.read().
