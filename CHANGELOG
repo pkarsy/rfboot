@@ -1,3 +1,6 @@
+
+2018-04-19 README.md Installation.md : Documentation improvements.
+
 2017-10-03 rftool: Fixed minor bug in rftool about the maximum firmware size.
 Improved rftool Makefile.
 Optional use of "vagga" container for compilation.
