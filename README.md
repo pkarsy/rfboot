@@ -15,7 +15,7 @@ analogous to Serial.print()  and Serial.read().
 
 This project's emphasis is on reliability, security and usability.
 
-- [Installation.](help/Installation.md) Instructions to make the process as straightforward as possible.
+- [Installation.](help/Installation.md) Software and hardware you need, in order to upload code using rfboot.
 - [The first project.](help/The-First-Project.md) Instructions to successfully complete your first Arduino project using a bare atmega328 as target, and rfboot as bootloader.
 - [Reliability.](help/Reliability.md) Explains how rfboot does the job, under an inherently unreliable link (RF).
 - [Encryption.](help/Encryption.md) Discuses how the firmware is encrypted over the air, and why this is useful.
