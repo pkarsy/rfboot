@@ -10,6 +10,8 @@ import os
 import osproc
 import times
 import posix
+import streams
+#import ospaths
 
 # This is the size of rfboot in atmega FLASH
 # In fact the size is about 3600 bytes, but the fuses
@@ -58,8 +60,9 @@ const serialPortDir = "/dev/serial/by-id"
 
 # This holds the PID of Serial Terminal software, if one has opened the serial port
 # of the usb2rf module
-var LPID: int = -1
-var LPROCNAME: string
+#var LPID: int = -1
+#var LPROCNAME: string
+var USB2RFPATH: string
 
 # packs a uint16 in 2 bytes, little endian
 proc toString(u: uint16): string =
@@ -205,7 +208,9 @@ proc getPortName() : string =
     if s=="" or s.startsWith("#") or s.startsWith("//") or s.startsWith("!"):
       discard
     elif not s.startsWith("/dev/"):
-      discard
+      stderr.writeLine "WARNING: malformed line"
+      stderr.writeLine "\"", s, "\""
+      stderr.writeLine "A line in \"", homeconfig, "\" file should be either a commend or a device path starting with \"/dev\""
     elif not ( fileExists(s) or symlinkExists(s) ):
       discard
     else:
@@ -215,9 +220,10 @@ proc getPortName() : string =
     stderr.writeLine "Config file does not point to any connected device"
     quit QuitFailure
   var portName = $realpath(hwID,nil)
+  USB2RFPATH = portName
   return portName
 
-
+discard """
 proc checkLockFile(portName:string) =
   LPID = -1
   LPROCNAME = nil
@@ -238,30 +244,78 @@ proc checkLockFile(portName:string) =
       discard unlink(lockfile)
 
 
+proc checkPortUse(portName:string) =
+  echo "checkPortUse START"
+  LPID = -1
+  LPROCNAME = nil
+  # fuser -v /dev/ttyUSB0
+  let p = startProcess( command="/bin/fuser", args=[ "-v", portName ], options={poStdErrToStdOut } )
+  #, poUsePath
+  discard waitForExit(p)
+  let procout = outputStream(p)
+  block:
+    let output = procout.readLine()
+    if output=="":
+      #echo "No access from any prog"
+      return
+  let output = procout.readLine().strip()
+  #if output.len > 1 :
+  #  stderr.writeLine("Serial port is opened by multiple clients, cannot continue")
+  #  ### TODO exit
+  let data = output.split()
+  echo "lsof=", data
+  if data.len<3:
+    stderr.writeLine "ERROR: Cannot sort lsof output"
+    quit QuitFailure
+  if getEnv("USER")!=data[2] :
+    stderr.writeLine "ERROR: the port is accessed from another user"
+    quit QuitFailure
+  #echo "user=", data[2]
+  echo "pid=", data[1]
+  LPID = data[1].parseInt()
+  echo "prog=", data[0]
+  LPROCNAME = data[0]
+"""
+
 # Stops other processess accessing the serial port.
 # It is used for code upload even when a Serial Terminal (ie gtkterm)
 # is using the port
-proc sendStopSignal(portname:string): bool =
-  checkLockFile(portname)
+discard """proc sendStopSignal(portname:string): bool =
+  checkPortUse(portname)
   if (LPID>0):
-    discard kill(LPID.cint,SIGSTOP)
+    discard kill(LPID.cint, SIGSTOP)
     echo "Stopping process ",LPID,"(",LPROCNAME,") that holds a LOCK on the serial port"
     return true
   else:
     return false
+"""
+
+discard """
+                    USER        PID ACCESS COMMAND
+/dev/ttyUSB0:        pkar      23483 F.... gtkterm
+"""
+
+proc sendStopSignal() =
+  #echo "Stopping programs accessing the"
+  let p = startProcess( command="/bin/fuser", args=[ "-sk", "-STOP", USB2RFPATH ], options={poParentStreams} )
+  discard waitForExit(p)
+  #poStdErrToStdOut,
 
 
 # resumes the processes being stopped
 # see the previous function
-proc sendContSignal() {.noconv.} =
+discard """proc sendContSignal() {.noconv.} =
   if (LPID)>0:
     echo "Resuming process ", LPID,"(", LPROCNAME,")"
     discard kill(LPID.cint, SIGCONT)
-
+"""
+proc sendContSignal() {.noconv.} =
+  let p = startProcess( command="/bin/fuser", args=[ "-sk", "-CONT", USB2RFPATH ], options={poParentStreams} )
+  discard waitForExit(p)
 
 proc openPort(portname: cstring): cint =
-    if sendStopSignal($portname):
-      addQuitProc sendContSignal
+    sendStopSignal()
+    addQuitProc sendContSignal
     result = c_openport(portname)
     if result<0 :
       stderr.writeLine "Cannot open serial port \"", portName, "\" . Error=", result
@@ -296,7 +350,6 @@ proc keyAsArrayC(key: array[4,uint32]): string =
 proc getUploadParams() : tuple[ rfbChannel:int, rfbootSyncWord:string, key: array[4,uint32], pingSignature: uint32 ] =
   result.pingSignature = START_SIGNATURE
   result.rfbChannel = -1
-  #result.rfbootSyncWord=
   var rfbootConf : string
   try:
      rfbootConf = readFile(RfbootSettingsFile)
@@ -692,10 +745,11 @@ proc actionUpload(appFileName: string, timeout=10.0) =
         var ivdec = iv
         xtea_decipher(ivdec,key)
         echo "Upload Counter = ", ivdec[0]
-        echo "Bootloader compile time = ", fromSeconds(ivdec[1].int64).getLocalTime.format("yyyy-MM-dd HH:mm")
+        #echo "Bootloader compile time = ", fromSeconds(ivdec[1].int64).getLocalTime.format("yyyy-MM-dd HH:mm")
     else:
       stderr.writeLine "Wrong IV length from rfboot", msg.len
       quit QuitFailure
+  echo "Upload starts ..."
   header = xteaEncipherCbc(header, key, iv)
   block:
     var app1=""
@@ -754,31 +808,34 @@ proc actionUpload(appFileName: string, timeout=10.0) =
       elif resp==USB_SEND_PACKET:
         #stderr.writeLine "pkt_idx=", pkt_idx
         if pkt_idx==0:
-          stderr.writeLine "pkt_len", app[pkt_idx-PAYLOAD..pkt_idx-1].len
+          stderr.writeLine "\npkt_len", app[pkt_idx-PAYLOAD..pkt_idx-1].len
+        #elif pkt_idx mod 1024==0:
+        #  stderr.write "*"
+        #  #stderr.flushFile
         port.write app[pkt_idx-PAYLOAD..pkt_idx-1]
         pkt_idx -= PAYLOAD
       elif resp==USB_INFO_RESEND:
-        stderr.writeLine "Resend"
+        stderr.writeLine "\nResend"
       elif resp==USB_INFO_END:
         #stderr.writeLine "Got END from usb2rf, pkt_idx=", pkt_idx
         if pkt_idx>0:
-          stderr.writeLine "WARNING: usb2rf termination"
+          stderr.writeLine "\nWARNING: usb2rf termination"
           quit QuitFailure
         break
       else:
-        stderr.writeLine "Got unknown response", resp
+        stderr.writeLine "\nGot unknown response", resp
         quit QuitFailure
     let resp = port.getPacket(1200000,3)
     if resp.len<3:
-      stderr.writeLine "No response from usb2rf module"
+      stderr.writeLine "\nNo response from usb2rf module"
       quit QuitFailure
     let reply = resp[0].int
     if reply == RFB_WRONG_CRC:
-      stderr.writeLine "CRC check failed"
+      stderr.writeLine "\nCRC check failed"
       quit QuitFailure
     elif reply == RFB_SUCCESS:
-      echo "CRC OK. Success !"
-      echo "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3)
+      echo "\nCRC OK. Success !"
+      echo "Upload time = ", (epochTime()-startUploadTime).formatFloat(precision=3), " sec"
   #
   # We got success reply
   #
@@ -807,11 +864,13 @@ proc actionMonitor() =
   sleep 20
   discard usb2rf.close()
   if p.len >= 2:
-    # No need for checkLockFile. openPort does it.
-    #checkLockFile(portName)
-    if LPID > 0:
-      stderr.writeLine "Serial port \"", portName, "\" is in use by ", LPID,"(",LPROCNAME, "), not executing command"
-    else:
+    # No need for checkPortUse. openPort does it.
+    #checkPortUse(portName)
+
+    #if LPID > 0:
+    #  stderr.writeLine "Serial port \"", portName, "\" is in use by ", LPID,"(",LPROCNAME, "), not executing command"
+    #else:
+    block:
       stdout.write "Executing : \""
       for i in p[1..^1]:
         stdout.write i, " "
@@ -860,7 +919,7 @@ proc actionAddPort() =
     f.writeLine port
     f.close
 
-proc actionPingUsb(): bool =
+discard """proc actionPingUsb(): bool =
   let portname = getPortName()
   let port = portname.openPort()
   port.drain(5000)
@@ -873,12 +932,15 @@ proc actionPingUsb(): bool =
   else:
     echo "module identified : \"", USB2RF_START_MESSAGE, "\""
     return true
+"""
 
 
 # implements command line parsing and returns all the parameters in a tuple
 proc main() =
+  #setStdIoUnbuffered()
   let p = commandLineParams() # nim's standard library function
-  if p.len == 0 or ( p.len==1 and (p[1]=="-h" or p[1]=="--help") ):
+  #echo p, p.len
+  if p.len == 0 or ( p.len==1 and (p[0]=="-h" or p[0]=="--help") ):
     echo """
 
 rftool: rfboot multi-purpose utility
@@ -918,6 +980,8 @@ Usage : rftool create|new ProjectName # Creates a new Arduino based project
     actionGetPort()
   of "addport":
     actionAddPort()
+  #of "test":
+  #  checkPortUse("/dev/ttyUSB0")
   else:
     stderr.writeLine "Unknown command \"", action,"\""
     quit QuitFailure

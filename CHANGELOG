@@ -1,3 +1,7 @@
+2018-05-26 rftool: The precompiled rftool binary will be 64 bit from now on. The reason for this change is that it is quite inconvenient to generate the 32-bit binaries and at the same time 32-bit linuxes are almost extint nowdays. If anyone really needs the 32 bit binary, it can easily compiled in a 32 bit box. The binary is statically linked and probably will work on any 64-bit kernel.
+
+2018-05-26 rftool: Now rftool uses the standard /bin/fuser utility to stop/start the serial terminal program (gtkterm, putty etc.). Until now rftool looked at /var/lock/LCK.. files. This method however has the major disadvantage that only programs creating lockfiles are working. Gtkterm worked with ubuntu 16.04. The newer gtkterm shipped with ubuntu 18.04 does not create a lockfile anymore. The old method was very restrictive anyway, and the new method should work with any GUI serial terminal.
+
 2017-10-03 rftool: Fixed minor bug in rftool about the maximum firmware size.
 Improved rftool Makefile.
 Optional use of "vagga" container for compilation.
@@ -7,9 +11,7 @@ Now rftool accepts "new" as synonymous to "create"
 
 2017-09-10 rftool: Now rftool accept "terminal" as synonymous to "monitor"
 
-2017-09-10 rftool: The special reset string "MANUAL" can be used inside app_settings.h
-to instruct rftool to not warn us about missing reset string. Useful if we use
-an external tool to reset the remote target.
+2017-09-10 rftool: The special reset string "MANUAL" can be used inside app_settings.h to instruct rftool to not warn us about missing reset string. Useful if we use an external tool to reset the remote target.
 
 2017-09-09 rftool: Major code cleanup
 
