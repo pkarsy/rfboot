@@ -73,7 +73,7 @@ For example, add this line to setup():
 ```C++
 PRINTLN("Hello world");
 ```
-All arduino code is working as expected, with the exception of Serial.print(). The
+All arduino code is working as expected, with the exception of Serial.print() wich sends data to the hardware serial port but NOT to the RF module. The
 PRINT and PRINTLN macros can be used instead which use sprintf internally.
 ```C++
 i=2;
@@ -82,7 +82,7 @@ j=7;
 k=8;
 PRINTLN("j=%d k=%d",j,k);
 ```
-As you can see they look like the standard printf function.
+As you can see they look like the standard printf function. They send data via the RF link, the usb2rf module receives the data, and we can see them with a serial port terminal (ie gtkterm)
 
 Press '0' to '9' to see the response.
 
