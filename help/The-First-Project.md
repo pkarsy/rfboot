@@ -26,8 +26,19 @@ On the PC, prefferably in you sketchbook folder type :
 ```sh
 > rftool create myProject
 ```
-as you can see rftool generates random parameters (using /dev/urandom), and creates
-a "myProject" folder containing all information/data our project needs. As is, the project prints the uptime on screen (the serial terminal) every second.
+
+and you will get something like this:
+```sh
+
+Application SyncWord = 28,120
+rfboot SyncWord = 167,224
+rfboot channel = 0
+Application channel = 3
+
+```
+
+As you can see rftool generates random parameters (using /dev/urandom), and creates
+a "myProject" folder containing all information/data our project needs.
 
 ```sh
 > cd myProject
@@ -66,6 +77,7 @@ From now on, you need the usb2rf module (See [Installation](Installation.md)) co
 > make send
 ```
 
+The "myProject" folder contains a arduino .ino file, in this case "myProject.ino". As is, the program prints the uptime on screen (the serial terminal) every second. The purpose of the program is to ensure that all machinery needed for further development is working.
 After the upload is finished, you will see uptime (in ms) in gtkterm.
 If you are succesful, you can start playing with the code.
 
@@ -73,7 +85,7 @@ For example, add this line to setup():
 ```C++
 PRINTLN("Hello world");
 ```
-All arduino code is working as expected, with the exception of Serial.print() wich sends data to the hardware serial port but NOT to the RF module. The
+All arduino code is working as expected, with the exception of Serial.print() wich sends data to the hardware serial port but <b>NOT</b> to the RF module. The
 PRINT and PRINTLN macros can be used instead which use sprintf internally.
 ```C++
 i=2;

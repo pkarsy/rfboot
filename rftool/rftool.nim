@@ -11,7 +11,6 @@ import osproc
 import times
 import posix
 import streams
-#import ospaths
 
 # This is the size of rfboot in atmega FLASH
 # In fact the size is about 3600 bytes, but the fuses
@@ -34,10 +33,11 @@ proc xtea_encipher_cbc( v: var array[2,uint32], key : array[4,uint32], iv: var a
 proc xtea_decipher(v: var array[2,uint32], key : array[4,uint32] ) {.importc.}
 #proc xtea_decipher_cbc( v: var array[2,uint32], key : array[4,uint32], iv: var array[2,uint32] ) {.importc.}
 
-
+# These are the codes remore rfboot can send via the usb2rf bridge
+# and finally arrive to the serial port
 const RFB_NO_SIGNATURE = 1
 const RFB_INVALID_CODE_SIZE = 2
-#const RFB_IDENTICAL_CODE = 3
+#const RFB_IDENTICAL_CODE = 3 **Not used anymore**
 const RFB_SEND_PKT = 4
 const RFB_WRONG_CRC=5
 const RFB_SUCCESS=6
@@ -103,6 +103,7 @@ proc crc16_rev(buf: string): uint16 =
   for i,c in buf:
     crc16_update(result,buf[buf.high-i].uint8)
 
+# Reads the configuration file and extracts the XTEA key
 proc parseKey(keyStr: string): array[4,uint32] =
   const msg = "XTEA_KEY: Expecting 4 integers (0 to 4294967295) separated by comma"
   let key = keyStr.toLowerAscii.replace("u","").replace(" ","").split(",")
@@ -129,7 +130,7 @@ proc `$`(a:array[2, uint32]): string =
   return "{" & $a[0] & "," & $a[1] & "}"
 
 proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
-  assert(st.len mod 8 == 0,"String to be encrypted must have size multiple of 8 bytes")
+  assert(st.len mod 8 == 0, "String to be encrypted must have size multiple of 8 bytes")
   result = ""
   for i in countup(0 , st.len - 1, step=8):
     var x:array[2,uint32]
