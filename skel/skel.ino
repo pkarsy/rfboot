@@ -51,7 +51,7 @@ void setup() {
     // Uncomment to use a LED in A5
     // pinMode(A5,OUTPUT);
 
-    PRINTLN("Hello world, press some printable key");
+    PRINTLN("Hello world, press a key");
 }
 
 void loop() {
@@ -59,31 +59,8 @@ void loop() {
     // This means we must reset it periodically, to avoid a reset.
     // If an operation/function inside loop blocks for more than 2sec,
     // the module will reset by the watchdog automatically.
-    // This is good as it prevents a halted/non responding  module.
+    // This is a desirable behavior, preventing halted/non-responding modules.
     wdt_reset();
-
-    // this block of code is for demonstation purposes and disabled by default
-    // It is a hint that at least cc1101 module
-    // is correctly wired remove it to continue with your application.
-    if (false) {
-        // we print a message every 1000ms=1sec
-        // the clock can be off by a few % because
-        // RC oscillator is not very accurate
-        const unsigned int DELAY = 1000;
-        static uint32_t old_uptime_ms = 0;
-        uint32_t current_uptime_ms = millis();
-        if (current_uptime_ms - old_uptime_ms >= DELAY) {
-            // Generally avoid to print a lot of messages, as the link is half duplex.
-            // PRINT and PRINTLN use the F() operator, so the string literals do not
-            // consume precious RAM. It is equivalent to
-            // rf.print(F("formatString"), arg1, arg2, ..)
-            PRINTLN("uptime = %lu sec", current_uptime_ms/DELAY);
-            // we could just write
-            // old_uptime_ms = current_uptime_ms;
-            // but we want it to be multiple of 1000
-            old_uptime_ms = current_uptime_ms / DELAY * DELAY;
-        }
-    }
 
     if (rf.interrupt) {
         byte packet[64];
