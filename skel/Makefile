@@ -2,8 +2,10 @@
 # If you use another AVR build system you must take the necessary changes
 # for the build to work
 
+# probably the project is NOT based on a promini, but the following
+# setting keep the build system happy.
 # for 8MHz projects choose pro328, even if the board is not o pro mini 3.3V
-# for 16MHZ pro5v328.
+# for 16MHZ choose pro5v328.
 BOARD_TAG     =  pro328
 
 # It is ok, unless the enums are larger than 256 items

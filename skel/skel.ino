@@ -25,12 +25,21 @@ void cc1101_interrupt(void) {
 }
 
 void setup() {
+    // rfboot enables watchdog (2 sec timeout) automatically
+    // we can disable it with wdt_disable(); but is not recommended
+    // as a misbehaving code will lock the module and we will no be
+    // able to resend code remotelly, ie without resetting the module
+
+    // Althrough not needed by rfboot itself, almost all rfboot projects
+    // also use the CC1101 module for connectivity witho othe modules/PC
     rf.init();
     // CFREQ_433 is the default with mCC1101
-    // note that this is different with PanStamp library
+    // note that this is different than PanStamp library
     // rf.setCarrierFreq(CFREQ_433);
+    // APP_CHANNEL and APP_SYNCWORD are defined in "app_settings.h"
+    // and generated randomly by "rftool create ....."
     rf.setChannel(APP_CHANNEL);
-    rf.setSyncWord(APP_SYNCWORD[0],APP_SYNCWORD[1]);
+    rf.setSyncWord(APP_SYNCWORD[0], APP_SYNCWORD[1]);
     rf.disableAddressCheck();
 
     // with the default register settings of the library
@@ -42,15 +51,15 @@ void setup() {
     // Uncomment to use a LED in A5
     // pinMode(A5,OUTPUT);
 
-    PRINTLN("Hello world");
+    PRINTLN("Hello world, press some printable key");
 }
 
 void loop() {
-    // rfboot bootloader already enables watchdog timer
-    // we must reset it periodically
-    // if an operation/function inside loop
-    // blocks for more than 2sec. the module will reset
-    // by the watchdog automatically.
+    // As we said, rfboot has already enabled the watchdog timer.
+    // This means we must reset it periodically, to avoid a reset.
+    // If an operation/function inside loop blocks for more than 2sec,
+    // the module will reset by the watchdog automatically.
+    // This is good as it prevents a halted/non responding  module.
     wdt_reset();
 
     // this block of code is for demonstation purposes and disabled by default
@@ -92,10 +101,24 @@ void loop() {
                 while (1) {};
             }
             // here you can put code to check for any input
-            if (pkt_size==1 and packet[0]>='0' and packet[0]<='9') {
-
-                PRINTLN("Key %c detected", packet[0]);
+            if (pkt_size==1) {
+                byte c = packet[0];
+                if (c>=32 and c<=126)  {
+                    PRINTLN("You pressed \"%c\"", packet[0]);
+                }
+                else {
+                    PRINTLN("Non printable ascii char");
+                }
             }
+            else {
+                PRINTLN("Got packet with size %d", pkt_size);
+            }
+            // if (pkt_size==4 ....
+            // you will need strcmp/memcmp for this and VERY IMPORTAND
+            // you cannot type 4 chars in the serial terminal. The fingers are
+            // very slow and probably the 4 chars will arrive as 4 packets, 1
+            // byte each. However you can paste text (up to 32 chars) and will
+            // arrive as a single packet
         }
     }
 
