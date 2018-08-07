@@ -85,7 +85,7 @@ For example, add this line to setup():
 ```C++
 PRINTLN("Hello world");
 ```
-All arduino code is working as expected, with the exception of Serial.print() wich sends data to the hardware serial port but <b>NOT</b> to the RF module. The
+All arduino code is working as expected, <b>with the important exception of Serial.print()</b> wich sends data to the hardware serial port but <b>NOT</b> to the RF module. The
 PRINT and PRINTLN macros can be used instead which use sprintf internally.
 ```C++
 i=2;
