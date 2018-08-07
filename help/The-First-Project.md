@@ -73,7 +73,7 @@ From now on, you need the usb2rf module (See [Installation](Installation.md)) co
 # Opens gtkterm with all apropriate options
 > make terminal
 
-# Sends the firmware
+# Sends the firmware via the RF link
 > make send
 ```
 
@@ -85,7 +85,7 @@ For example, add this line to setup():
 ```C++
 PRINTLN("Hello world");
 ```
-All arduino code is working as expected, <b>with the important exception of Serial.print()</b> wich sends data to the hardware serial port but <b>NOT</b> to the RF module. The
+All arduino code is working as expected, <b>with the important exception of Serial.print()</b> wich sends data to the hardware serial port but <b>NOT</b> to the RF link. The
 PRINT and PRINTLN macros can be used instead which use sprintf internally.
 ```C++
 i=2;
@@ -99,7 +99,7 @@ As you can see they look like the standard printf function. They send data via t
 Press '0' to '9' to see the response.
 
 Now uncomment the lines related to the LED, inside setup()
-and loop(). Please read the notes.
+and loop() in order to have the LED blinking.
 
 A very importand feature of rfboot is that it does NOT use any EEPROM location to store RF
 channel etc. All parameters are stored in the compiled bootloader, and the application can
