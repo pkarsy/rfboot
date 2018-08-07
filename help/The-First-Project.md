@@ -78,7 +78,7 @@ From now on, you need the usb2rf module (See [Installation](Installation.md)) co
 ```
 
 The "myProject" folder contains a arduino .ino file, in this case "myProject.ino". As is, the program prints the uptime on screen (the serial terminal) every second. The purpose of the program is to ensure that all machinery needed for further development is working.
-After the upload is finished, you will see uptime (in ms) in gtkterm.
+After the upload is finished, you will see uptime (in ms) in gtkterm. The program also responds to keypresses '0' to '9'. Press some numeric keys to ensure that you can send messages to remote module.
 If you are succesful, you can start playing with the code.
 
 For example, add this line to setup():
@@ -95,8 +95,6 @@ k=8;
 PRINTLN("j=%d k=%d",j,k);
 ```
 As you can see they look like the standard printf function. They send data via the RF link, the usb2rf module receives the data, and we can see them with a serial port terminal (we use gtkterm at 38400 bps)
-
-Press '0' to '9' to see the response.
 
 Now uncomment the lines related to the LED, inside setup()
 and loop() in order to have the LED blinking.
