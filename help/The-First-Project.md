@@ -87,7 +87,7 @@ i=2;
 PRINT("i=%d",i);
 j=7;
 k=8;
-PRINTLN("j=%d k=%d",j,k);
+PRINTLN("j=%d and k=%d",j,k);
 ```
 As you can see they look like the standard printf function. They send data via the RF link, the usb2rf module receives the data, and we can see them with a serial port terminal (we use gtkterm at 38400 bps)
 
