@@ -41,6 +41,8 @@ void setup() {
 
     // Uncomment to use a LED in A5
     // pinMode(A5,OUTPUT);
+
+    PRINTLN("Hello world");
 }
 
 void loop() {
@@ -51,11 +53,10 @@ void loop() {
     // by the watchdog automatically.
     wdt_reset();
 
-    // this block of code is for demonstation purposes
-    // and also a hint that at least cc1101 module
-    // is correctly wired and atmega328 correctly powered (less certain)
-    // remove it after the initial setup, to continue with your application.
-    {
+    // this block of code is for demonstation purposes and disabled by default
+    // It is a hint that at least cc1101 module
+    // is correctly wired remove it to continue with your application.
+    if (false) {
         // we print a message every 1000ms=1sec
         // the clock can be off by a few % because
         // RC oscillator is not very accurate
