@@ -1,7 +1,9 @@
 # rfboot
 
-Atmega328p Bootloader for wireless (OTA) code uploads, using the CC1101 RF chip.</br>
-rfboot is very reliable. I use it for all my projects, even those without any need for RF connectivity, because I can work with dosens of projects in parallel without any need to swap serial cables. There are very few failed uploads (less than 1% in my tests), and fixed immediatelly with a second upload</br>
+Atmega328p Bootloader for wireless (OTA) code uploads, using the CC1101 RF chip.
+
+
+Rfboot is very reliable. I use it for all my projects, even those without any need for RF connectivity, because I can work with dosens of projects in parallel without any need to swap serial cables. There are very few failed uploads (less than 1% in my tests), and fixed immediatelly with a second upload</br>
 Special care is taken (while rfboot is evolving) that all older rfboot installations are compatible with the newest uploading tool.
 
 Included :
