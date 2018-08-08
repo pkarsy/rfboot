@@ -865,19 +865,27 @@ proc actionMonitor() =
   sleep 20
   discard usb2rf.close()
   if p.len >= 2:
-    # No need for checkPortUse. openPort does it.
+    # No need for checkPortUse. openPort does it. ?????
     #checkPortUse(portName)
+    let pr = startProcess( command="/bin/fuser", args=[ "-s", USB2RFPATH ], options={poParentStreams} )
+    let exitCode = waitForExit(pr)
+
+
 
     #if LPID > 0:
     #  stderr.writeLine "Serial port \"", portName, "\" is in use by ", LPID,"(",LPROCNAME, "), not executing command"
     #else:
-    block:
+    if exitCode == 0:
+      stderr.writeLine "Serial port \"", portName, "\" is in use. Not opening a serial terminal, as probably another one is using the same port."
+    elif exitCode == 1:
       stdout.write "Executing : \""
-      for i in p[1..^1]:
+      for i in p[1..<p.len]:
         stdout.write i, " "
       stdout.write portName
       echo "\""
-      discard startProcess( command=p[1], args=p[2..^1] & portName, options={poStdErrToStdOut,poUsePath} )
+      discard startProcess( command=p[1], args=p[2..<p.len] & portName, options={poStdErrToStdOut,poUsePath} )
+    else:
+      stderr.writeLine "Unknown return code from fuser : ", exitCode
 
 
 proc actionResetLocal() =
