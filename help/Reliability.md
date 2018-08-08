@@ -7,7 +7,7 @@ to communicate with our  project, but we also want to update the code via the sa
 And most importantly, whatever failure happens while uploading, we should be able to
 repeat the process until we succeed.
 
-Here is explained what rfboot does to accomplish this job
+Here is explained what rfboot does to accomplish this job.
 
 At first, a bootloader runs only at power on or after a MCU Reset. The aproach we take here is
 that the application must implement a mechanism to software reset the MCU, whenever
