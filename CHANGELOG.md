@@ -1,5 +1,4 @@
--2018-08-08 rftool
-If a serial port is in use, rftool does not try to open a new serial terminal.
+- 2018-08-08 rftool: If a serial port is in use, rftool does not try to open a new serial terminal.
 
 <b>2018-08-08 The-First-Project.md:</b> Documentation improvements.
 
