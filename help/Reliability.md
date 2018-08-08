@@ -44,7 +44,7 @@ It is waiting for new firmware.
 
 - rfboot enables the watchdog timer before the application starts. If for some reason the
 application is malfunctioning, watchdog timer will eventually reset the device allowing to reprogram it.
-**Note: If the code resets the watchdog periodically, but fails to respond to the reset string, then you are locked out. You will need to access the reset or power button.**.<br/>
+**Note: If the code resets the watchdog periodically, but fails to respond to the reset string, then you are locked out. You will need to access the reset or power button.**
 
 - Every time rftool creates a new empty project, gives unique channel, syncword, and XTEA
 key to the project. This is in turn makes it impossible to send the code to the wrong device (essentially "bricking" it).
