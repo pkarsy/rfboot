@@ -11,6 +11,7 @@ import osproc
 import times
 import posix
 import streams
+import serial
 
 # This is the size of rfboot in atmega FLASH
 # In fact the size is about 3600 bytes, but the fuses
@@ -19,11 +20,12 @@ const BOOTLOADER_SIZE = 4096
 
 # A few serial handling functions (public domain), grabbbed from various
 # Internet sources plus some handling routines.
-{.compile: "serial.c".}
-proc c_openport*(port: cstring):cint {.importc.}
-proc readser*(fd: cint, buf: cstring, nbytes: cint, timeout: cint): cint {.importc.}
-proc writeser(fd: cint, buf: cstring, nbytes: cint) {.importc.}
-proc c_getchar(fd: cint, timeout: cint): cint {.importc.}
+#{.compile: "serial.c".}
+#proc c_openport*(port: cstring):cint {.importc.}
+#proc readser*(fd: cint, buf: cstring, nbytes: cint, timeout: cint): cint {.importc.}
+#proc writeser(fd: cint, buf: cstring, nbytes: cint) {.importc.}
+#proc c_getchar(fd: cint, timeout: cint): cint {.importc.}
+
 
 # We use the same .c file as rfboot for xtea functions
 
@@ -314,13 +316,21 @@ proc sendContSignal() {.noconv.} =
   let p = startProcess( command="/bin/fuser", args=[ "-sk", "-CONT", USB2RFPATH ], options={poParentStreams} )
   discard waitForExit(p)
 
-proc openPort(portname: cstring): cint =
+proc openPort(portname: string): SerialPort =
     sendStopSignal()
     addQuitProc sendContSignal
-    result = c_openport(portname)
-    if result<0 :
-      stderr.writeLine "Cannot open serial port \"", portName, "\" . Error=", result
-      quit QuitFailure
+    var port: SerialPort
+    try:
+        port = newSerialPort(portname)
+    except InvalidSerialPortError:
+        echo "No such serial port"
+        quit QuitFailure
+    try:
+        port.open(38400, Parity.None, 8, StopBits.One)
+    except:
+        echo "Cannot open serial port : \"", portname, "\""
+        quit QuitFailure
+    return port
 
 
 # a random integer 0-255
@@ -502,24 +512,30 @@ proc getApp(fn : string): string =
   return app
 
 
-proc write( port: cint, data: string) =
+discard """proc write( port: cint, data: string) =
   var buf: char
   for c in data:
     buf = c
-    writeser(port, addr buf, 1)
+    writeser(port, addr buf, 1)"""
 
 
-proc getChar(port: cint, timeout: cint = 100000): int =
-  let n = c_getchar(port, timeout)
-  return n
+proc getChar(port: SerialPort, timeout  = 1000): int =
+  port.setTimeouts(timeout.int32, -1.int32) 
+  var buf = newString(1)
+  #while true:
+  try:
+    discard port.read(buf)
+  except TimeoutError:
+    return -1
+  return buf[0].int
 
 
-proc drain(port: cint, timeout: cint=100000) {.noconv.} =
+proc drain(port: SerialPort, timeout = 1000.int32) =
   while port.getChar(timeout) != -1:
     discard
 
 
-proc getPacket(port: cint, timeout: cint = 100000, size:int = 1000000): string =
+proc getPacket(port: SerialPort, timeout = 100, size = 1000000): string =
   var sz = size;
   while (sz>0):
     let res = port.getChar(timeout)
@@ -531,14 +547,14 @@ proc getPacket(port: cint, timeout: cint = 100000, size:int = 1000000): string =
     sz-=1
 
 
-proc setChannel(port: cint, channel: 0..127) =
-  port.write CommdModeStr & "C" & channel.char
-  port.drain 10000
+proc setChannel(port: SerialPort, channel: 0..10) =
+  discard port.write CommdModeStr & "C" & channel.char
+  port.drain 10
 
 
-proc setSyncWord(port: cint, address: string) =
-  port.write CommdModeStr & "A" & address
-  port.drain 10000
+proc setSyncWord(port: SerialPort, address: string) =
+  discard port.write CommdModeStr & "A" & address
+  port.drain 10
 
 
 proc actionCreate() =
@@ -686,10 +702,10 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     StartSignature.uint32.toString & newString(16)
 
   var smallHeader = pingSignature.toString
-  port.drain(5000)
-  port.write(CommdModeStr & "Z")  # fast reset
+  port.drain 5
+  discard port.write CommdModeStr & "Z"  # fast reset
   const USB2RF_START_MESSAGE = "USB2RF"
-  let p = port.getPacket(200000, len(USB2RF_START_MESSAGE) )
+  let p = port.getPacket(200, len(USB2RF_START_MESSAGE) )
   if p!=USB2RF_START_MESSAGE:
     stderr.writeLine "Cannot contact usb2rf"
     quit QuitFailure
@@ -707,8 +723,8 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     echo "App SyncWord = ", appSyncWord.toArray
     port.setSyncWord appSyncWord
     echo "Reset String = ", resetString
-    port.write resetString
-    let msg = port.getPacket(100000, resetString.len)
+    discard port.write resetString
+    let msg = port.getPacket(100, resetString.len)
     if msg == resetString:
       echo "Ok the target reported reset"
     else:
@@ -717,14 +733,14 @@ proc actionUpload(appFileName: string, timeout=10.0) =
   port.setSyncWord rfbootSyncWord
   echo "rfboot channel = ", rfbChannel
   port.setChannel rfbChannel
-  port.drain(5000)
+  port.drain 5
   var contact = false
   var msg: string
   var iv: array[2,uint32];
   var startPingTime = epochTime()
   while epochTime() - startPingTime < timeout:
-    port.write smallHeader
-    msg = port.getPacket(100000,8)
+    discard port.write smallHeader
+    msg = port.getPacket(100,8)
     if msg!=nil:
       contact = true
       break
@@ -732,7 +748,7 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     stderr.writeLine "Cannot contact rfboot"
     port.setChannel appChannel
     port.setSyncWord appSyncWord
-    port.drain 2000
+    port.drain 2
     quit QuitFailure
   else:
     if msg.len == 8:
@@ -765,8 +781,8 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     quit QuitFailure
   startPingTime = epochTime()
   while epochTime() - startPingTime < timeout:
-    port.write header
-    msg = port.getPacket(100000,3)
+    discard port.write header
+    msg = port.getPacket(100,3)
     if msg!=nil:
       contact = true
       break
@@ -800,7 +816,7 @@ proc actionUpload(appFileName: string, timeout=10.0) =
     var pkt_idx = app.len
     let applen = app.len.uint16.toString
 
-    port.write CommdModeStr & "U" & applen
+    discard port.write CommdModeStr & "U" & applen
 
     while true:
       let resp=port.getChar()
@@ -813,7 +829,7 @@ proc actionUpload(appFileName: string, timeout=10.0) =
         #elif pkt_idx mod 1024==0:
         #  stderr.write "*"
         #  #stderr.flushFile
-        port.write app[pkt_idx-PAYLOAD..pkt_idx-1]
+        discard port.write app[pkt_idx-PAYLOAD..pkt_idx-1]
         pkt_idx -= PAYLOAD
       elif resp==USB_INFO_RESEND:
         stderr.writeLine "\nResend"
@@ -826,7 +842,7 @@ proc actionUpload(appFileName: string, timeout=10.0) =
       else:
         stderr.writeLine "\nGot unknown response", resp
         quit QuitFailure
-    let resp = port.getPacket(1200000,3)
+    let resp = port.getPacket(1200, 3)
     if resp.len<3:
       stderr.writeLine "\nNo response from usb2rf module"
       quit QuitFailure
@@ -863,7 +879,7 @@ proc actionMonitor() =
   sleep 20
   usb2rf.setSyncWord appSyncWord
   sleep 20
-  discard usb2rf.close()
+  usb2rf.close
   if p.len >= 2:
     # No need for checkPortUse. openPort does it. ?????
     #checkPortUse(portName)
@@ -892,9 +908,9 @@ proc actionResetLocal() =
   let portname = getPortName()
   let fd = portname.openPort()
   echo "reseting the usb2rf module"
-  fd.write CommdModeStr & "R"
+  discard fd.write CommdModeStr & "R"
   sleep 10
-  discard fd.close
+  fd.close
 
 
 proc actionGetPort() =
@@ -931,10 +947,10 @@ proc actionAddPort() =
 discard """proc actionPingUsb(): bool =
   let portname = getPortName()
   let port = portname.openPort()
-  port.drain(5000)
+  port.drain 5
   port.write(CommdModeStr & "Z")  # fast reset
   const USB2RF_START_MESSAGE = "USB2RF"
-  let p = port.getPacket(200000, len(USB2RF_START_MESSAGE) )
+  let p = port.getPacket(200, len(USB2RF_START_MESSAGE) )
   if p!=USB2RF_START_MESSAGE:
     stderr.writeLine "Cannot contact usb2rf"
     return false
