@@ -1,6 +1,8 @@
+- 2018-08-12 rftool : Now uses the serial library
+
 - 2018-08-08 rftool: If a serial port is in use, rftool does not try to open a new serial terminal.
 
-- 2018-08-08 The-First-Project.md: Documentation improvements.
+- 2018-08-08 The-First-Project: Documentation improvements.
 
 - 2018-05-26 rftool: The default rftool binary is now 64 bit. The binary is statically linked and probably will work on any 64-bit kernel. The reason for this change is that it is quite inconvenient to generate the 32-bit binaries and at the same time 32-bit linuxes are almost extint nowdays. If anyone really needs the 32 bit binary, it can easily compiled in a 32 bit box.
 
