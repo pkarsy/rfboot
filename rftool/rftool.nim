@@ -48,7 +48,7 @@ const ApplicationSettingsFile = "app_settings.h"
 const RfbootSettingsFile = "rfboot/rfboot_settings.h"
 
 # rfboot is ~3.5Kbytes and fuses set to 4K
-# Also rfboot uses the last application page for its own use
+# Also rfboot uses the last application page (128 bytes) to store IV and upload counter
 # so maximum application size = 32K-4K-128
 const SPM_PAGE_SIZE = 128
 const MaxAppSize = 32*1024 - BOOTLOADER_SIZE - SPM_PAGE_SIZE
@@ -60,10 +60,6 @@ const RandomGen = "/dev/urandom"
 const homeconfig = "~/.usb2rf"
 const serialPortDir = "/dev/serial/by-id"
 
-# This holds the PID of Serial Terminal software, if one has opened the serial port
-# of the usb2rf module
-#var LPID: int = -1
-#var LPROCNAME: string
 var USB2RFPATH: string
 
 # packs a uint16 in 2 bytes, little endian
@@ -131,6 +127,7 @@ proc parseKey(keyStr: string): array[4,uint32] =
 proc `$`(a:array[2, uint32]): string =
   return "{" & $a[0] & "," & $a[1] & "}"
 
+# encrypts a string with xtea-cbc in Little Endian
 proc xteaEncipherCbc(st: string, key: array[4,uint32], iv: var array[2,uint32] ) : string =
   assert(st.len mod 8 == 0, "String to be encrypted must have size multiple of 8 bytes")
   result = ""
