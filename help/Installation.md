@@ -77,7 +77,7 @@ Linux by default does not give permission (to regular users) to access the Seria
 ```bash
 > sudo adduser myusername dialout
 ```
-You need to logout and login again for the changes to take effect.
+You need to logout and login again for the changes to take effect.<br>
 For ISP programmer:
 ```bash
 > sudo nano /etc/udev/rules.d/99-isp.rules
