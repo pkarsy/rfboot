@@ -77,7 +77,7 @@ From now on, you need the usb2rf module (See [Installation](Installation.md)) co
 > make send
 ```
 
-The "myProject" folder contains a arduino .ino file, in this case "myProject.ino". As is, the program prints a "hello wolrd", waits for a keypress from the serial terminal and after that is prints back what you pressed. The purpose of the program is to ensure that all machinery needed for further development is working.
+The "myProject" folder contains a arduino .ino file, in this case "myProject.ino". As is, the program prints a "hello world", it waits for a keypress from the serial terminal, and after that it prints back what you pressed. The purpose of the program is to ensure that all components are correctly wired and working.
 
 If you were succesful, you can start playing with the code.
 All arduino code is working as expected, <b>with the important exception of Serial.print()</b> wich sends data to the hardware serial port but <b>NOT</b> to the RF link. The
