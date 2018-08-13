@@ -103,8 +103,8 @@ You have to diconnect the module from the USB port (if connected), and reconnect
 
 ### usb2rf module
 
-***WARNING: The red FTDI modules (USB-to-Serial, it seams they have a fake FTDI chip) are very unreliable. A lot of failed uploads, and mysterious CRC errors, dissapeared by using a CP2102 or Pl2303 USB-to-Serial module.<br/>
-I dont't have a genuine FTDI module to test it. Maybe the problem is power related as the FTDI regulator powers the ProMini and the CC1101 module.<br/>
+***WARNING: The red FTDI modules (USB-to-Serial, they probably have a fake FTDI chip) that can be found on many online shops, are very unreliable. A lot of failed uploads, and mysterious CRC errors, dissapeared by using a CP2102 or Pl2303 USB-to-Serial module.<br/>
+I dont't have a genuine FTDI module to test it. Maybe the problem is power related as the FTDI regulator powers the ProMini and the CC1101 module directly. This means that if we resist the temptation to connect FTDI<-->FTDI directly with the 6-pin headers, they may work reliably.<br/>
 I didn't investigate further, as CP2102 is working perfectly.***
 
 To build the usb2rf module you need :
@@ -188,8 +188,7 @@ fact do harm, as this chip is not tested by the developer.
 - The Pl2303 chip cannot programmed, so if you are going to use this chip, you
 have to use only one, and use other brands, if you need to connect other
 USB-to-Serial modules.
-- The FTDI modules also have unique serial IDs but as I said I have reliablility problems
-with them (non genuine chips).
+- The FTDI modules also have unique serial IDs, if you manage to bypass the reliability problems as explained earlier.
 - There is another linux utility doing the same job, and seems to have more options<br/>
 http://cp210x-program.sourceforge.net/<br/>
 but some distros might have difficulties to install the dependencies (python-usb).
@@ -201,7 +200,7 @@ but some distros might have difficulties to install the dependencies (python-usb
 > rftool addport
 ```
 and insert the usb2rf module. rftool detects it and saves the Serial port device
-to ~/.usb2rf file.
+to "~/.usb2rf" file. Note that if you omit this step, rftool will not be able to use this module, for code upload.
 
 Note: Sometimes the module is detected as "/dev/ttyUSB0". Another time as "/dev/ttyUSB1", and so
 on. rftool instead searches the "/dev/serial/by-id" directory and always finds the correct usb2rf module.
