@@ -19,8 +19,6 @@ Do not use LM7833 or L78L33 or other non LDO regulators unless your power source
 for each project, to write rfboot to the target MCU.
 - A breadboard. Note that a breadboard with loose connections is a basic source of failures when prototyping.
 
-Here is how our project looks like. It is not connected with anything, and we are going to program it wirelessly.
-![The first project](https://github.com/pkarsy/rfboot/blob/master/help/files/FirstRfbootProject.jpg)
 
 On the PC, prefferably in you sketchbook folder type :
 ```sh
@@ -46,7 +44,7 @@ a "myProject" folder containing all information/data our project needs.
 Now it is time to burn the atmega with rfboot, using the ISP programmer.
 
 Here is a photo of the USBasp programmer together with a ZIF developer board. (search ebay)
-![USBasp](https://github.com/pkarsy/rfboot/blob/master/help/files/usbasp.jpg)
+![USBasp](files/usbasp.jpg)
 If you have a USBtiny ISP programmer, edit the file "rfboot/hardware_settings.mk" and uncomment
 the USBtiny line. Put the atmega328p-pu chip on the ZIF socket and :
 
@@ -64,6 +62,8 @@ UART Serial bootloaders on the other hand need a relatively accurate +-2% clock,
 otherwise they cannot communicate at all. This is the reason all arduino boards
 come with crystal/resonator.
 
+Here is how our project looks like. It is not connected with anything, and we are going to program it wirelessly.
+![The first project](files/FirstRfbootProject.jpg)
 
 Now put the atmega and the other components in the breadboard,
 and power the board.</br>
