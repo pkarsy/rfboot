@@ -4,7 +4,7 @@ You need to:
 - Install the needed software in the PC
 - Assemble and configure the usb2rf module (Connects to a USB port of the PC)
 - Configure rftool to use the usb2rf module
-- Upload the apropriate firmware to usb2rf (An Arduino sketch)
+- Upload the apropriate firmware to usb2rf
 
 ### Install the apropriate software
 First of all, a linux PC is needed for the development. I don't use Windows neither MAC
@@ -58,7 +58,7 @@ Now if you type
 ```bash
 > rftool
 ```
-Should give you a small usage message. This means rftool is in the PATH. As you can see the
+should give you a small usage message. This means rftool is in the PATH. As you can see the
 rftool is precompiled. It is a statically linked executable, and it can run on any x86_64(AMD64) linux system. You can recompile it of course if you want, see [rftool README](../rftool/README.md)
 
 Now it is time to install mCC1101, a modified (and simplified) panStamp
