@@ -72,19 +72,17 @@ Change "~/sketchbook/libraries" with your actual sketchbook folder.
 > git clone https://github.com/pkarsy/mCC1101.git
 ```
 
-Linux by default does not give permission (to regular users) to
-access the Serial ports, neither the ISP programmers. To fix it:
+Linux by default does not give permission (to regular users) to access the Serial ports, neither the ISP programmers. To change this for Serial port:
 
-- Serial port
 ```bash
 > sudo adduser myusername dialout
 ```
 You need to logout and login again for the changes to take effect.
-- ISP programmer
-
+For ISP programmer:
 ```bash
 > sudo nano /etc/udev/rules.d/99-isp.rules
 ```
+
 Add the lines
 ```sh
 # USBasp
