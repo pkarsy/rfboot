@@ -104,7 +104,7 @@ You have to diconnect the module from the USB port (if connected), and reconnect
 ### usb2rf module
 
 ***WARNING: The red FTDI modules (USB-to-Serial, they probably have a fake FTDI chip) that can be found on many online shops, are very unreliable. A lot of failed uploads, and mysterious CRC errors, dissapeared by using a CP2102 or Pl2303 USB-to-Serial module.<br/>
-I dont't have a genuine FTDI module to test it. Maybe the problem is power related as the FTDI regulator powers the ProMini and the CC1101 module directly. This means that if we resist the temptation to connect FTDI<-->ProMini directly with the 6-pin headers, they may work reliably.<br/>
+I dont't have a genuine FTDI module to test it.<br>Maybe the problem is power related as the FTDI regulator powers the ProMini and the CC1101 module directly. This means that if we resist the temptation to connect FTDI<-->ProMini directly with the 6-pin headers, and connect the 5V FTDI output to the RAW proMini pin, then they may work reliably.<br/>
 I didn't investigate further, as CP2102 is working perfectly.***
 
 To build the usb2rf module you need :
