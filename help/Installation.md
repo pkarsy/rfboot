@@ -83,7 +83,7 @@ For ISP programmer:
 > sudo nano /etc/udev/rules.d/99-isp.rules
 ```
 
-Add the lines
+and add the lines
 ```sh
 # USBasp
 SUBSYSTEM=="usb", ATTR{product}=="USBasp", ATTR{idProduct}=="05dc", ATTRS{idVendor}=="16c0", MODE="0666"
@@ -92,14 +92,14 @@ SUBSYSTEM=="usb", ATTR{product}=="USBasp", ATTR{idProduct}=="05dc", ATTRS{idVend
 SUBSYSTEM=="usb", ATTR{idVendor}=="1781", ATTR{idProduct}=="0c9f", MODE="0666"
 ```
 
-In the command line
+Now in the command line
 ```bash
 > sudo service udev restart
 ```
 You have to diconnect the module from the USB port (if connected), and reconnect for the changes to take effect.
 
-***Software installation is done !***
-<br/>The steps above should be repeated on every linux PC you are going to use for development.
+***Now the Linux PC has all neccesary software components***
+<br/>The steps above should be repeated on every PC you are going to use for development.
 
 ### usb2rf module
 
