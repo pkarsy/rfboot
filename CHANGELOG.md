@@ -1,4 +1,4 @@
-- 2018-08-14 rftool : No an additional rftool.i386 file is provided for the few still using i386 linuxes
+- 2018-08-14 rftool : Now an additional rftool.i386 file is provided for the few still using i386 linuxes.
 
 - 2018-08-12 rftool : Now uses the serial library
 
