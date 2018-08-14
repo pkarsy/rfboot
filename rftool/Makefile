@@ -23,13 +23,13 @@ bin:
 	ls -l rftool
 
 musl:
-	nim -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
+	nim -d:release --opt:size -x:on --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
 	strip rftool
 	ls -l rftool
 
 vagga:
 	if [ ! -d serial.nim ]; then git clone https://github.com/euantorano/serial.nim.git --branch v1.1.0 ; fi
-	vagga nim --path:./serial.nim/src -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
+	vagga nim --path:./serial.nim/src -d:release --opt:size -x:on --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
 	strip rftool
 	ls -l rftool
 
