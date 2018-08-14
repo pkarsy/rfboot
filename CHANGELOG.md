@@ -1,4 +1,4 @@
-- 2018-08-14 rftool : Now an additional rftool.i386 file is provided for the few still using i386 linuxes.
+- 2018-08-14 rftool : the rftool.i386 file is provided for the few still using i386 linuxes.
 
 - 2018-08-12 rftool : Now uses the serial library
 
@@ -12,10 +12,7 @@
 
 - 2018-04-19 README.md Installation.md: Documentation improvements.
 
-- 2017-10-03 rftool: Fixed minor bug in rftool about the maximum firmware size.
-Improved rftool Makefile.
-Optional use of "vagga" container for compilation.
-Now rftool accepts "new" as synonymous to "create"
+- 2017-10-03 rftool: Fixed minor bug in rftool about the maximum firmware size. Improved rftool Makefile. Optional use of "vagga" container for compilation. Now rftool accepts "new" as synonymous to "create"
 
 - 2017-09-13 Installation.md: A lot of improvements in the documentation, new photos uploaded.
 
@@ -25,9 +22,6 @@ Now rftool accepts "new" as synonymous to "create"
 
 - 2017-09-09 rftool: Major code cleanup
 
-- 2017-09-09 rftool: Now upload supports .elf and .hex files, not only binary files.
-This in practice means that there is no need to convert the ELF file
-in binary format in the Makefile.
+- 2017-09-09 rftool: Now upload supports .elf and .hex files, not only binary files. This in practice means that there is no need to convert the ELF file in binary format in the Makefile.
 
-- 2017-09-09 CHANGELOG file created: Maybe too late, as almost all functionality is
-there.
+- 2017-09-09 CHANGELOG file created: Maybe too late, as almost all functionality is there.
