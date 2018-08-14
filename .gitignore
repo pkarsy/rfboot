@@ -6,3 +6,4 @@ nimcache
 old
 .vagga
 rust
+serial-*
