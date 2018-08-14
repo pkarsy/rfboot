@@ -976,9 +976,9 @@ https://github.com/pkarsy/rfboot
 Usage : rftool create|new ProjectName # Creates a new Arduino based project
         rftool upload|send SomeFirmware # Accepted filetypes are .bin .hex .elf
         rftool monitor|terminal term_emulator_cmd arg arg -p #opens a serial terminal with appropriate parameters
-        rftool resetlocal # Reset the usb2rf module. It is used by the usb2rf Makefile
-        rftool getport # Prints in wich port the usb2rf module is connected
         rftool addport # Adds usb2rf module to ~/.usb2rf file
+        rftool resetlocal # Reset the usb2rf module. It is used by the usb2rf Makefile
+        rftool getport # Prints the port in which the usb2rf module is connected
 """
     quit QuitSuccess
   let action = p[0].strip.normalize # lower without _
