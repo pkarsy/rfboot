@@ -28,7 +28,7 @@ musl:
 	ls -l rftool
 
 vagga:
-	git clone https://github.com/euantorano/serial.nim.git --branch v1.1.0
+	if [ ! -d serial.nim ]; then git clone https://github.com/euantorano/serial.nim.git --branch v1.1.0 ; fi
 	vagga nim --path:./serial.nim/src -d:release --opt:size --passL:-static --gcc.exe:musl-gcc --gcc.linkerexe:musl-gcc c rftool
 	strip rftool
 	ls -l rftool
