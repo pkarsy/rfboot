@@ -1,5 +1,3 @@
-- 2018-08-14 rftool : the rftool.i386 file is provided for the few still using i386 linuxes.
-
 - 2018-08-12 rftool : Now uses the serial library
 
 - 2018-08-08 rftool: If a serial port is in use, rftool does not try to open a new serial terminal.
