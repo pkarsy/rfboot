@@ -1,4 +1,4 @@
-### Components and Porting
+## Components and Porting
 
 - RF<br>
 For RF connectivity, the most common solution is to use 2.4GHz
