@@ -7,7 +7,7 @@ band seems overcrowded with all WIFI routers/APs/MicrowaveOvens around. Signal t
 
 #### MCU
 The use of atmega328p is very natural. It is a well supported chip with tons of online
-information. It powers a lot of Arduino boards, and can be programmed with standard Arduino code. And the truth is that atmega328 has the right size (IO and RAM/Flash) for a lot of small projects.
+information. It powers a lot of Arduino boards, and can be programmed with standard Arduino code. And the truth is that atmega328 has the right size (IO and RAM/Flash) for a lot of projects.
 
 #### Porting
 I expect that porting rfboot to another avr MCU should not be hard, if such a need arises. The use of another RF chip can be a little harder however, with the exception of CC2500 which is almost identical to CC1101 (It is a 2.4GHz transceiver) but I didn't try this.
