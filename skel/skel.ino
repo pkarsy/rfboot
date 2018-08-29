@@ -28,7 +28,7 @@ void setup() {
     // rfboot enables watchdog (2 sec timeout) automatically
     // we can disable it with wdt_disable(); but is not recommended
     // as a misbehaving code will lock the module and we will no be
-    // able to resend code remotelly, ie without resetting the module
+    // able to resend code remotely, ie without resetting the module
 
     // Althrough not needed by rfboot itself, almost all rfboot projects
     // also use the CC1101 module for connectivity witho othe modules/PC
