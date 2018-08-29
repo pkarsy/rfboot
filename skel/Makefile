@@ -16,7 +16,7 @@ include /usr/share/arduino/Arduino.mk
 
 send: all
 	@# "rftool send" tries to reset the remote module by sending a reset string first
-	@# Obviously the application code must support this, otherwise you have to
+	@# The application code must support this however, otherwise you have to
 	@# manually reset the module
 	rftool send $(TARGET_ELF)
 
