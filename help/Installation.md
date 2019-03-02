@@ -200,11 +200,11 @@ but some distros might have difficulties to install the dependencies (python-usb
 > rftool addport
 ```
 and insert the usb2rf module. rftool detects it and saves the Serial port device
-to "~/.usb2rf" file. Note that if you omit this step, rftool will not be able to use this module, for code upload.
+to "~/.usb2rf" file. Note that **if you omit this step, rftool will not be able to use this module, for code upload.**
 
 Note: Sometimes the module is detected as "/dev/ttyUSB0". Another time as "/dev/ttyUSB1", and so
 on. rftool instead searches the "/dev/serial/by-id" directory and always finds the correct usb2rf module.
-You can have more than one usb2rf devices and rftool will use the first one connected.
+You can have more than one usb2rf devices and rftool will use the first one referenced in "~/.usb2rf"
 
 ### Burn the appropriate firmware to usb2rf
 
