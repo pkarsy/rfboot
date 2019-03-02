@@ -1,5 +1,5 @@
 # This Makefile uses the arduino-makefile
-# If you use another AVR build system you must take the necessary changes
+# In order to use another AVR build system you must take the necessary changes
 # for the build to work
 
 # probably the project is NOT based on a promini, but the following
