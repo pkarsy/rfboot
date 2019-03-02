@@ -8,7 +8,7 @@ Special care is taken (while rfboot is evolving) that all older rfboot installat
 
 Included :
 
-- The atmega328 bootloader, intended to be installed to this MCU via an ISP programmer.
+- The atmega328 bootloader, intended to be installed to this MCU via an ISP programmer. After this initial step, all programms can be sent wirelesly.
 - A suitable utility (rftool) to easily create new projects (the directory structure) using rfboot as bootloader.
 The same tool is used for code upload. Every project is created with unique RF settings and a
 preconfigured Makefile. While developing, a "make send" uploads the code wirelessly.
