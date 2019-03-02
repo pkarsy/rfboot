@@ -209,7 +209,7 @@ You can have more than one usb2rf devices and rftool will use the first one refe
 ### Burn the appropriate firmware to usb2rf
 
 The usb2rf module (The proMini) needs a firmware in order to do the job as a USB<-->RF bridge.
-This step will work only if you already done the "rftool addport" step above. And of course it
+**This step will work only if you already done the "rftool addport" step above.** And of course it
 needs to be done once. Ensure the module is the only one connected (if you happen to have more than one)
 To upload the pre-compiled .hex
 ```bash
