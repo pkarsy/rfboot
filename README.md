@@ -1,5 +1,8 @@
 # rfboot
 
+# Importand note : As time passes, the limitations of this software become more and more apparent. Only atmega328+cc1101+makefile(no platformio). If you are interested on OTA programming consider using other solutions like the excellent [esp-link](https://github.com/jeelabs/esp-link)
+
+
 Atmega328p Bootloader for wireless (OTA) code uploads, using the CC1101 RF chip.
 
 
