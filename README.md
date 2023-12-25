@@ -1,13 +1,8 @@
 # rfboot
 
-# Importand note : As time passes, the limitations of this software become more and more apparent. Only atmega328+cc1101+makefile(no platformio). If you are interested on OTA programming consider using other solutions like the excellent [esp-link](https://github.com/jeelabs/esp-link)
-
+# Importand note : As time passes, the limitations of rfboot become more and more obvious. Only atmega328 with cc1101 is supported and no itegration with platformio. If you are interested on OTA updates consider using another programmer like the excellent [esp-link](https://github.com/jeelabs/esp-link)
 
 Atmega328p Bootloader for wireless (OTA) code uploads, using the CC1101 RF chip.
-
-
-Rfboot is very reliable. I use it for all my projects, even those without any need for RF connectivity, because I can work with dozens of projects in parallel without any need to swap serial cables. There are very few failed uploads (less than 1% in my tests), and fixed immediately with a second upload.</br>
-Special care is taken (while rfboot is evolving) that all older rfboot installations are compatible with the newest uploading tool.</br>
 
 Included :
 
